@@ -197,7 +197,7 @@ const submitForm = async () => {
 
       <footer class="mt-12 text-center">
         <p class="text-slate-500 text-xs uppercase tracking-widest font-medium">
-          © 2024 CSUCCIS Learning Management System
+          © 2026 CSU College of Computing and Information Sciences. All rights reserved.
         </p>
         <div class="flex justify-center gap-4 mt-4">
           <a href="#" class="text-slate-500 hover:text-[#ec5b13] transition-colors" title="Help"><HelpCircle :size="18" /></a>
