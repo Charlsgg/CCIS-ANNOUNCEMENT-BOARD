@@ -2,26 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
-
 class Board extends Model
 {
+    use SoftDeletes;
     protected $table = 'table_board';
-    
     protected $primaryKey = 'board_id';
+    public $incrementing = true; 
     
-    public $incrementing = false;
-    
-    public $timestamps = false;
+    public $timestamps = true; 
 
     protected $fillable = [
-        'board_id',
         'board_name',
-        'created_at',
-        'updated_at',
     ];
 
-    // Define the One-to-Many relationship with Announcements
     public function announcements()
     {
         return $this->hasMany(Announcement::class, 'board_id', 'board_id');

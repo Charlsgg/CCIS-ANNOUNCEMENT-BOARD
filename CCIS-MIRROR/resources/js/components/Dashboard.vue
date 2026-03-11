@@ -4,13 +4,11 @@ export default { layout: null }
 
 <script setup lang="ts">
 import { ref, shallowRef, onMounted } from 'vue'
-import { QuillEditor } from '@vueup/vue-quill'
-// @ts-ignore
-import '@vueup/vue-quill/dist/vue-quill.snow.css'
+// REMOVED: Quill imports
 
 import { 
     Terminal, Bell, User, Home, Megaphone, LogOut, 
-    Send, Code, Menu, X
+    Send, Menu, X 
 } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -18,14 +16,6 @@ const props = defineProps<{
 }>()
 
 const isSidebarOpen = ref(false)
-const toolbarOptions = [
-    ['bold', 'italic', 'underline'],
-    [{ 'align': [] }],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    ['blockquote'],
-    ['image', 'link'],
-    ['clean']
-]
 
 // Composer State
 const newTitle = ref('')
@@ -35,13 +25,12 @@ const csrfToken = ref('')
 
 onMounted(() => {
     fetchAnnouncements()
-    // Grab the token once
     const tokenTag = window.document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
     if (tokenTag) {
         csrfToken.value = tokenTag.content
     }
 })
-// --- FETCH ANNOUNCEMENTS FROM DATABASE ---
+
 const fetchAnnouncements = async () => {
     try {
         const response = await fetch('/api/announcements')
@@ -62,15 +51,9 @@ const fetchAnnouncements = async () => {
     }
 }
 
-onMounted(() => {
-    fetchAnnouncements()
-})
-
-// --- POST ANNOUNCEMENT TO LARAVEL ---
 const postAnnouncement = async () => {
-    const isEditorEmpty = !newContent.value || newContent.value === '<p><br></p>'
-    
-    if (!newTitle.value.trim() || isEditorEmpty) {
+    // Simplified validation since it's now a plain textarea
+    if (!newTitle.value.trim() || !newContent.value.trim()) {
         alert('Please enter both a title and a message.')
         return
     }
@@ -81,19 +64,17 @@ const postAnnouncement = async () => {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken.value // Cleaner and no TS errors
+                'X-CSRF-TOKEN': csrfToken.value
             },
             body: JSON.stringify({
                 title: newTitle.value,
                 content: newContent.value,
-                board_id: 1 // You can make this dynamic based on selection later
+                board_id: 1
             })
         })
 
         if (response.ok) {
             const savedPost = await response.json()
-            
-            // Add new post to the top of the UI list
             announcements.value.unshift({
                 id: savedPost.announcement_id,
                 title: savedPost.title,
@@ -101,8 +82,6 @@ const postAnnouncement = async () => {
                 date: 'Just now',
                 icon: shallowRef(Megaphone)
             })
-            
-            // Reset Inputs
             newTitle.value = ''
             newContent.value = ''
         } else {
@@ -190,7 +169,7 @@ const postAnnouncement = async () => {
                     
                     <div class="mb-6 md:mb-8 flex flex-col gap-2">
                         <h3 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Information System Announcements</h3>
-                        <p class="text-slate-400 text-sm md:text-base max-w-2xl">Stay updated with the latest academic updates specifically curated for the ISS Organization.</p>
+                        <p class="text-slate-400 text-sm md:text-base max-w-2xl">Stay updated with the latest academic updates.</p>
                     </div>
 
                     <div class="mb-10 rounded-2xl bg-[#221610] border border-[#ec5b13]/30 shadow-lg shadow-black/20 overflow-hidden flex flex-col focus-within:border-[#ec5b13] transition-colors p-4 md:p-6">
@@ -202,15 +181,11 @@ const postAnnouncement = async () => {
                             class="w-full bg-transparent border-none focus:ring-0 text-white text-xl md:text-2xl font-bold placeholder-slate-600 px-0 pb-4 outline-none border-b border-[#ec5b13]/10 mb-4"
                         />
 
-                        <div class="editor-wrapper min-h-37.5 text-white">
-                            <QuillEditor 
-                                v-model:content="newContent" 
-                                contentType="html" 
-                                theme="snow" 
-                                :toolbar="toolbarOptions"
-                                placeholder="What's the latest update? You can paste images here directly (Ctrl+V)..."
-                            />
-                        </div>
+                        <textarea 
+                            v-model="newContent"
+                            placeholder="What's the latest update?"
+                            class="w-full min-h-32 bg-transparent border-none focus:ring-0 text-white text-base placeholder-slate-600 outline-none resize-none"
+                        ></textarea>
                         
                         <div class="mt-6 flex flex-col sm:flex-row items-end justify-end gap-4 border-t border-[#ec5b13]/10 pt-4">
                             <button @click="postAnnouncement" class="w-full sm:w-auto px-8 py-2.5 bg-[#ec5b13] hover:bg-[#d44c0b] text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-[#ec5b13]/20 flex items-center justify-center gap-2">
@@ -240,7 +215,7 @@ const postAnnouncement = async () => {
                                 </div>
                                 
                                 <div 
-                                    class="text-slate-300 text-sm mb-4 leading-relaxed ql-editor px-0 py-0"
+                                    class="text-slate-300 text-sm mb-4 leading-relaxed px-0 py-0 whitespace-pre-wrap"
                                     v-html="post.content"
                                 ></div>
                             </div>
@@ -256,96 +231,9 @@ const postAnnouncement = async () => {
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
+/* REMOVED ALL QUILL SPECIFIC STYLING */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* QUILL DARK THEME OVERRIDES 
-  Matches your #221610 and #ec5b13 color scheme
-*/
-.editor-wrapper .ql-toolbar.ql-snow {
-    border: none;
-    border-bottom: 1px solid rgba(236, 91, 19, 0.2);
-    background-color: rgba(42, 28, 21, 0.8);
-    border-radius: 8px 8px 0 0;
-    padding: 12px;
-}
-.editor-wrapper .ql-container.ql-snow {
-    border: none;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1rem;
-}
-.editor-wrapper .ql-editor {
-    min-height: 150px;
-    padding: 16px 0;
-}
-.editor-wrapper .ql-editor.ql-blank::before {
-    color: #64748b; /* slate-500 placeholder text */
-    font-style: normal;
-}
-/* Toolbar icons styling */
-.editor-wrapper .ql-snow .ql-stroke {
-    stroke: #94a3b8; /* slate-400 */
-}
-.editor-wrapper .ql-snow .ql-fill {
-    fill: #94a3b8;
-}
-.editor-wrapper .ql-snow .ql-picker {
-    color: #94a3b8;
-}
-.editor-wrapper .ql-snow.ql-toolbar button:hover .ql-stroke,
-.editor-wrapper .ql-snow .ql-toolbar button:hover .ql-stroke,
-.editor-wrapper .ql-snow.ql-toolbar button.ql-active .ql-stroke,
-.editor-wrapper .ql-snow .ql-toolbar button.ql-active .ql-stroke {
-    stroke: #ec5b13;
-}
-.editor-wrapper .ql-snow.ql-toolbar button:hover .ql-fill,
-.editor-wrapper .ql-snow .ql-toolbar button:hover .ql-fill,
-.editor-wrapper .ql-snow.ql-toolbar button.ql-active .ql-fill,
-.editor-wrapper .ql-snow .ql-toolbar button.ql-active .ql-fill {
-    fill: #ec5b13;
-}
-
-/* Post Content Formatting overrides (so saved content matches theme) */
-.ql-editor img {
-    border-radius: 0.5rem;
-    border: 1px solid rgba(236, 91, 19, 0.2);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    max-width: 100%;
-}
-.ql-editor b, .ql-editor strong { color: #ec5b13; }
-.ql-editor i, .ql-editor em { color: #cbd5e1; }
-.ql-editor u { text-decoration: underline; text-underline-offset: 4px; }
-.ql-editor blockquote {
-    border-left: 4px solid #ec5b13;
-    background: rgba(236, 91, 19, 0.05);
-    color: #94a3b8;
-    padding: 0.5rem 1rem;
-    border-radius: 0 0.5rem 0.5rem 0;
-}
-/* Ensure the editor container and the rendered output both respect alignment */
-.ql-editor .ql-align-right, 
-.formatted-content .ql-align-right { 
-    text-align: right !important; 
-}
-
-.ql-editor .ql-align-center, 
-.formatted-content .ql-align-center { 
-    text-align: center !important; 
-}
-
-/* This is the magic bit for images */
-.ql-editor .ql-align-right img,
-.formatted-content .ql-align-right img {
-    display: inline-block;
-    /* If it's a block, we use margins to push it */
-    margin-left: auto; 
-    margin-right: 0;
-}
-
-.ql-editor .ql-align-center img,
-.formatted-content .ql-align-center img {
-    display: inline-block;
-    margin-left: auto;
-    margin-right: auto;
-}
+.whitespace-pre-wrap { white-space: pre-wrap; }
 </style>

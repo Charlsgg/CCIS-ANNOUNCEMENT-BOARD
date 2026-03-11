@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\EventController;
 
 // --- Public Routes ---
 Route::get('/', function () {
@@ -13,29 +14,43 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 // --- Protected Routes (Require Login) ---
 Route::middleware('auth')->group(function () {
-    
-    // Page Views
+
+    Route::middleware('check_type:it_instructor')->prefix('it-dept')->name('it.')->group(function () {
+        Route::get('/home', [AnnouncementController::class, 'index'])->name('home');
+        
+        // Announcements (Owner-based)
+        Route::resource('announcements', AnnouncementController::class)->except(['index']);
+        // Events
+        Route::resource('events', EventController::class);
+    });
+
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Page View for the Announcement Board
     Route::get('/announcements-board', function () {
         return view('announcement-board'); // This must match the filename exactly
     })->name('announcements.index');
-    // --- API Routes for Vue ---
+
+    Route::get('/events-calendar', function () {
+        return view('events-calendar'); 
+    })->name('events.index');
+
     Route::prefix('api')->group(function () {
-        // Fetch all announcements (calls your index method)
+
         Route::get('/announcements', [AnnouncementController::class, 'index']);
-        
-        // Save new announcement (calls your store method)
         Route::post('/announcements', [AnnouncementController::class, 'store']);
-        
-        // Delete announcement (calls your destroy method)
-        // Using {id} allows your destroy($id) function to receive the correct parameter
+        Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
+
+        // Route::get('/events', [EventController::class, 'index']);   
+        // Route::post('/events', [EventController::class, 'store']);     
+        // Route::put('/events/{id}', [EventController::class, 'update']);
+        // Route::delete('/events/{id}', [EventController::class, 'destroy']); 
     });
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-});
+}
+
+);

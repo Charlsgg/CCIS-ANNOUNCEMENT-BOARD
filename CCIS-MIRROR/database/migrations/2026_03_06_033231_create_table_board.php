@@ -6,15 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
-    {
-        Schema::create('table_board', function (Blueprint $table) {
-            $table->integer('board_id')->primary();
-            $table->string('board_name')->nullable();
-            $table->timestamp('created_at');
-            $table->timestamp('updated_at')->nullable();
-        });
-    }
+  public function up(): void
+{
+    Schema::create('table_board', function (Blueprint $table) {
+        // Changed to id() to match the BigInteger expected by Announcement
+        $table->id('board_id'); 
+        $table->string('board_name')->nullable();
+        
+        $table->timestamps(); 
+        $table->softDeletes(); 
+    });
+}
 
     public function down(): void
     {

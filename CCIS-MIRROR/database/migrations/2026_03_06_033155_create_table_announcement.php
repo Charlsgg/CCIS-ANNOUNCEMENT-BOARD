@@ -9,26 +9,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('table_announcement', function (Blueprint $table) {
+
             $table->id('announcement_id'); 
-            
+
             $table->unsignedBigInteger('board_id');
             $table->unsignedBigInteger('author_id');
 
             $table->string('title'); 
-
-
             $table->longText('content'); 
-            $table->timestamps();
+            
+            $table->timestamps(); 
+            $table->softDeletes(); 
 
             $table->foreign('author_id')
-                  ->references('user_id')
-                  ->on('table_users')
-                  ->onDelete('cascade'); 
+                ->references('user_id')
+                ->on('table_users')
+                ->onDelete('cascade'); 
 
             $table->foreign('board_id')
-                  ->references('board_id')
-                  ->on('table_board')
-                  ->onDelete('cascade');
+                ->references('board_id')
+                ->on('table_board')
+                ->onDelete('cascade');
         });
     }
 

@@ -9,13 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('table_users', function (Blueprint $table) {
-            $table->integer('user_id')->primary(); // Note: Not auto-incrementing based on your SQL
+            $table->id('user_id'); 
             $table->string('name');
-            $table->string('email');
+            $table->string('email')->unique(); 
             $table->string('password'); 
-            $table->string('user_type');
-            $table->timestamp('created_at');
-            $table->timestamp('updated_at')->nullable();
+            $table->string('user_type')->default('customer');
+            
+            $table->timestamps(); 
+            $table->softDeletes(); 
         });
     }
 

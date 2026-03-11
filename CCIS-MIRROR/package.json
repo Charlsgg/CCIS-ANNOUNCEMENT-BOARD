@@ -22,7 +22,6 @@
     },
     "dependencies": {
         "@material-symbols/font-400": "^0.40.2",
-        "@vueup/vue-quill": "^1.2.0",
         "daisyui": "^5.5.19",
         "flowbite": "^4.0.1",
         "lucide-vue-next": "^0.577.0",

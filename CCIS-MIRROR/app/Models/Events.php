@@ -1,44 +1,27 @@
 <?php
-namespace App\Models;
 
+namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-class Schedule extends Model
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+class Event extends Model
 {
     use SoftDeletes;
-
-    // Mapping to your specific table ID
-    protected $table = 'table_events';
     
-    // Telling Laravel the custom PK name
+    protected $table = 'table_events';
     protected $primaryKey = 'event_id';
-
-    // If these IDs are not auto-incrementing integers
-    public $incrementing = false;
-
-    // Mapping your custom "created_at" names if different from Laravel defaults
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = 'updated_at';
-    const DELETED_AT = 'deleted_at';
+    public $incrementing = true; 
 
     protected $fillable = [
-        'event_id', 'author_id', 'board_id', 'title', 
-        'content', 'start_time', 'end_time'
+        'event_type', 'author_id', 'board_id', 'title', 'content', 'start_time', 'end_time',
     ];
 
-    /**
-     * Relationship to the Author (User)
-     */
-    public function author()
+    public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id', 'user_id');
     }
 
-    /**
-     * Relationship to the Board
-     */
-    public function board()
+    public function board(): BelongsTo
     {
         return $this->belongsTo(Board::class, 'board_id', 'board_id');
     }
