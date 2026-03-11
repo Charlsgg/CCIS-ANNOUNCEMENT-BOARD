@@ -10,6 +10,7 @@ class Announcement extends Model
     protected $table = 'table_announcement';
     protected $primaryKey = 'announcement_id';
     
+    
     // Set to true because the database is now handling the ID generation
     public $incrementing = true; 
     

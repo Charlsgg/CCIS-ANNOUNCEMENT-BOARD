@@ -12,17 +12,27 @@ Route::get('/', function () {
 
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
-// --- Protected Routes (Require Login) ---
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'check_type:it_instructor'])->prefix('it')->name('it.')->group(function () {
+    Route::get('/home', [AnnouncementController::class, 'index'])->name('home');
+    Route::resource('announcements', AnnouncementController::class)->except(['index']);
+});
+Route::middleware(['auth', 'check_type:cs_instructor'])->prefix('cs')->name('cs.')->group(function () {
+    Route::get('/home', [AnnouncementController::class, 'index'])->name('home');
+    route::resource('announcements', AnnouncementController::class)->except(['index']);
+    route::resource('events', EventController::class);
+});
+Route::middleware(['auth', 'check_type:is_instructor'])->prefix('is')->name('is.')->group(function () {
+    Route::get('/home', [AnnouncementController::class, 'index'])->name('home');
+    route::resource('announcements', AnnouncementController::class)->except(['index']);
+    route::resource('events', EventController::class);
+});
+Route::middleware(['auth', 'check_type:lsg_officer'])->prefix('lsg')->name('lsg.')->group(function () {
+    Route::get('/dashboard', [AnnouncementController::class, 'index'])->name('home');
+    Route::resource('events', EventController::class);
+});
 
-    Route::middleware('check_type:it_instructor')->prefix('it-dept')->name('it.')->group(function () {
-        Route::get('/home', [AnnouncementController::class, 'index'])->name('home');
-        
-        // Announcements (Owner-based)
-        Route::resource('announcements', AnnouncementController::class)->except(['index']);
-        // Events
-        Route::resource('events', EventController::class);
-    });
+
+Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -48,8 +58,6 @@ Route::middleware('auth')->group(function () {
         // Route::put('/events/{id}', [EventController::class, 'update']);
         // Route::delete('/events/{id}', [EventController::class, 'destroy']); 
     });
-
-    // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 }
 
