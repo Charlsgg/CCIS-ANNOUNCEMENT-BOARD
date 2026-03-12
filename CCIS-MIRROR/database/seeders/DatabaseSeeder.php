@@ -37,7 +37,16 @@ class DatabaseSeeder extends Seeder
                 'user_type' => 'lsg_officer',
                 'password' => bcrypt('password123'),
                 'created_at' => Carbon::now(),
+            ],
+            [
+                'user_id' => 105,
+                'name' => 'Imong mama',
+                'email' => 'yes@gmail.com',
+                'user_type' => 'is_instructor',
+                'password' => bcrypt('password123'),
+                'created_at' => Carbon::now(),
             ]
+
         ];
 
         foreach ($users as $user) {
