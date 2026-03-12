@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id' => 101,
                 'name' => 'Juan Dela Cruz',
-                'email' => 'juan@csuccis.edu.ph',
+                'email' => 'juan@gmail',
                 'user_type' => 'it_instructor',
                 'password' => bcrypt('password123'),
                 'created_at' => Carbon::now(),
@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             [
                 'user_id' => 102,
                 'name' => 'Maria Clara',
-                'email' => 'maria@csuccis.edu.ph',
+                'email' => 'maria@gmail.com',
                 'user_type' => 'cs_instructor',
                 'password' => bcrypt('password123'),
                 'created_at' => Carbon::now(),
@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
                 'user_id' => 103,
                 'name' => 'Jose Rizal',
                 'email' => 'admin@gmail.com',
-                'user_type' => 'ccislg_officer',
+                'user_type' => 'lsg_officer',
                 'password' => bcrypt('password123'),
                 'created_at' => Carbon::now(),
             ]

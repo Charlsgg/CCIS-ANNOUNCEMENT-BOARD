@@ -25,7 +25,6 @@ const submitForm = async () => {
 
   try {
     // 2. Perform Login Request using Axios
-    // We send 'position' which your Controller now maps to 'user_type'
     const response = await axios.post('/login', {
       email: email.value,
       password: password.value,
@@ -33,15 +32,15 @@ const submitForm = async () => {
       remember: remember.value,
     }, {
       headers: {
-        // Ensure Laravel knows to return JSON, preventing the GET redirect error
         'Accept': 'application/json',
         'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
       }
     });
 
     if (response.status === 200) {
-      // 3. Success: Redirect to dashboard
-      window.location.href = '/dashboard'
+      // 3. CORRECTED: Use the dynamic redirect URL from Laravel's response!
+      // We add a fallback to '/dashboard' just in case response.data.redirect is missing
+      window.location.href = response.data.redirect || '/dashboard';
     }
 
   } catch (err: any) {
@@ -50,12 +49,10 @@ const submitForm = async () => {
       const data = err.response.data;
 
       if (status === 422) {
-        // Validation Errors (Email taken, field empty, etc)
         errors.value.email = data.errors?.email?.[0];
         errors.value.password = data.errors?.password?.[0];
         errors.value.position = data.errors?.position?.[0];
       } else if (status === 401) {
-        // Authentication Errors (Wrong password/email)
         errors.value.general = data.message || 'Invalid credentials. Please check your email and position.';
       } else {
         errors.value.general = 'Something went wrong on the server. Please try again later.';
@@ -154,7 +151,7 @@ const submitForm = async () => {
                 <option value="it_instructor">IT INSTRUCTOR</option>
                 <option value="is_instructor">IS INSTRUCTOR</option>
                 <option value="cs_instructor">CS INSTRUCTOR</option>
-                <option value="ccislg_officer">CCISLG OFFICER</option>
+                <option value="lsg_officer">CCISLG OFFICER</option>
               </select>
               <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
                 <ChevronDown :size="20" />

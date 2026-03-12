@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('table_notification', function (Blueprint $table) {
-            $table->id('notification_id')->primary();
+            $table->id('notification_id');
             $table->unsignedBigInteger('reciepient_id');
             $table->unsignedBigInteger('announcement_id')->nullable();
             $table->unsignedBigInteger('event_id')->nullable();
