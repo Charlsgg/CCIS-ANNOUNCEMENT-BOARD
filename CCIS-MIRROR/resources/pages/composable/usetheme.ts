@@ -40,7 +40,7 @@ const themeMap: Record<string, ThemeColors> = {
     is_instructor: {
         label: 'Information System',
         abbr: 'ISS',
-        accent: '#16d120bb',
+        accent: '#32DD41',
         dashTitle: 'ISS Dashboard',
         announcementHeading: 'Information System Announcements',
         announcementSubheading: 'Stay updated with the latest IS academic updates.',
