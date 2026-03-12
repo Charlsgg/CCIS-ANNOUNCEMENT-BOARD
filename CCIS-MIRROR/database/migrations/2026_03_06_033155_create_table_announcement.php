@@ -11,16 +11,15 @@ return new class extends Migration
         Schema::create('table_announcement', function (Blueprint $table) {
 
             $table->id('announcement_id'); 
-
             $table->unsignedBigInteger('board_id');
             $table->unsignedBigInteger('author_id');
-
             $table->string('title'); 
             $table->longText('content'); 
-            
+            $table->interger('likes_count')->default(0);
+            //
             $table->timestamps(); 
             $table->softDeletes(); 
-
+            //
             $table->foreign('author_id')
                 ->references('user_id')
                 ->on('table_users')

@@ -12,16 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('table_announcement_attachment', function (Blueprint $table) {
-            $table->integer('attachment_id')->primary();
+            $table->id('attachment_id')->primary();
             $table->integer('announcement_id');
-
             $table->string('file_path');
             $table->string('file_type');
-
-
+            //
             $table->timestamps(); 
             $table->softDeletes(); 
-
+            //
             $table->foreign('announcement_id')
                 ->references('announcement_id')
                 ->on('table_announcement')

@@ -14,9 +14,10 @@ return new class extends Migration
             $table->string('email')->unique(); 
             $table->string('password'); 
             $table->string('user_type')->default('customer');
-            
+            //
             $table->timestamps(); 
             $table->softDeletes(); 
+            //
         });
     }
 

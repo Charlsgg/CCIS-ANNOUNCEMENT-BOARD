@@ -10,18 +10,18 @@ return new class extends Migration
     public function up(): void
 {
     Schema::create('user_profiles', function (Blueprint $table) {
+        $table->string('profile_picture')->nullable();
+        $table->text('bio')->nullable();
+        //
+        $table->timestamps();
+        $table->softDeletes();
+        //
         $table->foreignId('user_id')->primary()
         ->constrained('table_users', 'user_id')
         ->onDelete('cascade');
-        $table->string('profile_picture')->nullable();
-        $table->text('bio')->nullable();
-        $table->timestamps();
     });
 }
 
-    /**
-     * Reverse the migrations.
-     */
   public function down(): void
     {
         Schema::dropIfExists('user_profiles');

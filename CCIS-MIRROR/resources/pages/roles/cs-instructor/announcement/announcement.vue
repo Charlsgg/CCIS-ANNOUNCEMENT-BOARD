@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, onMounted } from 'vue'
 import { Megaphone, Send } from 'lucide-vue-next'
-import Layout from "../../../components/layout.vue"; // Adjust path as needed
-
-// Composer State
+import Layout from "../../../components/layout.vue"; 
 const newTitle = ref('')
 const newContent = ref('')
 const announcements = ref<any[]>([])

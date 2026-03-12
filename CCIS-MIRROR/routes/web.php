@@ -30,18 +30,19 @@ Route::middleware(['auth', 'check_type:lsg_officer'])->prefix('lsg')->name('lsg.
     Route::resource('events', EventController::class);
 });
 
+Route::get('/announcements-board', function () {
+        return view('announcement-board');
+    })->name('announcements.index');
 
 Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
-
-    Route::get('/announcements-board', function () {
-        return view('announcement-board'); // This must match the filename exactly
+    Route::get('/announcements-page', function () {
+        return view('announcements-page'); 
     })->name('announcements.index');
-
-    Route::get('/events-calendar', function () {
+    Route::get('/events', function () {
         return view('events-calendar'); 
     })->name('events.index');
 
@@ -52,10 +53,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
 
-        // Route::get('/events', [EventController::class, 'index']);   
-        // Route::post('/events', [EventController::class, 'store']);     
-        // Route::put('/events/{id}', [EventController::class, 'update']);
-        // Route::delete('/events/{id}', [EventController::class, 'destroy']); 
+        Route::get('/events', [EventController::class, 'index']);   
+        Route::post('/events', [EventController::class, 'store']);     
+        Route::put('/events/{id}', [EventController::class, 'update']);
+        Route::delete('/events/{id}', [EventController::class, 'destroy']); 
     });
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 }

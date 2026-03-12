@@ -9,10 +9,10 @@ return new class extends Migration
   public function up(): void
 {
     Schema::create('table_board', function (Blueprint $table) {
-        // Changed to id() to match the BigInteger expected by Announcement
+        
         $table->id('board_id'); 
         $table->string('board_name')->nullable();
-        
+        //
         $table->timestamps(); 
         $table->softDeletes(); 
     });
