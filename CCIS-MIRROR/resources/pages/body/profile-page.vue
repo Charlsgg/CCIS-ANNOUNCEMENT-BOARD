@@ -17,9 +17,154 @@ const { theme, styles, surface, isDark, setUserType, initTheme } = useTheme()
 const isSidebarOpen = ref(false)
 const csrfToken = ref('')
 
-// Form state
-const fullName = ref('Dr. Sarah Chen')
-const emailAddress = ref('s.chen@csuccis.edu.ph')
+// Add these to your existing refs
+const showPasswordModal = ref(false)
+const currentPassword = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
+const isUpdatingPassword = ref(false)
+const passwordError = ref('')
+
+// Add this function to handle the submission
+const updatePassword = async () => {
+    isUpdatingPassword.value = true
+    passwordError.value = ''
+
+    if (newPassword.value !== confirmPassword.value) {
+        passwordError.value = 'New passwords do not match.'
+        isUpdatingPassword.value = false
+        return
+    }
+
+    try {
+        const response = await fetch('/api/profile/password', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value
+            },
+            body: JSON.stringify({
+                current_password: currentPassword.value,
+                password: newPassword.value,
+                password_confirmation: confirmPassword.value
+            })
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+            alert('Password updated successfully!')
+            showPasswordModal.value = false
+            currentPassword.value = ''
+            newPassword.value = ''
+            confirmPassword.value = ''
+        } else {
+            // Handle validation errors from Laravel
+            if (data.errors) {
+                const firstErrorKey = Object.keys(data.errors)[0]
+                passwordError.value = data.errors[firstErrorKey][0]
+            } else {
+                passwordError.value = data.message || 'Failed to update password.'
+            }
+        }
+    } catch (error) {
+        console.error('Error updating password:', error)
+        passwordError.value = 'A network error occurred.'
+    } finally {
+        isUpdatingPassword.value = false
+    }
+}
+const name = ref('')
+const email = ref('')
+const profilePictureUrl = ref('https://ui-avatars.com/api/?name=User&size=200&background=random')
+const isSaving = ref(false)
+
+// File Upload State
+const fileInput = ref<HTMLInputElement | null>(null)
+const selectedFile = ref<File | null>(null)
+
+// 1. Fetch profile data when the page loads
+const fetchProfileData = async () => {
+    try {
+        const response = await fetch('/api/profile', {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value
+            }
+        })
+        
+        if (response.ok) {
+            const data = await response.json()
+            name.value = data.user.name
+            email.value = data.user.email
+            if (data.user.profile_picture) {
+                profilePictureUrl.value = data.user.profile_picture
+            } else {
+                profilePictureUrl.value = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name)}&size=200&background=random`
+            }
+        }
+    } catch (error) {
+        console.error('Failed to fetch profile:', error)
+    }
+}
+
+// 2. Handle file selection for local preview
+const triggerFileInput = () => {
+    fileInput.value?.click()
+}
+
+const handleFileUpload = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.files && target.files.length > 0) {
+        selectedFile.value = target.files[0]
+        // Create a temporary URL to show the image preview immediately
+        profilePictureUrl.value = URL.createObjectURL(selectedFile.value)
+    }
+}
+
+// 3. Submit form data to the Laravel API
+const saveProfile = async () => {
+    isSaving.value = true
+    
+    // We must use FormData to send files via fetch
+    const formData = new FormData()
+    formData.append('name', name.value)
+    formData.append('email', email.value)
+    
+    if (selectedFile.value) {
+        formData.append('profile_picture', selectedFile.value)
+    }
+
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value
+            },
+            body: formData
+        })
+
+        if (response.ok) {
+            const data = await response.json()
+            alert('Profile updated successfully!')
+            if (data.profile_picture) {
+                profilePictureUrl.value = data.profile_picture
+            }
+            // Reset the selected file so we don't re-upload it next time
+            selectedFile.value = null
+        } else {
+            const errorData = await response.json()
+            console.error('Validation errors:', errorData.errors)
+            alert('Failed to update profile. Please check the inputs.')
+        }
+    } catch (error) {
+        console.error('Error saving profile:', error)
+    } finally {
+        isSaving.value = false
+    }
+}
 
 onMounted(() => {
     initTheme()
@@ -27,11 +172,12 @@ onMounted(() => {
         setUserType(props.user.user_type)
     }
     
-    // Grab CSRF token for the logout form in the sidebar
     const tokenTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
     if (tokenTag) {
         csrfToken.value = tokenTag.content
     }
+
+    fetchProfileData()
 })
 </script>
 
@@ -55,7 +201,7 @@ onMounted(() => {
 
         <main class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
             <AppNavbar
-                :user-name="user?.name"
+                :user-name="name"
                 @toggle-sidebar="isSidebarOpen = true"
             />
 
@@ -73,11 +219,11 @@ onMounted(() => {
                             <div class="rounded-2xl shadow-sm p-8 flex flex-col items-center text-center transition-colors" :style="styles.cardBg">
                                 
                                 <div class="relative mb-6">
-                              <div class="h-40 w-40 rounded-full ring-4 overflow-hidden flex items-center justify-center" :style="{ backgroundColor: surface.inputBg, '--tw-ring-color': surface.borderSubtle }"
->
-                                        <img class="h-full w-full object-contain" alt="Profile Avatar" src="https://ui-avatars.com/api/?name=Sarah+Chen&size=200&background=random"/>
+                                    <div class="h-40 w-40 rounded-full ring-4 overflow-hidden flex items-center justify-center" :style="{ backgroundColor: surface.inputBg, '--tw-ring-color': surface.borderSubtle }">
+                                        <img class="h-full w-full object-cover" alt="Profile Avatar" :src="profilePictureUrl"/>
                                     </div>
                                     <button 
+                                        @click="triggerFileInput"
                                         class="absolute bottom-2 right-2 p-2.5 rounded-full shadow-lg border-4 hover:scale-110 transition-transform flex items-center justify-center text-white"
                                         :style="{ backgroundColor: theme.accent, borderColor: surface.cardBg }"
                                     >
@@ -85,12 +231,21 @@ onMounted(() => {
                                     </button>
                                 </div>
                                 
-                                <h2 class="text-2xl font-bold" :style="styles.textPrimary">{{ user?.name || fullName }}</h2>
+                                <h2 class="text-2xl font-bold" :style="styles.textPrimary">{{ name }}</h2>
                                 <p class="text-sm uppercase font-bold mt-1" :style="{ color: theme.accent }">{{ theme.abbr }}</p>
                                 
                                 <div class="w-full border-t my-6" :style="{ borderColor: surface.borderSubtle }"></div>
                                 
+                                <input 
+                                    type="file" 
+                                    ref="fileInput" 
+                                    class="hidden" 
+                                    accept="image/jpeg, image/png, image/jpg" 
+                                    @change="handleFileUpload" 
+                                />
+
                                 <button 
+                                    @click="triggerFileInput"
                                     class="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all border"
                                     :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: surface.textPrimary }"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.borderColor = theme.accent"
@@ -111,14 +266,15 @@ onMounted(() => {
                                     Personal Information
                                 </h3>
                                 
-                                <form @submit.prevent class="space-y-6">
+                                <form @submit.prevent="saveProfile" class="space-y-6">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div class="flex flex-col gap-2">
                                             <label class="text-sm font-bold" :style="styles.textSecondary">Full Name</label>
                                             <input 
-                                                v-model="fullName"
+                                                v-model="name"
                                                 class="w-full px-4 py-3.5 rounded-xl border focus:ring-2 focus:outline-none transition-all" 
                                                 type="text" 
+                                                required
                                                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }"
                                                 @focus="(e: FocusEvent) => (e.currentTarget as HTMLElement).style.borderColor = theme.accent"
                                                 @blur="(e: FocusEvent) => (e.currentTarget as HTMLElement).style.borderColor = surface.inputBorder"
@@ -127,16 +283,88 @@ onMounted(() => {
                                         <div class="flex flex-col gap-2">
                                             <label class="text-sm font-bold" :style="styles.textSecondary">Email Address</label>
                                             <input 
-                                                v-model="emailAddress"
+                                                v-model="email"
                                                 class="w-full px-4 py-3.5 rounded-xl border focus:ring-2 focus:outline-none transition-all" 
                                                 type="email" 
+                                                required
                                                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }"
                                                 @focus="(e: FocusEvent) => (e.currentTarget as HTMLElement).style.borderColor = theme.accent"
                                                 @blur="(e: FocusEvent) => (e.currentTarget as HTMLElement).style.borderColor = surface.inputBorder"
                                             />
                                         </div>
                                     </div>
+                                    <div 
+                                        v-if="showPasswordModal" 
+                                        class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                                        :style="{ backgroundColor: surface.overlayBg }"
+                                    >
+                                        <div 
+                                            class="w-full max-w-md p-8 rounded-2xl shadow-xl transition-colors"
+                                            :style="styles.cardBg"
+                                        >
+                                            <h3 class="text-xl font-bold mb-6" :style="styles.textPrimary">Change Password</h3>
+                                            
+                                            <form @submit.prevent="updatePassword" class="space-y-4">
+                                                <div v-if="passwordError" class="p-3 rounded-lg text-sm bg-red-100 text-red-700 border border-red-200">
+                                                    {{ passwordError }}
+                                                </div>
 
+                                                <div class="flex flex-col gap-2">
+                                                    <label class="text-sm font-bold" :style="styles.textSecondary">Current Password</label>
+                                                    <input 
+                                                        v-model="currentPassword"
+                                                        type="password" 
+                                                        required
+                                                        class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none"
+                                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }"
+                                                    />
+                                                </div>
+
+                                                <div class="flex flex-col gap-2">
+                                                    <label class="text-sm font-bold" :style="styles.textSecondary">New Password</label>
+                                                    <input 
+                                                        v-model="newPassword"
+                                                        type="password" 
+                                                        required
+                                                        minlength="8"
+                                                        class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none"
+                                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }"
+                                                    />
+                                                </div>
+
+                                                <div class="flex flex-col gap-2">
+                                                    <label class="text-sm font-bold" :style="styles.textSecondary">Confirm New Password</label>
+                                                    <input 
+                                                        v-model="confirmPassword"
+                                                        type="password" 
+                                                        required
+                                                        minlength="8"
+                                                        class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none"
+                                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }"
+                                                    />
+                                                </div>
+
+                                                <div class="pt-4 flex justify-end gap-3">
+                                                    <button 
+                                                        type="button"
+                                                        @click="showPasswordModal = false"
+                                                        class="px-6 py-2.5 font-bold rounded-xl"
+                                                        :style="styles.textSecondary"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button 
+                                                        type="submit"
+                                                        :disabled="isUpdatingPassword"
+                                                        class="px-6 py-2.5 font-bold rounded-xl shadow-md disabled:opacity-50"
+                                                        :style="styles.button"
+                                                    >
+                                                        {{ isUpdatingPassword ? 'Updating...' : 'Save Password' }}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
                                     <div class="pt-8 border-t mt-8" :style="{ borderColor: surface.borderSubtle }">
                                         <h3 class="text-lg font-bold mb-6 flex items-center gap-2" :style="styles.textPrimary">
                                             <span class="material-symbols-outlined" :style="{ color: theme.accent }">security</span>
@@ -146,15 +374,14 @@ onMounted(() => {
                                             <div class="flex flex-col gap-2">
                                                 <label class="text-sm font-bold" :style="styles.textSecondary">Password</label>
                                                 <button 
-                                                    class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border transition-all text-left" 
-                                                    type="button"
-                                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder }"
-                                                    @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
-                                                    @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.inputBg"
-                                                >
-                                                    <span :style="styles.textMuted">••••••••••••</span>
-                                                    <span class="text-xs font-bold" :style="{ color: theme.accent }">Update</span>
-                                                </button>
+                                                @click="showPasswordModal = true"
+                                                class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border transition-all text-left" 
+                                                type="button"
+                                                :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder }"
+                                            >
+                                                <span :style="styles.textMuted">••••••••••••</span>
+                                                <span class="text-xs font-bold" :style="{ color: theme.accent }">Update</span>
+                                            </button>
                                             </div>
                                         </div>
                                     </div>
@@ -170,13 +397,14 @@ onMounted(() => {
                                             Cancel
                                         </button>
                                         <button 
-                                            class="py-3.5 px-10 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98]" 
+                                            class="py-3.5 px-10 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98] disabled:opacity-50" 
                                             type="submit"
+                                            :disabled="isSaving"
                                             :style="styles.button"
-                                            @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '0.9'"
-                                            @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '1'"
+                                            @mouseenter="(e: MouseEvent) => { if(!isSaving) (e.currentTarget as HTMLElement).style.opacity = '0.9' }"
+                                            @mouseleave="(e: MouseEvent) => { if(!isSaving) (e.currentTarget as HTMLElement).style.opacity = '1' }"
                                         >
-                                            Save Changes
+                                            {{ isSaving ? 'Saving...' : 'Save Changes' }}
                                         </button>
                                     </div>
                                 </form>

@@ -86,40 +86,7 @@ class AuthController extends Controller
             'redirect' => $redirectUrl
         ], 201);
     }
-    public function resetPassword(Request $request)
-    {
-        // 1. Validate the input
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email|exists:table_users,email',
-            'password' => 'required|min:8|confirmed',
-        ]);
-
-        // 2. Attempt to reset the password
-        // This will verify the token against the password_reset_tokens table
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password)
-                ])->setRememberToken(Str::random(60));
-
-                $user->save();
-            }
-        );
-
-        // 3. Return JSON response for Vue
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json([
-                'message' => __($status) // "Your password has been reset."
-            ], 200);
-        }
-
-        // If something went wrong (e.g. token expired)
-        throw ValidationException::withMessages([
-            'email' => [__($status)],
-        ]);
-    }
+    
     public function forgotPassword(Request $request)
     {
         $request->validate([
