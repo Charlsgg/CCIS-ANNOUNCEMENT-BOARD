@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\EventController;
-
+use App\Http\Controllers\UserProfileController;
 
 Route::get('/login', function () {
     return view('login'); 
@@ -140,6 +140,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/events', [EventController::class, 'store']);     
         Route::put('/events/{id}', [EventController::class, 'update']);
         Route::delete('/events/{id}', [EventController::class, 'destroy']); 
+
+        Route::get('/profile', [UserProfileController::class, 'show']);
+        Route::post('/profile', [UserProfileController::class, 'update']);
+        Route::put('/profile/password', [UserProfileController::class, 'updatePassword']);
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
