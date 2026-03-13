@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#020202] text-slate-300 p-8 overflow-hidden font-sans selection:bg-indigo-500/30">
     
-    <div class="pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-[length:100%_4px,3px_100%]"></div>
+    <div class="pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-size-[100%_4px,3px_100%]"></div>
 
     <header class="relative z-10 flex justify-between items-end mb-16 border-b border-white/5 pb-8">
       <div class="animate-in fade-in slide-in-from-left duration-1000">
@@ -28,9 +28,9 @@
              class="announcement-card group"
              :style="{ '--delay': `${index * 0.1}s` }">
           
-          <div class="relative bg-gradient-to-br from-[#111] to-[#080808] border border-white/10 rounded-xl p-8 transition-all duration-700 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(79,70,229,0.1)]">
+          <div class="relative bg-linear-to-br from-[#111] to-[#080808] border border-white/10 rounded-xl p-8 transition-all duration-700 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(79,70,229,0.1)]">
             
-            <div class="absolute -left-[1px] top-10 h-12 w-[3px] shadow-[0_0_10px_currentColor]" 
+            <div class="absolute -left-px top-10 h-12 w-0.75 shadow-[0_0_10px_currentColor]" 
                  :class="getTextColor(item.author_position)"></div>
 
             <div class="flex justify-between items-start mb-6">
@@ -51,7 +51,7 @@
 
             <div class="mt-8 flex items-center justify-between opacity-20 group-hover:opacity-50 transition-all">
               <span class="text-[9px] font-bold tracking-[0.3em] uppercase">Data Packet Verified</span>
-              <div class="h-[1px] flex-grow mx-4 bg-white/20"></div>
+              <div class="h-px grow mx-4 bg-white/20"></div>
               <i class="fa-solid fa-microchip text-xs"></i>
             </div>
           </div>

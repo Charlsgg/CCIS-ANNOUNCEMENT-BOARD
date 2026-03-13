@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { 
   Mail, ArrowLeft, Send, HelpCircle, ShieldCheck, Languages 
@@ -10,9 +10,22 @@ const status = ref('')
 const errors = ref<{ email?: string; general?: string }>({})
 const isLoading = ref(false)
 
-// 1. Pre-configure Axios for Laravel
-axios.defaults.withCredentials = true;
+// 1. Configure Axios
+axios.defaults.baseURL = 'http://localhost:8000'; 
+// withCredentials is not needed for monolith web routes, but fine to leave
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.headers.common['Accept'] = 'application/json';
+
+// 2. Grab the CSRF token on mount and attach it to Axios
+onMounted(() => {
+  const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  
+  if (csrfToken) {
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+  } else {
+    console.error('CSRF token not found: Ensure <meta name="csrf-token" content="{{ csrf_token() }}"> is in your Blade layout head.');
+  }
+})
 
 const submitForm = async () => {
   errors.value = {}
@@ -20,20 +33,15 @@ const submitForm = async () => {
   isLoading.value = true
 
   try {
-    // 2. Perform Forgot Password Request
+    // 3. Removed the await axios.get('/sanctum/csrf-cookie') call
+    // Just perform the direct POST request
     const response = await axios.post('/forgot-password', {
       email: email.value,
-    }, {
-      headers: {
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
-      }
     });
 
     if (response.status === 200) {
-      // Laravel typically returns a 'status' message on success
       status.value = response.data.status || 'We have emailed your password reset link.';
-      email.value = ''; // Clear the input after success
+      email.value = ''; 
     }
 
   } catch (err: any) {

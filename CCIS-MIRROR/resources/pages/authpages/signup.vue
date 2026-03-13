@@ -21,13 +21,12 @@ const isLoading = ref(false)
 // 1. Pre-configure Axios for Laravel
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-
 const submitForm = async () => {
   errors.value = {}
   isLoading.value = true
 
   try {
-    // 2. Perform Register Request using Axios
+
     const response = await axios.post('/register', {
       name: name.value,
       email: email.value,
@@ -37,9 +36,16 @@ const submitForm = async () => {
     }, {
       headers: {
         'Accept': 'application/json',
-        'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+        // Note: Sanctum handles the CSRF token automatically once the cookie is set, 
+        // so you technically don't even need the manual meta tag pull anymore, 
+        // but leaving it doesn't hurt!
       }
     });
+
+    if (response.status === 201 || response.status === 200) {
+      // 3. Redirect to dashboard
+      window.location.href = response.data.redirect || '/dashboard';
+    }
 
     if (response.status === 201 || response.status === 200) {
       // 3. Redirect to dashboard or wherever Laravel points us
