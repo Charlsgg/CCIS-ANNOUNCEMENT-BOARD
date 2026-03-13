@@ -146,7 +146,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                 <div 
                                     v-for="d in [24,25,26,27,28,29,30]" 
                                     :key="'prev-'+d" 
-                                    class="min-h-[120px] p-2 opacity-40 transition-colors" 
+                                    class="min-h-30 p-2 opacity-40 transition-colors" 
                                     :style="{ backgroundColor: surface.cardBg, color: surface.textMuted }"
                                 >
                                     {{ d }}
@@ -156,7 +156,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                     v-for="d in [1,2]" 
                                     :key="'d-'+d" 
                                     @click="showEventDetailModal = true" 
-                                    class="min-h-[120px] p-2 cursor-pointer transition-colors" 
+                                    class="min-h-30 p-2 cursor-pointer transition-colors" 
                                     :style="{ backgroundColor: surface.cardBg }"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
                                     @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.cardBg"
@@ -165,7 +165,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                 </div>
 
                                 <div 
-                                    class="min-h-[120px] p-2 cursor-pointer transition-colors border-t-2" 
+                                    class="min-h-30 p-2 cursor-pointer transition-colors border-t-2" 
                                     :style="{ backgroundColor: surface.cardBg, borderTopColor: theme.accent }" 
                                     @click="showEventDetailModal = true"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
@@ -181,7 +181,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                 </div>
 
                                 <div 
-                                    class="min-h-[120px] p-2 cursor-pointer transition-colors border-t-2" 
+                                    class="min-h-30 p-2 cursor-pointer transition-colors border-t-2" 
                                     :style="{ backgroundColor: surface.cardBg, borderTopColor: theme.accent }" 
                                     @click="showEventDetailModal = true"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
@@ -197,7 +197,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                 </div>
 
                                 <div 
-                                    class="min-h-[120px] p-2 cursor-pointer transition-colors border-t-2" 
+                                    class="min-h-30 p-2 cursor-pointer transition-colors border-t-2" 
                                     :style="{ backgroundColor: surface.cardBg, borderTopColor: theme.accent }" 
                                     @click="showEventDetailModal = true"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
@@ -219,7 +219,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                     v-for="d in [6,7,8,9]" 
                                     :key="'d-'+d" 
                                     @click="showEventDetailModal = true" 
-                                    class="min-h-[120px] p-2 cursor-pointer transition-colors" 
+                                    class="min-h-30 p-2 cursor-pointer transition-colors" 
                                     :style="{ backgroundColor: surface.cardBg }"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
                                     @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.cardBg"
@@ -228,7 +228,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                 </div>
 
                                 <div 
-                                    class="min-h-[120px] p-2 cursor-pointer transition-colors border-t-2" 
+                                    class="min-h-30 p-2 cursor-pointer transition-colors border-t-2" 
                                     :style="{ backgroundColor: surface.cardBg, borderTopColor: theme.accent }" 
                                     @click="showEventDetailModal = true"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
@@ -247,7 +247,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                                     v-for="d in 21" 
                                     :key="'fill-'+d" 
                                     @click="showEventDetailModal = true" 
-                                    class="min-h-[120px] p-2 cursor-pointer transition-colors" 
+                                    class="min-h-30 p-2 cursor-pointer transition-colors" 
                                     :style="{ backgroundColor: surface.cardBg }"
                                     @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.hoverBg"
                                     @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.cardBg"
@@ -308,7 +308,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
             
             <div 
                 v-if="showCreateModal" 
-                class="fixed inset-0 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity"
+                class="fixed inset-0 backdrop-blur-sm z-100 flex items-center justify-center p-4 transition-opacity"
                 :style="{ backgroundColor: surface.overlayBg }"
             >
                 <div class="w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden" :style="styles.cardBg">
@@ -406,7 +406,7 @@ const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
             <div 
                 v-if="showEventDetailModal" 
-                class="fixed inset-0 backdrop-blur-sm z-[101] flex items-center justify-center p-4 transition-opacity"
+                class="fixed inset-0 backdrop-blur-sm z-101 flex items-center justify-center p-4 transition-opacity"
                 :style="{ backgroundColor: surface.overlayBg }"
             >
                 <div class="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden" :style="styles.cardBg">

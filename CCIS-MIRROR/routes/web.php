@@ -14,12 +14,23 @@ Route::get('/signup', function () {
     return view('signup'); 
 })->name('signup');
 
+Route::post('/register', [AuthController::class, 'register']);
+
 Route::get('/forgot-password', function () {
     return view('forgot-password'); 
 })->name('password.request');
 
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
 
+Route::get('/reset-password/{token}', function (string $token) {
+    return view('reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset');
+
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+// -----------------------------
+
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 Route::get('/announcements-board', function () {
