@@ -40,9 +40,7 @@ const { theme, styles, surface, isDark, toggleMode } = useTheme()
             <div class="p-2 rounded-lg hidden sm:flex shadow-inner" :style="styles.iconBg">
                 <Terminal :size="20" />
             </div>
-            <h2 class="text-lg md:text-xl font-bold tracking-tight truncate" :style="styles.textPrimary">
-                {{ theme.dashTitle }}
-            </h2>
+            
         </div>
 
         <!-- Right -->

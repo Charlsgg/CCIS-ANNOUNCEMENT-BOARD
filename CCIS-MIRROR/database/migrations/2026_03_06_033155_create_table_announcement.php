@@ -15,6 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('author_id');
             $table->string('title'); 
             $table->longText('content'); 
+            $table->string('topic');
             $table->integer('likes_count')->default(0);
             //
             $table->timestamps(); 
