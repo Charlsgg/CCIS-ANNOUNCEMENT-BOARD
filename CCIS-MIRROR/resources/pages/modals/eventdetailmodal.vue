@@ -160,8 +160,8 @@ const formatTime = (dateStr?: string) => {
 
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                                 <div v-for="item in [
-                                    { label: 'Start Date', date: formatFullDate(activeEvent?.start_time), sub: formatTime(activeEvent?.start_time) + ' PST', icon: 'event_upcoming' },
-                                    { label: 'End Date', date: formatFullDate(activeEvent?.end_time || activeEvent?.start_time), sub: formatTime(activeEvent?.end_time) + ' PST', icon: 'event_available' },
+                                    { label: 'Start Date', date: formatFullDate(activeEvent?.start_time), sub: formatTime(activeEvent?.start_time) , icon: 'event_upcoming' },
+                                    { label: 'End Date', date: formatFullDate(activeEvent?.end_time || activeEvent?.start_time), sub: formatTime(activeEvent?.end_time) , icon: 'event_available' },
                                     { label: 'Venue', date: activeEvent?.venue, sub: activeEvent?.venueDetail, icon: 'location_on' }
                                 ]" :key="item.label"
                                     class="p-3 md:p-4 rounded-xl border shadow-sm flex sm:block items-center sm:items-start gap-4 sm:gap-0 transition-shadow"
