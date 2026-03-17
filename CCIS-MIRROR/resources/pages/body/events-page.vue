@@ -9,7 +9,6 @@ import AppSidebar from '../components/appsidebar.vue'
 import AppNavbar from '../components/appnavbar.vue'
 import EventCreateModal from '../modals/eventcreatemodal.vue'
 import MonthYearSelector from '../components/monthyearselector.vue'
-import SearchBar from '../components/searchbar.vue'
 import UpcomingEvents from '../components/upcomingevents.vue'
 import CalendarGrid from '../components/calendargrid.vue'
 
@@ -289,7 +288,6 @@ onMounted(() => {
                                 v-model:month="currentMonth"
                                 v-model:year="currentYear"
                             />
-                            <SearchBar :surface="surface" />
 
                             <button 
                                 @click="showCreateModal = true" 
