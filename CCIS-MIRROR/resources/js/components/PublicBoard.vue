@@ -48,7 +48,7 @@
           <span>Back</span>
         </button>
         
-        <div class="relative flex-grow w-full">
+        <div class="relative grow w-full">
           <input 
             v-model="searchQuery"
             class="w-full glass-input rounded-xl px-12 py-3 text-lg hover:border-orange-500 transition-all duration-300" 
@@ -85,7 +85,7 @@
             </div>
           </div>
 
-          <div class="text-sm opacity-70 leading-relaxed flex-grow ql-display line-clamp-4" v-html="item.content"></div>
+          <div class="text-sm opacity-70 leading-relaxed grow ql-display line-clamp-4" v-html="item.content"></div>
 
           <button class="mt-6 text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500 hover:text-white transition-all flex items-center gap-2">
             Read More <span class="group-hover:translate-x-2 transition-transform">→</span>
