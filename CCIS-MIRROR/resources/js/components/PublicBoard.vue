@@ -1,161 +1,214 @@
 <template>
-  <div class="min-h-screen bg-[#020202] text-slate-300 p-8 overflow-hidden font-sans selection:bg-indigo-500/30">
-    
-    <div class="pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,118,0.06))] bg-size-[100%_4px,3px_100%]"></div>
-
-    <header class="relative z-10 flex justify-between items-end mb-16 border-b border-white/5 pb-8">
-      <div class="animate-in fade-in slide-in-from-left duration-1000">
-        <div class="flex items-center gap-3">
-          <div class="w-3 h-3 bg-indigo-500 rounded-full animate-ping"></div>
-          <h1 class="text-white text-3xl font-extralight tracking-[0.3em] uppercase">System_Output</h1>
-        </div>
-        <p class="text-[10px] font-mono opacity-40 mt-2 tracking-widest">ENCRYPTED UP-LINK STABLE</p>
-      </div>
+  <div class="min-h-screen bg-black text-white p-8 font-sans selection:bg-orange-500/30">
+    <header class="flex flex-col md:flex-row justify-between items-start mb-16 gap-8 relative z-10">
       
-      <div class="text-right font-mono animate-in fade-in slide-in-from-right duration-1000">
-        <div class="text-4xl text-white font-light tracking-tighter">{{ currentTime }}</div>
-        <div class="text-[10px] text-indigo-400/60 uppercase mt-1">{{ currentDate }}</div>
+      <div class="flex items-center gap-4 animate-in fade-in slide-in-from-left duration-700">
+        <div class="text-orange-500">
+          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="mb-1 text-[10px] font-bold tracking-[0.2em] uppercase opacity-70 text-orange-500">Butuan City</div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-light">28°C</span>
+            <span class="text-xs font-semibold tracking-widest uppercase opacity-60 text-orange-500">Partly Cloudy</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center md:absolute md:left-1/2 md:-translate-x-1/2 animate-in fade-in zoom-in duration-1000">
+        <h1 class="text-8xl font-light tracking-tighter leading-none glow-text">{{ currentTime }}</h1>
+        <div class="uppercase tracking-[0.3em] text-sm font-medium mt-2 opacity-80 text-orange-500">
+          {{ currentDate }}
+        </div>
+      </div>
+
+      <div class="hidden lg:block animate-in fade-in slide-in-from-right duration-700">
+        <div class="glass-card p-4 w-64">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-[10px] font-bold tracking-widest uppercase text-orange-500">{{ currentMonthYear }}</h2>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center text-[9px] font-bold opacity-40 mb-2">
+            <div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center">
+             <div v-for="d in 31" :key="d" :class="['p-1 text-[10px]', d === currentDay ? 'bg-orange-500 rounded-full font-bold shadow-[0_0_10px_rgba(249,115,22,0.5)]' : 'opacity-60']">
+               {{ d }}
+             </div>
+          </div>
+        </div>
       </div>
     </header>
 
-    <main class="relative z-10 max-w-6xl mx-auto">
+    <main class="max-w-6xl mx-auto relative z-10">
+      <section class="flex flex-col md:flex-row gap-4 mb-12 items-center">
+        <button @click="$router?.back()" class="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-orange-500/10 border border-white/10 hover:border-orange-500 transition-all duration-300 text-sm font-medium group shrink-0">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          <span>Back</span>
+        </button>
+        
+        <div class="relative flex-grow w-full">
+          <input 
+            v-model="searchQuery"
+            class="w-full glass-input rounded-xl px-12 py-3 text-lg hover:border-orange-500 transition-all duration-300" 
+            placeholder="Search announcements..." 
+            type="text"
+          />
+          <svg class="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </div>
+
+        <button class="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-orange-500/10 border border-white/10 hover:border-orange-500 transition-all duration-300 text-sm font-medium group shrink-0">
+          <span class="material-symbols-outlined text-lg">event</span>
+          <span>Events</span>
+        </button>
+      </section>
+
       <TransitionGroup 
         name="list" 
         tag="div" 
-        class="grid grid-cols-1 md:grid-cols-2 gap-10"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        <div v-for="(item, index) in announcements" :key="item.id" 
-             class="announcement-card group"
-             :style="{ '--delay': `${index * 0.1}s` }">
+        <article v-for="(item, index) in filteredAnnouncements" :key="item.id" 
+                 class="glass-card p-6 flex flex-col h-full group"
+                 :style="{ '--delay': `${index * 0.1}s` }">
           
-          <div class="relative bg-linear-to-br from-[#111] to-[#080808] border border-white/10 rounded-xl p-8 transition-all duration-700 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(79,70,229,0.1)]">
-            
-            <div class="absolute -left-px top-10 h-12 w-0.75 shadow-[0_0_10px_currentColor]" 
-                 :class="getTextColor(item.author_position)"></div>
-
-            <div class="flex justify-between items-start mb-6">
-              <div class="flex flex-col">
-                <span class="text-[10px] font-black uppercase tracking-[0.2em] mb-1" :class="getTextColor(item.author_position)">
-                  {{ formatPosition(item.author_position) }}
-                </span>
-                <span class="text-[9px] opacity-30 font-mono italic">SECURE_LOG_{{ item.id }}</span>
-              </div>
-              <span class="text-[10px] opacity-40 font-mono tabular-nums">{{ item.time_ago }}</span>
+          <div class="flex items-center gap-4 mb-6">
+            <div :class="['w-12 h-12 rounded-lg flex items-center justify-center font-black text-xl italic transition-all duration-500', getPosBg(item.author_position)]">
+              {{ item.author_position ? item.author_position.substring(0,2).toUpperCase() : 'SY' }}
             </div>
-
-            <h3 class="text-2xl font-semibold text-white/90 mb-4 group-hover:text-white transition-colors">
-              {{ item.title }}
-            </h3>
-
-            <div class="ql-display opacity-70 group-hover:opacity-100 transition-opacity duration-500" v-html="item.content"></div>
-
-            <div class="mt-8 flex items-center justify-between opacity-20 group-hover:opacity-50 transition-all">
-              <span class="text-[9px] font-bold tracking-[0.3em] uppercase">Data Packet Verified</span>
-              <div class="h-px grow mx-4 bg-white/20"></div>
-              <i class="fa-solid fa-microchip text-xs"></i>
+            <div>
+              <h3 class="font-bold text-lg leading-tight group-hover:text-orange-400 transition-colors">{{ item.title }}</h3>
+              <p :class="['text-[10px] font-semibold tracking-wider uppercase mt-1', getTextColor(item.author_position)]">
+                {{ formatPosition(item.author_position) }} • {{ item.time_ago }}
+              </p>
             </div>
           </div>
-        </div>
+
+          <div class="text-sm opacity-70 leading-relaxed flex-grow ql-display line-clamp-4" v-html="item.content"></div>
+
+          <button class="mt-6 text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500 hover:text-white transition-all flex items-center gap-2">
+            Read More <span class="group-hover:translate-x-2 transition-transform">→</span>
+          </button>
+        </article>
       </TransitionGroup>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 
 const announcements = ref([])
-const loading = ref(true)
+const searchQuery = ref('')
 const currentTime = ref('')
 const currentDate = ref('')
+const currentDay = ref(new Date().getDate())
+const currentMonthYear = ref('')
 
 const fetchAnnouncements = async () => {
-    try {
-        const response = await axios.get('/api/announcements')
-        // Simple logic to trigger the TransitionGroup: 
-        // If the data is actually different, Vue will handle the movement animations
-        announcements.value = response.data
-    } finally {
-        loading.value = false
-    }
+  try {
+    const response = await axios.get('/api/announcements')
+    announcements.value = response.data
+  } catch (e) { console.error("Sync Error", e) }
 }
 
+const filteredAnnouncements = computed(() => {
+  return announcements.value.filter(a => 
+    a.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    (a.content && a.content.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  )
+})
+
 const getTextColor = (pos) => {
-    const colors = {
-        'it_instructor': 'text-blue-400',
-        'is_instructor': 'text-orange-400',
-        'cs_instructor': 'text-purple-400',
-        'ccislg_officer': 'text-yellow-400',
-        'superadmin': 'text-red-500'
-    }
-    return colors[pos] || 'text-indigo-400'
+  const colors = {
+    'it_instructor': 'text-blue-400',
+    'is_instructor': 'text-orange-500',
+    'cs_instructor': 'text-purple-400',
+    'ccislg_officer': 'text-yellow-400',
+    'superadmin': 'text-red-500'
+  }
+  return colors[pos] || 'text-orange-500'
+}
+
+const getPosBg = (pos) => {
+  const bgs = {
+    'it_instructor': 'bg-blue-600',
+    'is_instructor': 'bg-orange-600',
+    'cs_instructor': 'bg-purple-600',
+    'ccislg_officer': 'bg-yellow-600',
+    'superadmin': 'bg-red-600'
+  }
+  return bgs[pos] || 'bg-orange-500'
 }
 
 const formatPosition = (pos) => pos ? pos.replace('_', ' ') : 'System'
 
 const updateClock = () => {
-    const now = new Date()
-    currentTime.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-    currentDate.value = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()
+  const now = new Date()
+  currentTime.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+  currentDate.value = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()
+  currentMonthYear.value = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase()
 }
 
 let clockTimer;
 onMounted(() => {
-    fetchAnnouncements()
-    updateClock()
-    clockTimer = setInterval(updateClock, 1000)
-    setInterval(fetchAnnouncements, 30000) // Auto-refresh for headless feel
+  fetchAnnouncements()
+  updateClock()
+  clockTimer = setInterval(updateClock, 1000)
+  setInterval(fetchAnnouncements, 30000)
 })
 onUnmounted(() => clearInterval(clockTimer))
 </script>
 
 <style scoped>
-/* Staggered Entry Animation */
-.announcement-card {
-  animation: slideIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+/* Glassmorphism Styles */
+.glow-text {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  transform: translateY(-5px);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  outline: none !important;
+}
+
+.glass-input:focus {
+  border-color: #F97316 !important;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Animations */
+.list-enter-active {
+  animation: slideIn 0.6s ease forwards;
   animation-delay: var(--delay);
-  opacity: 0;
 }
 
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Vue List Transitions (for when items update) */
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-.list-move {
-  transition: transform 0.6s ease;
-}
-
-/* Rich Text Styling */
-.ql-display :deep(img) {
-  border-radius: 8px;
-  filter: saturate(1.2) brightness(0.9);
-  transition: filter 0.5s;
-}
-.announcement-card:hover .ql-display :deep(img) {
-  filter: saturate(1.5) brightness(1.1);
-}
-.ql-display :deep(blockquote) {
-  border-left: 2px solid #6366f1;
-  padding-left: 1rem;
-  font-style: italic;
-  margin: 1rem 0;
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
