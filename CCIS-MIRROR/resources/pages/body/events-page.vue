@@ -12,20 +12,38 @@ import MonthYearSelector from '../components/monthyearselector.vue'
 import SearchBar from '../components/searchbar.vue'
 import UpcomingEvents from '../components/upcomingevents.vue'
 import CalendarGrid from '../components/calendargrid.vue'
+
 interface CalendarEvent {
     id: string | number
     title: string
     color?: string
     venue?: string
     description?: string
-    start_time?: string // Added to read from DB
+    start_time?: string  // Kept for your modal logic
+    end_time?: string    // Kept for your modal logic
+    startTime?: string   // ADDED: For multi-day ribbon logic
+    endTime?: string     // ADDED: For multi-day ribbon logic
 }
 
 interface CalendarDay {
     date: number
+    fullDate?: string    // ADDED: For multi-day date comparisons
     isCurrentMonth: boolean
     events: CalendarEvent[]
     isHighlight?: boolean
+}
+
+interface DatabaseEvent {
+    event_id: number
+    user_id?: number
+    board_id?: number
+    title: string
+    content: string
+    Venue: string
+    start_time: string
+    end_time?: string
+    event_month?: number
+    event_year?: number
 }
 
 const props = defineProps<{
@@ -42,7 +60,7 @@ const today = new Date()
 const currentMonth = ref(today.getMonth()) // 0-11
 const currentYear = ref(today.getFullYear())
 
-// NEW: Store events fetched from the database
+// Store events fetched from the database
 const dbEvents = ref<DatabaseEvent[]>([])
 const isLoading = ref(false)
 
@@ -51,23 +69,22 @@ const showCreateModal = ref(false)
 const showEventDetailModal = ref(false)
 const selectedDay = ref<CalendarDay | null>(null)
 
-// NEW: Function to fetch events from Laravel
+// NEW: Unified state for the modal to display (handles both Calendar clicks and Upcoming Events clicks)
+const selectedEvent = ref<{title: string, venue: string, description: string, start_time: string} | null>(null)
+
 const fetchEvents = async () => {
     isLoading.value = true
     try {
-        // We add +1 to month because JavaScript months are 0-11, but your DB uses 1-12
         const queryParams = new URLSearchParams({
             month: String(currentMonth.value + 1),
             year: String(currentYear.value)
         })
 
-        // Replace with your actual Laravel route
-        // Inside your fetchEvents() function:
         const response = await fetch(`/api/events?${queryParams.toString()}`)
         
         if (response.ok) {
             const data = await response.json()
-            dbEvents.value = data.events // Save the DB events to our ref
+            dbEvents.value = data.events 
         }
     } catch (error) {
         console.error('Error fetching events:', error)
@@ -76,22 +93,9 @@ const fetchEvents = async () => {
     }
 }
 
-// NEW: Automatically refetch events when the user changes the month or year dropdowns!
 watch([currentMonth, currentYear], () => {
     fetchEvents()
 })
-interface DatabaseEvent {
-    event_id: number
-    user_id?: number
-    board_id?: number
-    title: string
-    content: string
-    Venue: string
-    start_time: string
-    end_time?: string
-    event_month?: number
-    event_year?: number
-}
 const calendarDays = computed(() => {
     const days: CalendarDay[] = []
     const firstDay = new Date(currentYear.value, currentMonth.value, 1)
@@ -101,56 +105,130 @@ const calendarDays = computed(() => {
     const totalDays = lastDay.getDate()
     const prevMonthLastDay = new Date(currentYear.value, currentMonth.value, 0).getDate()
     
-    // Previous month padding
+    // 1. Generate padding days (previous month)
     for (let i = startPadding - 1; i >= 0; i--) {
-        days.push({ date: prevMonthLastDay - i, isCurrentMonth: false, events: [] })
+        const padDate = prevMonthLastDay - i
+        const prevMonth = currentMonth.value === 0 ? 11 : currentMonth.value - 1
+        const prevYear = currentMonth.value === 0 ? currentYear.value - 1 : currentYear.value
+        const fullDate = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(padDate).padStart(2, '0')}`
+        
+        days.push({ date: padDate, fullDate, isCurrentMonth: false, events: [] })
     }
     
-    // Current month days
+    // 2. Generate current month days
     for (let i = 1; i <= totalDays; i++) {
-        // NEW: Filter the database events to find ones that match this specific day
-        const dayEvents = dbEvents.value.filter(event => {
-            if (!event.start_time) return false;
-            const eventDate = new Date(event.start_time);
-            
-            // Check if the event's date matches the current calendar square
-            return eventDate.getDate() === i &&
-                   eventDate.getMonth() === currentMonth.value &&
-                   eventDate.getFullYear() === currentYear.value;
-        }).map(event => {
-           
-            return {
-                id: event.event_id, 
-                title: event.title,
-                venue: event.Venue,    
-                description: event.content,
-                start_time: event.start_time,
-                color: theme.value.accent
-                
-                
-            }
-        });
-
-        days.push({
-            date: i,
-            isCurrentMonth: true,
-            events: dayEvents,
-            isHighlight: dayEvents.length > 0 // Highlight the day if it has events
-        })
+        const fullDate = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
+        days.push({ date: i, fullDate, isCurrentMonth: true, events: [] })
     }
     
-    // Next month padding
+    // 3. Generate padding days (next month)
     let nextMonthDay = 1
     while (days.length < 42) {
-        days.push({ date: nextMonthDay++, isCurrentMonth: false, events: [] })
+        const nextMonth = currentMonth.value === 11 ? 0 : currentMonth.value + 1
+        const nextYear = currentMonth.value === 11 ? currentYear.value + 1 : currentYear.value
+        const fullDate = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(nextMonthDay).padStart(2, '0')}`
+        
+        days.push({ date: nextMonthDay++, fullDate, isCurrentMonth: false, events: [] })
     }
+    
+    // 4. Distribute events across the generated days
+    dbEvents.value.forEach(event => {
+        if (!event.start_time) return
+        
+        const startDate = new Date(event.start_time)
+        // Default to start date if no end date exists
+        const endDate = event.end_time ? new Date(event.end_time) : new Date(startDate)
+        
+        // Strip the time portion to ensure strict date-to-date comparison
+        startDate.setHours(0, 0, 0, 0)
+        endDate.setHours(23, 59, 59, 999)
+        
+        const calendarEvent: CalendarEvent = {
+            id: event.event_id, 
+            title: event.title,
+            venue: event.Venue,    
+            description: event.content,
+            start_time: event.start_time,
+            end_time: event.end_time,
+            startTime: event.start_time, // Passed to grid for start boundary check
+            endTime: event.end_time,     // Passed to grid for end boundary check
+            color: theme.value.accent
+        }
+
+        days.forEach(day => {
+            if (!day.fullDate) return
+            
+            const currentCellDate = new Date(day.fullDate)
+            // Set cell date to noon to avoid unexpected timezone shifts
+            currentCellDate.setHours(12, 0, 0, 0) 
+
+            // If the cell falls within the start and end range, add the event
+            if (currentCellDate >= startDate && currentCellDate <= endDate) {
+                day.events.push(calendarEvent)
+                day.isHighlight = true
+            }
+        })
+    })
     
     return days
 })
 
+// Handles clicks from the Calendar Grid
 const openEventDetail = (day: CalendarDay) => {
     selectedDay.value = day
+    if (day.events && day.events.length > 0) {
+        selectedEvent.value = {
+            title: day.events[0].title,
+            venue: day.events[0].venue || 'TBA',
+            description: day.events[0].description || 'No description provided.',
+            start_time: day.events[0].start_time || ''
+        }
+    } else {
+        selectedEvent.value = null
+    }
     showEventDetailModal.value = true
+}
+
+// NEW: Handles clicks from the Upcoming Events Sidebar
+const openUpcomingEventDetail = async (eventId: number) => {
+    // 1. Check if the event is already in the current month's calendar view
+    const event = dbEvents.value.find(e => e.event_id === eventId)
+    
+    if (event) {
+        selectedEvent.value = {
+            title: event.title,
+            venue: event.Venue,
+            description: event.content,
+            start_time: event.start_time
+        }
+        showEventDetailModal.value = true
+    } else {
+        // 2. If it's next month, it won't be in dbEvents. Fetch it from the upcoming list!
+        try {
+            const response = await fetch('/api/events/upcoming')
+            const data = await response.json()
+            const futureEvent = data.events?.find((e: any) => e.id === eventId || e.event_id === eventId)
+            
+            if (futureEvent) {
+                selectedEvent.value = {
+                    title: futureEvent.title,
+                    venue: futureEvent.location || futureEvent.Venue || 'TBA', 
+                    description: futureEvent.description || futureEvent.content || 'No description provided.',
+                    start_time: futureEvent.start_time || futureEvent.created_at
+                }
+                showEventDetailModal.value = true
+            }
+        } catch (error) {
+            console.error("Could not load future event details", error)
+        }
+    }
+}
+
+// Helper to format the date nicely for the modal header
+const formatModalDate = (dateString?: string) => {
+    if (!dateString) return 'Event Details'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 onMounted(() => {
@@ -239,7 +317,7 @@ onMounted(() => {
                             :theme="theme" 
                             :surface="surface" 
                             :styles="styles"
-                            @show-detail="showEventDetailModal = true"
+                            @show-detail="openUpcomingEventDetail" 
                         />
                     </div>
 
@@ -249,12 +327,12 @@ onMounted(() => {
 
         <Teleport to="body">
             <EventCreateModal 
-                :show="showCreateModal"
-                :theme="theme"
-                :surface="surface"
-                :styles="styles"
-                @close="showCreateModal = false"
-            />
+            :show="showCreateModal"
+            :theme="theme"
+            :surface="surface"
+            :styles="styles"
+            @close="showCreateModal = false"
+            @created="fetchEvents" />
 
             <div 
                 v-if="showEventDetailModal" 
@@ -274,11 +352,12 @@ onMounted(() => {
                     <div class="p-8 -mt-10">
                         <div class="p-6 rounded-xl shadow-xl border" :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
                             
-                            <div class="font-bold text-sm mb-1" :style="{ color: theme.accent }">
-                                {{ selectedDay ? `${currentMonth + 1}/${selectedDay.date}/${currentYear}` : 'Event Details' }}
+                            <div class="font-bold text-sm mb-1 uppercase tracking-wide" :style="{ color: theme.accent }">
+                                {{ formatModalDate(selectedEvent?.start_time) }}
                             </div>
+
                             <h3 class="text-2xl font-bold mb-4" :style="styles.textPrimary">
-                                {{ selectedDay?.events?.[0]?.title || 'Selected Event' }}
+                                {{ selectedEvent?.title || 'No Title Selected' }}
                             </h3>
                             
                             <div class="space-y-4">
@@ -286,14 +365,16 @@ onMounted(() => {
                                     <span class="material-symbols-outlined mt-0.5" :style="{ color: theme.accent }">location_on</span>
                                     <div>
                                         <p class="text-xs font-bold uppercase" :style="styles.textMuted">Venue</p>
-                                        <p class="text-sm" :style="styles.textPrimary">Main Campus Building, All Lecture Halls</p>
+                                        <p class="text-sm" :style="styles.textPrimary">{{ selectedEvent?.venue || 'TBA' }}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-start gap-3">
                                     <span class="material-symbols-outlined mt-0.5" :style="{ color: theme.accent }">description</span>
                                     <div>
                                         <p class="text-xs font-bold uppercase" :style="styles.textMuted">Description</p>
-                                        <p class="text-sm leading-relaxed" :style="styles.textSecondary">Mandatory evaluation period for all CCIS students. Please refer to your specific department for detailed schedules per subject. Bring valid school ID and permit.</p>
+                                        <p class="text-sm leading-relaxed" :style="styles.textSecondary">
+                                            {{ selectedEvent?.description || 'No additional details provided.' }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>

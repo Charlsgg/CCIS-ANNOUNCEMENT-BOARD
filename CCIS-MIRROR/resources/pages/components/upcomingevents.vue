@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
 defineProps<{
     theme: Record<string, any>
     surface: Record<string, any>
@@ -6,14 +8,55 @@ defineProps<{
 }>()
 
 defineEmits<{
-    (e: 'show-detail'): void
+    (e: 'show-detail', eventId: number): void
 }>()
 
-const events = [
-    { dates: 'Oct 10-12', posted: 'Oct 1', title: 'Tech Summit 2023: Innovations in AI', loc: 'Grand Auditorium', desc: 'Three-day event featuring keynote speakers from industry leaders.' },
-    { dates: 'Oct 15', posted: 'Sep 28', title: 'Career Orientation Seminar', loc: 'Seminar Hall B', desc: 'A guide for graduating students on how to navigate the job market.' },
-    { dates: 'Oct 20', posted: 'Oct 2', title: 'Hackathon 2023 Kick-off', loc: 'IT Lab 4 & 5', desc: 'Join us for the opening ceremony of the annual 48-hour coding marathon.' }
-]
+// Define the shape of your Event data based on your Laravel model
+interface AppEvent {
+    id: number;
+    title: string;
+    description: string;
+    event_month: string;
+    event_year: string;
+    location?: string;
+    created_at?: string;
+}
+
+const events = ref<AppEvent[]>([])
+const isLoading = ref(true)
+const errorMessage = ref('')
+
+const fetchUpcomingEvents = async () => {
+    isLoading.value = true
+    errorMessage.value = ''
+    
+    try {
+        const response = await fetch('/api/events/upcoming')
+        const data = await response.json()
+        
+        if (data.status === 'success') {
+            events.value = data.events
+        } else {
+            errorMessage.value = 'Failed to load events.'
+        }
+    } catch (error) {
+        console.error('Error fetching events:', error)
+        errorMessage.value = 'Could not connect to the server.'
+    } finally {
+        isLoading.value = false
+    }
+}
+
+onMounted(() => {
+    fetchUpcomingEvents()
+})
+
+// Quick helper to format the 'posted' date if you have timestamps
+const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Recently'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
 </script>
 
 <template>
@@ -27,12 +70,26 @@ const events = [
         </div>
         
         <div class="p-4 space-y-4">
+            
+            <div v-if="isLoading" class="text-center p-4 text-sm" :style="styles.textMuted">
+                Loading events...
+            </div>
+
+            <div v-else-if="errorMessage" class="text-center p-4 text-sm text-red-500">
+                {{ errorMessage }}
+            </div>
+
+            <div v-else-if="events.length === 0" class="text-center p-4 text-sm" :style="styles.textMuted">
+                No upcoming events found.
+            </div>
+
             <div 
+                v-else
                 v-for="event in events"
-                :key="event.title"
+                :key="event.id"
                 class="p-4 rounded-xl transition-all cursor-pointer border"
                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }"
-                @click="$emit('show-detail')"
+                @click="$emit('show-detail', event.id)"
                 @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.borderColor = surface.borderStrong"
                 @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.borderColor = surface.borderSubtle"
             >
@@ -41,17 +98,27 @@ const events = [
                         class="px-2 py-1 text-[10px] font-bold rounded uppercase"
                         :style="{ backgroundColor: theme.accent + '20', color: theme.accent }"
                     >
-                        {{ event.dates }}
+                        {{ event.event_month }} {{ event.event_year }}
                     </span>
-                    <span class="text-[10px]" :style="styles.textMuted">Posted: {{ event.posted }}</span>
+                    <span class="text-[10px]" :style="styles.textMuted">
+                        Posted: {{ formatDate(event.created_at) }}
+                    </span>
                 </div>
-                <h4 class="font-bold text-sm mb-1 leading-snug" :style="styles.textPrimary">{{ event.title }}</h4>
+                
+                <h4 class="font-bold text-sm mb-1 leading-snug" :style="styles.textPrimary">
+                    {{ event.title }}
+                </h4>
+                
                 <div class="flex items-center gap-1 text-[11px] mb-2" :style="styles.textMuted">
                     <span class="material-symbols-outlined text-[14px]">location_on</span>
-                    {{ event.loc }}
+                    {{ event.location || 'TBA' }}
                 </div>
-                <p class="text-xs line-clamp-2" :style="styles.textSecondary">{{ event.desc }}</p>
+                
+                <p class="text-xs line-clamp-2" :style="styles.textSecondary">
+                    {{ event.description || 'No description provided.' }}
+                </p>
             </div>
+            
         </div>
     </aside>
 </template>

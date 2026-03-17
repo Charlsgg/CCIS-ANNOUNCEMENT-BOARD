@@ -39,6 +39,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/announcements-board', function () {
     return view('announcement-board');
 })->name('announcements.board');
+Route::get('/api/events/upcoming', [EventController::class, 'upcoming']);
 
 Route::middleware('auth')->group(function () {
 
@@ -131,7 +132,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/events', function () {
         return view('events-calendar'); 
     })->name('events.index');
-    
+    Route::get('/events/upcoming', [EventController::class, 'upcoming']);
 
     Route::prefix('api')->group(function () {
         Route::get('/my-announcements', [UserAnnouncementController::class, 'index']);

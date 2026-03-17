@@ -59,10 +59,8 @@ const fetchBoardData = async (topic: string | null = null) => {
         
         if (response.ok) {
             const data = await response.json()
-            
             announcements.value = data.announcements
             upcomingEvents.value = data.upcoming_events
-            // Stats are usually global, but the backend now returns them correctly
             stats.value = data.stats 
         }
     } catch (error) {
@@ -72,7 +70,6 @@ const fetchBoardData = async (topic: string | null = null) => {
     }
 }
 
-// Function to handle the emit from the filter component
 const handleFilterChange = (role: string | null) => {
     fetchBoardData(role)
 }

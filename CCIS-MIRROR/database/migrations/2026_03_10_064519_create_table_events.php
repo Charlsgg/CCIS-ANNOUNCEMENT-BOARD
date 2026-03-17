@@ -15,10 +15,10 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('board_id');
             $table->string('title');
-            $table->text('content');
+            $table->string('content');
             $table->string('venue', 255);
             $table->dateTime('start_time');
-            $table->dateTime('end_time');
+            $table->dateTime('end_time')->nullable();
             $table->timestamps(); 
             $table->softDeletes(); 
             $table->foreign('user_id')
