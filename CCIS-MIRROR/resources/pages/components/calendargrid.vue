@@ -30,7 +30,6 @@ defineEmits<{
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-// 1. Utility: Format Date/Time
 const formatTime = (timeStr?: string): string => {
     if (!timeStr) return ''
     try {
@@ -50,7 +49,6 @@ const isSameDay = (dateStr1?: string, dateStr2?: string): boolean => {
            d1.getDate() === d2.getDate()
 }
 
-// 2. Logic: Event Rendering Helpers
 const isEventStart = (event: CalendarEvent, day: CalendarDay): boolean => {
     return !day.fullDate || !event.startTime || isSameDay(event.startTime, day.fullDate)
 }
@@ -63,14 +61,12 @@ const getEventClasses = (event: CalendarEvent, day: CalendarDay): string[] => {
 
     const classes = ['relative', 'z-10']
 
-    // Left side boundary styling
     if (isStart) {
         classes.push('rounded-l', 'border-l-2')
     } else {
         classes.push('-ml-[9px]', 'pl-[9px]', 'border-l-0', 'rounded-l-none')
     }
 
-    // Right side boundary styling
     if (isEnd) {
         classes.push('rounded-r')
     } else {
@@ -89,15 +85,12 @@ const getEventStyle = (event: CalendarEvent): Record<string, string> => {
     }
 }
 
-// 3. Logic: Track Slotting Algorithm
-// This ensures multi-day events stay on the same vertical Y-axis
 const processedDays = computed(() => {
     const activeTracks: (string | number | null)[] = []
     const result = []
 
     for (const day of props.days) {
         if (!day.fullDate || !day.events || !day.events.length) {
-            // Free all tracks if there are no events today
             activeTracks.fill(null)
             result.push({ ...day, slottedEvents: [] })
             continue
@@ -105,7 +98,6 @@ const processedDays = computed(() => {
 
         const currentEventIds = new Set(day.events.map(e => e.id))
 
-        // Free up tracks for events that have ended
         for (let i = 0; i < activeTracks.length; i++) {
             if (activeTracks[i] !== null && !currentEventIds.has(activeTracks[i]!)) {
                 activeTracks[i] = null
@@ -115,7 +107,6 @@ const processedDays = computed(() => {
         const slottedEvents: (CalendarEvent | null)[] = []
         let maxTrack = -1
 
-        // Maintain tracks for continuing multi-day events
         const unplacedEvents: CalendarEvent[] = []
         for (const event of day.events) {
             const trackIdx = activeTracks.indexOf(event.id)
@@ -127,7 +118,6 @@ const processedDays = computed(() => {
             }
         }
 
-        // Assign lowest available tracks to new events
         for (const event of unplacedEvents) {
             let trackIdx = 0
             while (activeTracks[trackIdx] !== null && activeTracks[trackIdx] !== undefined) {
@@ -138,7 +128,6 @@ const processedDays = computed(() => {
             maxTrack = Math.max(maxTrack, trackIdx)
         }
 
-        // Fill empty gaps with nulls to render visual spacers
         const finalEvents = []
         for (let i = 0; i <= maxTrack; i++) {
             finalEvents.push(slottedEvents[i] || null)
@@ -191,28 +180,17 @@ const processedDays = computed(() => {
                 <div 
                     v-for="(event, idx) in day.slottedEvents"
                     :key="event ? event.id : `empty-${day.date}-${idx}`"
-                    class="mt-2 p-1.5 text-[10px] leading-tight font-semibold mb-1 flex flex-col gap-0.5"
-                    :class="event ? getEventClasses(event, day) : ['opacity-0', 'pointer-events-none']"
+                    class="h-[44px] mt-2 mb-1 p-1.5 text-[10px] leading-tight font-semibold flex flex-col justify-center gap-0.5"
+                    :class="event ? getEventClasses(event, day) : 'opacity-0 pointer-events-none'"
                     :style="event ? getEventStyle(event) : {}"
                 >
-                    <template v-if="event">
-                        <template v-if="isEventStart(event, day)">
-                            <span class="truncate">{{ event.title }}</span>
-                            
-                            <div v-if="event.startTime" class="opacity-80 font-normal text-[9px] truncate">
-                                {{ formatTime(event.startTime) }} 
-                                <span v-if="event.endTime"> - {{ formatTime(event.endTime) }}</span>
-                            </div>
-                        </template>
+                    <template v-if="event && isEventStart(event, day)">
+                        <span class="truncate">{{ event.title }}</span>
                         
-                        <template v-else>
-                            <span class="opacity-0 truncate">{{ event.title }}</span>
-                            <div v-if="event.startTime" class="opacity-0 font-normal text-[9px] truncate">Time</div>
-                        </template>
-                    </template>
-                    
-                    <template v-else>
-                        <span>&nbsp;</span>
+                        <div v-if="event.startTime" class="opacity-80 font-normal text-[9px] truncate">
+                            {{ formatTime(event.startTime) }} 
+                            <span v-if="event.endTime"> - {{ formatTime(event.endTime) }}</span>
+                        </div>
                     </template>
                 </div>
 
