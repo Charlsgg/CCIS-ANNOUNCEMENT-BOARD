@@ -14,9 +14,9 @@ defineEmits<{
 interface AppEvent {
     event_id: number;
     title: string;
-    content: string; 
-    venue: string; 
-    start_time: string; 
+    content: string;
+    venue: string;
+    start_time: string;
     created_at?: string;
 }
 
@@ -27,11 +27,11 @@ const errorMessage = ref('')
 const fetchUpcomingEvents = async () => {
     isLoading.value = true
     errorMessage.value = ''
-    
+
     try {
         const response = await fetch('/api/events/upcoming')
         const data = await response.json()
-        
+
         if (data.status === 'success') {
             events.value = data.events
         } else {
@@ -66,17 +66,15 @@ const formatFullDate = (dateString?: string) => {
 </script>
 
 <template>
-    <aside 
-        class="w-full xl:w-80 shrink-0 rounded-2xl overflow-hidden shadow-lg shadow-black/5 flex flex-col" 
-        :style="styles.cardBg"
-    >
+    <aside class="w-full xl:w-80 shrink-0 rounded-2xl overflow-hidden shadow-lg shadow-black/5 flex flex-col"
+        :style="styles.cardBg">
         <div class="p-6 border-b" :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.hoverBg }">
             <h3 class="text-lg font-bold" :style="styles.textPrimary">Upcoming Events</h3>
             <p class="text-xs" :style="styles.textMuted">Chronological feed of announcements</p>
         </div>
-        
+
         <div class="p-4 space-y-4">
-            
+
             <div v-if="isLoading" class="text-center p-4 text-sm" :style="styles.textMuted">
                 Loading events...
             </div>
@@ -89,42 +87,36 @@ const formatFullDate = (dateString?: string) => {
                 No upcoming events found.
             </div>
 
-            <div 
-                v-else
-                v-for="event in events"
-                :key="event.event_id"
+            <div v-else v-for="event in events" :key="event.event_id"
                 class="p-4 rounded-xl transition-all cursor-pointer border"
                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }"
                 @click="$emit('show-detail', event.event_id)"
                 @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.borderColor = surface.borderStrong"
-                @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.borderColor = surface.borderSubtle"
-            >
+                @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.borderColor = surface.borderSubtle">
                 <div class="flex justify-between items-start mb-2">
-                    <span 
-                        class="px-2 py-1 text-[10px] font-bold rounded uppercase"
-                        :style="{ backgroundColor: theme.accent + '20', color: theme.accent }"
-                    >
+                    <span class="px-2 py-1 text-[10px] font-bold rounded uppercase"
+                        :style="{ backgroundColor: theme.accent + '20', color: theme.accent }">
                         {{ formatFullDate(event.start_time) }}
                     </span>
                     <span class="text-[10px]" :style="styles.textMuted">
                         Posted: {{ formatDate(event.created_at) }}
                     </span>
                 </div>
-                
+
                 <h4 class="font-bold text-sm mb-1 leading-snug" :style="styles.textPrimary">
                     {{ event.title }}
                 </h4>
-                
+
                 <div class="flex items-center gap-1 text-[11px] mb-2" :style="styles.textMuted">
                     <span class="material-symbols-outlined text-[14px]">location_on</span>
                     {{ event.venue || 'TBA' }}
                 </div>
-                
+
                 <p class="text-xs line-clamp-2" :style="styles.textSecondary">
                     {{ event.content || 'No description provided.' }}
                 </p>
             </div>
-            
+
         </div>
     </aside>
 </template>
