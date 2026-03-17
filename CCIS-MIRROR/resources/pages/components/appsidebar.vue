@@ -20,7 +20,7 @@ onMounted(() => {
     currentPath.value = window.location.pathname
 })
 
-// 2. Define your navigation items dynamically
+// Define your navigation items dynamically
 const navItems = computed(() => [
     { name: 'Home', icon: Home, path: theme.value.homePath },
     { name: 'Events', icon: Calendar, path: theme.value.eventsPath },
@@ -28,6 +28,7 @@ const navItems = computed(() => [
     { name: 'Profile', icon: User, path: theme.value.profilePath },
 ])
 </script>
+
 <template>
     <aside
         :class="[
@@ -61,40 +62,53 @@ const navItems = computed(() => [
             </div>
 
             <nav class="flex-1 flex flex-col gap-1 overflow-y-auto pr-2 -mr-2">
-                <div class="mt-2 flex flex-col gap-1.5">
-                    
-                    <a
-                        v-for="item in navItems"
-                        :key="item.name"
-                        :href="item.path"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all"
-                        :style="currentPath === item.path ? styles.sidebarActive : { color: surface.textSecondary, fontWeight: 500 }"
-                        @mouseenter="(e: MouseEvent) => {
-                            // Only apply hover effect if it is NOT the active item
-                            if (currentPath !== item.path) {
-                                const el = e.currentTarget as HTMLElement
-                                el.style.backgroundColor = surface.hoverBg
-                                el.style.color = surface.textPrimary
-                            }
-                        }"
-                        @mouseleave="(e: MouseEvent) => {
-                            // Only remove hover effect if it is NOT the active item
-                            if (currentPath !== item.path) {
-                                const el = e.currentTarget as HTMLElement
-                                el.style.backgroundColor = 'transparent'
-                                el.style.color = surface.textSecondary
-                            }
-                        }"
-                    >
-                        <component :is="item.icon" :size="20" />
-                        
-                        <span :class="{ 'font-bold tracking-wide': currentPath === item.path }">
-                            {{ item.name }}
-                        </span>
-                    </a>
+    <div class="mt-2 flex flex-col gap-1.5">
+        
+        <a
+            v-for="item in navItems"
+            :key="item.name"
+            :href="item.path"
+            class="relative flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all duration-200 cursor-pointer overflow-hidden group"
+            :style="currentPath === item.path 
+                ? {
+                    backgroundColor: `${theme.primary}1A`, 
+                    color: theme.primary,
+                    fontWeight: 700
+                } 
+                : {
+                    color: surface.textSecondary,
+                    fontWeight: 500
+                }"
+            @mouseenter="(e: MouseEvent) => {
+                if (currentPath !== item.path) {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.backgroundColor = surface.hoverBg
+                    el.style.color = surface.textPrimary
+                }
+            }"
+            @mouseleave="(e: MouseEvent) => {
+                if (currentPath !== item.path) {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.backgroundColor = 'transparent'
+                    el.style.color = surface.textSecondary
+                }
+            }"
+        >
+            <div 
+                v-if="currentPath === item.path"
+                class="absolute left-0 top-0 bottom-0 w-[6px] z-10"
+                :style="{ backgroundColor: theme.primary || '#f97316' }"
+            ></div>
 
-                </div>
-            </nav>
+            <component :is="item.icon" :size="20" class="shrink-0 z-20" />
+            
+            <span class="tracking-wide z-20">
+                {{ item.name }}
+            </span>
+        </a>
+
+    </div>
+</nav>
 
             <div class="mt-auto pt-6 shrink-0" :style="{ borderTop: `1px solid ${surface.borderSubtle}` }">
                 <form action="/logout" method="POST">
@@ -109,4 +123,4 @@ const navItems = computed(() => [
             </div>
         </div>
     </aside>
-</template>
+</template> 

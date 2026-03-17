@@ -163,8 +163,6 @@ onMounted(() => {
     if (tokenTag) {
         csrfToken.value = tokenTag.content
     }
-
-    // NEW: Fetch events immediately when the page loads
     fetchEvents()
 })
 </script>

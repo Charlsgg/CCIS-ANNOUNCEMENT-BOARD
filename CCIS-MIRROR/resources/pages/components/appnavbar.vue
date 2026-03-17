@@ -65,28 +65,6 @@ const { theme, styles, surface, isDark, toggleMode } = useTheme()
                 <Sun v-if="isDark" :size="20" />
                 <Moon v-else :size="20" />
             </button>
-
-            <!-- Notifications -->
-            <button
-                class="p-2 rounded-lg transition-colors relative"
-                :style="{ color: surface.textSecondary }"
-                @mouseenter="(e: MouseEvent) => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.color = theme.accent
-                }"
-                @mouseleave="(e: MouseEvent) => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.color = surface.textSecondary
-                }"
-            >
-                <Bell :size="20" />
-                <span
-                    class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-                    :style="styles.dot"
-                ></span>
-            </button>
-
-            <!-- Avatar -->
             <div
                 class="h-8 w-8 md:h-9 md:w-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold"
                 :style="styles.avatar"
