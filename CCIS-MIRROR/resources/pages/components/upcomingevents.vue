@@ -11,13 +11,12 @@ defineEmits<{
     (e: 'show-detail', eventId: number): void
 }>()
 
-// 1. Updated Interface to match your Laravel Database columns exactly
 interface AppEvent {
     event_id: number;
     title: string;
-    content: string; // Matches 'content' from db
-    venue: string;   // Matches 'venue' from db
-    start_time: string; // Used to display the full date
+    content: string; 
+    venue: string; 
+    start_time: string; 
     created_at?: string;
 }
 
