@@ -68,7 +68,7 @@ const submitForm = async () => {
 
 <template>
   <div class="font-display relative min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat" 
-       style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBxqSjfb2I-D_a0KE0Ksc13U5bPf6IXKbMzsL8UCrToLft6wvX-5oECO-rzq4EHA_YER_SXeabI9aU_sEPgjG0SVQeVdrTg-GD4LV8T2A0_C6zXekuha1sybBCquxfxpEK9-wZrIlf6n-buFaa07zTE0PnrvKUkGJ86IruHm3xdV_3e1p2TVfZIhIxWuP4dfe33wC8NBvRrjsx0zkHTDYAg5UPbBXEW988V2VLPl7qICBb2CqSRzG1h-kgI1ArI8Lto3JNxCrZ5W88');">
+       style="background-image: url('app-0.1/CCIS-MIRROR/public/images/Moderncommercialbuildingunderclearsky.png');">
     
     <div class="absolute inset-0 bg-[#221610]/80 backdrop-blur-sm"></div>
 
