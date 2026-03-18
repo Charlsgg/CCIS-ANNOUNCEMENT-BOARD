@@ -8,7 +8,7 @@ import { useTheme } from '../composable/usetheme.ts'
 import AppSidebar from '../components/appsidebar.vue'
 import AppNavbar from '../components/appnavbar.vue'
 import EventCreateModal from '../modals/eventcreatemodal.vue'
-import EventDetailModal from '../modals/eventdetailmodal.vue' // <-- Imported here
+import EventDetailModal from '../modals/eventdetailmodal.vue'
 import MonthYearSelector from '../components/monthyearselector.vue'
 import UpcomingEvents from '../components/upcomingevents.vue'
 import CalendarGrid from '../components/calendargrid.vue'
