@@ -68,7 +68,7 @@ const submitForm = async () => {
 
 <template>
   <div class="font-display relative min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat" 
-       style="background-image: url('CCIS-MIRROR/public/images/Modern commercial building under clear sky.png');">
+       style="background-image: url('app-0.1/CCIS-MIRROR/public/images/Moderncommercialbuildingunderclearsky.png');">
     
     <div class="absolute inset-0 bg-[#221610]/80 backdrop-blur-sm"></div>
 
