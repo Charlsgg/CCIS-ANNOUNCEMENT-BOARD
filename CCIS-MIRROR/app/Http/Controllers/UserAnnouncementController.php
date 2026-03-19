@@ -11,11 +11,8 @@ class UserAnnouncementController extends Controller
 {
     public function index()
     {
-        // 1. Get the current user AND their profile picture
         $user = Auth::user();
         $userAvatar = $user->profile->profile_picture ?? null;
-
-        // 2. Fetch data from your specific view
         $rawData = DB::table('user_announcements_attachments_view')
             ->where('author_id', $user->user_id) 
             ->orderBy('announcement_date', 'desc')

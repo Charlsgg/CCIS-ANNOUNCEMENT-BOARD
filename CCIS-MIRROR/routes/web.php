@@ -8,7 +8,11 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserAnnouncementController;
 use App\Http\Controllers\AnnouncementBoardController;
 
-
+/*
+|--------------------------------------------------------------------------
+| PUBLIC WEB ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::get('/login', function () {
     return view('login'); 
 })->name('login');
@@ -25,120 +29,91 @@ Route::get('/forgot-password', function () {
 
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
-
 Route::get('/reset-password/{token}', function (string $token) {
     return view('reset-password', ['token' => $token]);
 })->middleware('guest')->name('password.reset');
 
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
-
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 Route::get('/announcements-board', function () {
     return view('announcement-board');
 })->name('announcements.board');
-Route::get('/api/events/upcoming', [EventController::class, 'upcoming']);
 
+/*
+|--------------------------------------------------------------------------
+| PUBLIC API ROUTES (No login required)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('api')->group(function () {
+    // This fixes the 404 Error! Vue asks for /api/board-data and it is now publicly available
+    Route::get('/board-data', [AnnouncementBoardController::class, 'index']);
+     Route::post('/announcements/{id}/like', [AnnouncementBoardController::class, 'like']); 
+    Route::get('/events/upcoming', [EventController::class, 'upcoming']);
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ROUTES (Requires Login)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
 
+    // IT Instructor Routes
     Route::middleware('check_type:it_instructor')->prefix('it')->name('it.')->group(function () {
-         Route::get('/home-page', function() {
-            return view('home-page'); 
-        })->name('home.page');
-
-        Route::get('/announcement-page', function () {
-            return view('announcement-page'); 
-        })->name('announcement.page'); 
-
-        Route::get('/events-page', function () {
-            return view('events-page'); 
-        })->name('events.page');
-
-        Route::get('/profile-page', function() {
-            return view('profile-page'); 
-        })->name('profile.page');
+         Route::get('/home-page', function() { return view('home-page'); })->name('home.page');
+        Route::get('/announcement-page', function () { return view('announcement-page'); })->name('announcement.page'); 
+        Route::get('/events-page', function () { return view('events-page'); })->name('events.page');
+        Route::get('/profile-page', function() { return view('profile-page'); })->name('profile.page');
         
         Route::resource('announcements', AnnouncementController::class)->except(['index']);
         Route::resource('events', EventController::class);
     });
 
+    // CS Instructor Routes
     Route::middleware('check_type:cs_instructor')->prefix('cs')->name('cs.')->group(function () {
-         Route::get('/home-page', function() {
-            return view('home-page'); 
-        })->name('home.page');
-
-        Route::get('/announcement-page', function () {
-            return view('announcement-page'); 
-        })->name('announcement.page'); 
-
-        Route::get('/events-page', function () {
-            return view('events-page'); 
-        })->name('events.page');
-
-        Route::get('/profile-page', function() {
-            return view('profile-page'); 
-        })->name('profile.page');
+         Route::get('/home-page', function() { return view('home-page'); })->name('home.page');
+        Route::get('/announcement-page', function () { return view('announcement-page'); })->name('announcement.page'); 
+        Route::get('/events-page', function () { return view('events-page'); })->name('events.page');
+        Route::get('/profile-page', function() { return view('profile-page'); })->name('profile.page');
         
         Route::resource('announcements', AnnouncementController::class)->except(['index']);
         Route::resource('events', EventController::class);
     });
 
+    // IS Instructor Routes
     Route::middleware('check_type:is_instructor')->prefix('is')->name('is.')->group(function () {
-         Route::get('/home-page', function() {
-            return view('home-page'); 
-        })->name('home.page');
-
-        Route::get('/announcement-page', function () {
-            return view('announcement-page'); 
-        })->name('announcement.page'); 
-
-        Route::get('/events-page', function () {
-            return view('events-page'); 
-        })->name('events.page');
-
-        Route::get('/profile-page', function() {
-            return view('profile-page'); 
-        })->name('profile.page');
+         Route::get('/home-page', function() { return view('home-page'); })->name('home.page');
+        Route::get('/announcement-page', function () { return view('announcement-page'); })->name('announcement.page'); 
+        Route::get('/events-page', function () { return view('events-page'); })->name('events.page');
+        Route::get('/profile-page', function() { return view('profile-page'); })->name('profile.page');
         
         Route::resource('announcements', AnnouncementController::class)->except(['index']);
         Route::resource('events', EventController::class);
     });
 
+    // LSG Officer Routes
     Route::middleware('check_type:lsg_officer')->prefix('lsg')->name('lsg.')->group(function () {
-
-        Route::get('/home-page', function() {
-            return view('home-page'); 
-        })->name('home.page');
-
-        Route::get('/announcement-page', function () {
-            return view('announcement-page'); 
-        })->name('announcement.page'); 
-
-        Route::get('/events-page', function () {
-            return view('events-page'); 
-        })->name('events.page');
-
-        Route::get('/profile-page', function() {
-            return view('profile-page'); 
-        })->name('profile.page');
+        Route::get('/home-page', function() { return view('home-page'); })->name('home.page');
+        Route::get('/announcement-page', function () { return view('announcement-page'); })->name('announcement.page'); 
+        Route::get('/events-page', function () { return view('events-page'); })->name('events.page');
+        Route::get('/profile-page', function() { return view('profile-page'); })->name('profile.page');
 
         Route::resource('announcements', AnnouncementController::class)->except(['index']);
         Route::resource('events', EventController::class);
     });
-
 
     Route::get('/events', function () {
         return view('events-calendar'); 
     })->name('events.index');
-    Route::get('/events/upcoming', [EventController::class, 'upcoming']);
-
+    
+    
+    // PROTECTED API ROUTES
     Route::prefix('api')->group(function () {
-        Route::post('/announcements/{id}/like', [AnnouncementBoardController::class, 'like']);
+        // You MUST be logged in to like a po 
         Route::get('/my-announcements', [UserAnnouncementController::class, 'index']);
-        Route::get('/board-data', [AnnouncementBoardController::class, 'index']);
-        
         Route::get('/announcements', [AnnouncementController::class, 'index']);
         Route::post('/announcements', [AnnouncementController::class, 'store']);
         Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);

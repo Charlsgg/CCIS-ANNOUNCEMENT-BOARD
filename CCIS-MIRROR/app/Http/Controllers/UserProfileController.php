@@ -57,22 +57,18 @@ class UserProfileController extends Controller
     {
         $user = $request->user();
 
-        // 1. Validate incoming data
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:table_users,email,' . $user->getKey() . ',user_id',
             'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // 2. Update the main table_users table
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
         ]);
 
         $profilePictureUrl = null;
-
-        // 3. Update the user_profiles table if a file was uploaded
         if ($request->hasFile('profile_picture')) {
             
             if ($user->profile && $user->profile->profile_picture) {
@@ -89,7 +85,6 @@ class UserProfileController extends Controller
             $profilePictureUrl = asset('storage/' . $path);
         }
 
-        // 4. Return a JSON success response
         return response()->json([
             'message' => 'Profile updated successfully.',
             'profile_picture' => $profilePictureUrl
