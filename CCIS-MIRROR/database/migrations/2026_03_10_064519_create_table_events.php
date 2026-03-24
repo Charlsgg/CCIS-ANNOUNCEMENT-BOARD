@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('venue', 255);
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();
-            $table->timestamps(); 
-            $table->softDeletes(); 
             $table->foreign('user_id')
                 ->references('user_id')
                 ->on('table_users')
@@ -30,6 +28,9 @@ return new class extends Migration
                 ->references('board_id')
                 ->on('table_board')
                 ->onDelete('cascade');
+
+            $table->timestamps(); 
+            $table->softDeletes(); 
         });
     }
     public function down(): void

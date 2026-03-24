@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div v-if="show" class="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
       
       <div 
         class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
@@ -33,7 +33,7 @@
 
           <div v-else v-for="(event, idx) in events" :key="idx" class="group animate-in fade-in slide-in-from-bottom-2 w-full overflow-hidden" :style="{ animationDelay: `${idx * 100}ms`, animationFillMode: 'both' }">
             
-            <h4 class="text-xl font-bold text-white mb-3 group-hover:text-orange-400 transition-colors break-words">
+            <h4 class="text-xl font-bold text-white mb-3 group-hover:text-orange-400 transition-colors wrap-break-word">
               {{ event.title }}
             </h4>
             
@@ -49,7 +49,7 @@
 
               <div class="flex items-start gap-3 bg-white/5 px-3 py-2 rounded-lg border border-white/5">
                 <span class="material-symbols-outlined text-[18px] text-blue-400 mt-0.5 shrink-0">location_on</span>
-                <span class="text-white/90 break-words flex-1">{{ event.venue || 'TBA' }}</span>
+                <span class="text-white/90 wrap-break-word flex-1">{{ event.venue || 'TBA' }}</span>
               </div>
 
             </div>
@@ -57,7 +57,7 @@
             <div class="mt-4">
               <h5 class="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-2">About this event</h5>
               <div 
-                class="text-sm text-white/80 leading-relaxed font-light break-words prose prose-invert max-w-none" 
+                class="text-sm text-white/80 leading-relaxed font-light wrap-break-word prose prose-invert max-w-none" 
                 v-html="event.description || '<span class=\'italic opacity-50\'>No description provided.</span>'"
               ></div>
             </div>

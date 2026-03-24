@@ -66,10 +66,11 @@
       <section class="flex flex-col md:flex-row break gap-4 mb-12 items-center">
         <button @click="goBack"
           class="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-orange-500/10 border border-white/10 hover:border-orange-500 transition-all duration-300 text-sm font-medium group shrink-0">
-          <span class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          <span
+            class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
           <span>Back</span>
         </button>
-        
+
         <div class="relative grow w-full">
           <input v-model="searchQuery"
             class="w-full glass-input rounded-xl px-12 py-3 text-lg hover:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
@@ -86,7 +87,7 @@
       <TransitionGroup name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <article v-for="(item, index) in filteredAnnouncements" :key="item.id"
           class="glass-card p-6 flex flex-col h-full group relative overflow-hidden"
-          :style="{ '--delay': `${index * 0.1}s` }">
+          :style="{ '--delay': `${index * 0.1}sec` }">
 
           <div class="flex items-center gap-4 mb-6 relative z-10">
             <div class="relative">
@@ -115,18 +116,18 @@
           <div class="mt-8 flex justify-between items-center relative z-10 border-t border-white/5 pt-4">
             <button @click="handleLike(item)"
               class="flex items-center gap-2 transition-all duration-300 group/like relative"
-              :disabled="item.isCooldown" :class="[
-                item.isLiked ? 'text-orange-500' : 'text-white/40 hover:text-orange-400',
-                item.isCooldown ? 'opacity-50 cursor-not-allowed grayscale' : ''
+              :disabled="item.isCooldown || item.isProcessing" :class="[
+                item.isAnimating ? 'text-orange-500' : 'text-white/40 grayscale',
+                item.isCooldown && !item.isAnimating ? 'cursor-not-allowed opacity-70' : 'hover:text-orange-400'
               ]">
               <span class="material-symbols-outlined text-xl transition-all duration-300"
-                :class="{ 'fill-icon scale-125 animate-pop': item.isLiked && !item.isCooldown }">
+                :class="{ 'fill-icon scale-125 animate-pop': item.isAnimating }">
                 favorite
               </span>
               <span class="text-xs font-bold">{{ item.likes_count }}</span>
               <span v-if="item.isCooldown"
-                class="absolute -top-4 left-0 text-[8px] font-black text-orange-500 uppercase tracking-tighter animate-pulse">
-                wait {{ item.cooldownTimer }}s
+                class="absolute -top-4 left-0 text-[8px] font-black text-orange-500 tracking-tighter animate-pulse">
+                {{ item.cooldownTimer }} secs
               </span>
             </button>
 
@@ -206,18 +207,18 @@
               <div class="flex items-center gap-6">
                 <button @click="handleLike(selectedAnnouncement)"
                   class="flex items-center gap-2 transition-all duration-300 group/modal-like relative"
-                  :disabled="selectedAnnouncement.isCooldown" :class="[
-                    selectedAnnouncement.isLiked ? 'text-orange-500' : 'text-white/40 hover:text-orange-400',
-                    selectedAnnouncement.isCooldown ? 'opacity-50 cursor-not-allowed grayscale' : ''
+                  :disabled="selectedAnnouncement.isCooldown || selectedAnnouncement.isProcessing" :class="[
+                    selectedAnnouncement.isAnimating ? 'text-orange-500' : 'text-white/40 grayscale',
+                    selectedAnnouncement.isCooldown && !selectedAnnouncement.isAnimating ? 'cursor-not-allowed opacity-70' : 'hover:text-orange-400'
                   ]">
                   <span class="material-symbols-outlined text-xl transition-all duration-300"
-                    :class="{ 'fill-icon scale-125 animate-pop': selectedAnnouncement.isLiked && !selectedAnnouncement.isCooldown }">
+                    :class="{ 'fill-icon scale-125 animate-pop': selectedAnnouncement.isAnimating }">
                     favorite
                   </span>
                   <span class="text-xs font-bold">{{ selectedAnnouncement.likes_count }}</span>
                   <span v-if="selectedAnnouncement.isCooldown"
-                    class="absolute -top-4 left-0 text-[8px] font-black text-orange-500 uppercase tracking-tighter animate-pulse">
-                    wait {{ selectedAnnouncement.cooldownTimer }}s
+                    class="absolute -top-4 left-0 text-[8px] font-black text-orange-500 tracking-tighter animate-pulse">
+                    {{ selectedAnnouncement.cooldownTimer }} secs
                   </span>
                 </button>
               </div>
@@ -286,7 +287,8 @@ const fetchAnnouncements = async () => {
       isLiked: false,
       isProcessing: false,
       isCooldown: false,
-      cooldownTimer: 0
+      cooldownTimer: 0,
+      isAnimating: false // Add this new property
     }))
   } catch (e) { console.error("Sync Error", e) }
 }
@@ -301,20 +303,28 @@ const goBack = () => {
 const handleLike = async (item) => {
   if (item.isProcessing || item.isCooldown) return
 
-  const originalLiked = item.isLiked
   const originalCount = item.likes_count
 
-  item.isLiked = !item.isLiked
-  item.likes_count += item.isLiked ? 1 : -1
+  // Optimistic UI Update
   item.isProcessing = true
+  item.likes_count += 1
+
+  // Trigger the quick visual pop
+  item.isAnimating = true
+  setTimeout(() => {
+    item.isAnimating = false // Turns off the orange pop after half a second
+  }, 500)
+
+  // Start the 10-second lockdown
+  startCooldown(item)
 
   try {
     const response = await axios.post(`/api/announcements/${item.id}/like`)
     item.likes_count = response.data.likes_count
-    startCooldown(item)
   } catch (e) {
-    item.isLiked = originalLiked
     item.likes_count = originalCount
+    item.isCooldown = false
+    item.cooldownTimer = 0
   } finally {
     item.isProcessing = false
   }
@@ -323,6 +333,7 @@ const handleLike = async (item) => {
 const startCooldown = (item) => {
   item.isCooldown = true
   item.cooldownTimer = 10
+
   const timer = setInterval(() => {
     item.cooldownTimer--
     if (item.cooldownTimer <= 0) {
@@ -331,6 +342,7 @@ const startCooldown = (item) => {
     }
   }, 1000)
 }
+
 
 const filteredAnnouncements = computed(() => {
   const q = searchQuery.value.toLowerCase()

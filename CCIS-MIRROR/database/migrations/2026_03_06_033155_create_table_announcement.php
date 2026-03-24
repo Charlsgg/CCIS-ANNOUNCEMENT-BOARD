@@ -18,8 +18,6 @@ return new class extends Migration
             $table->string('topic');
             $table->integer('likes_count')->default(0);
             //
-            $table->timestamps(); 
-            $table->softDeletes(); 
             //
             $table->foreign('author_id')
                 ->references('user_id')
@@ -30,6 +28,9 @@ return new class extends Migration
                 ->references('board_id')
                 ->on('table_board')
                 ->onDelete('cascade');
+                
+            $table->timestamps(); 
+            $table->softDeletes(); 
         });
     }
 
