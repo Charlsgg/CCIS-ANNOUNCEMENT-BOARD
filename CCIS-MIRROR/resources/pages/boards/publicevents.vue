@@ -36,7 +36,6 @@
         </div>
       </div>
 
-
       <div class="hidden lg:block animate-in fade-in slide-in-from-right duration-700">
         <div class="glass-card p-4 w-64 border-orange-500/10">
           <div class="flex justify-between items-center mb-4 text-orange-500">
@@ -71,11 +70,30 @@
             class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
           <span>Back</span>
         </button>
-        <div class="relative flex-grow w-full">
+
+        <div class="relative grow w-full z-50">
           <input
             class="w-full glass-input rounded-xl px-12 py-3 text-lg hover:border-orange-500 focus:border-orange-500 transition-all duration-300"
-            placeholder="Search events..." type="text" v-model="searchQuery" />
+            placeholder="Search events..." type="text" v-model="searchQuery" @focus="isSearchFocused = true"
+            @blur="handleSearchBlur" />
           <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 opacity-40">search</span>
+
+          <div v-if="searchQuery && isSearchFocused"
+            class="absolute top-full left-0 w-full mt-2 glass-card overflow-hidden max-h-60 overflow-y-auto custom-scrollbar shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-orange-500/30">
+            <ul v-if="filteredDbEvents.length > 0">
+              <li v-for="event in filteredDbEvents" :key="event.event_id" @mousedown="openSearchedEvent(event)"
+                class="px-5 py-3 border-b border-white/5 hover:bg-orange-500/20 cursor-pointer transition-colors flex flex-col gap-1 last:border-0">
+                <span class="font-bold text-orange-500">{{ event.title }}</span>
+                <span class="text-xs opacity-70">
+                  {{ formatTime(event.start_time) }} <span v-if="event.venue || event.Venue">• {{ event.venue ||
+                    event.Venue }}</span>
+                </span>
+              </li>
+            </ul>
+            <div v-else class="px-5 py-4 text-center opacity-50 text-sm italic">
+              No events found matching "{{ searchQuery }}"
+            </div>
+          </div>
         </div>
       </section>
 
@@ -102,7 +120,7 @@
           </div>
         </div>
 
-        <div class="flex-1 glass-card overflow-hidden flex flex-col min-h-[600px]">
+        <div class="flex-1 glass-card overflow-hidden flex flex-col min-h-150">
           <div class="grid grid-cols-7 bg-white/5 border-b border-white/10">
             <div v-for="day in ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']" :key="day"
               class="py-4 text-center text-orange-500 text-xs md:text-sm font-black tracking-widest">
@@ -112,13 +130,13 @@
 
           <div class="flex-1 grid grid-cols-7 overflow-y-auto custom-scrollbar">
             <div v-for="(day, index) in processedDays" :key="index" @click="openEventDetail(day)" :class="[
-              'border-b border-r border-white/5 p-2 md:p-4 min-h-[120px] transition-colors cursor-pointer group flex flex-col overflow-hidden',
+              'border-b border-r border-white/5 p-2 md:p-4 min-h-30 transition-colors cursor-pointer group flex flex-col overflow-hidden',
               !day.isCurrentMonth ? 'opacity-30' : 'hover:bg-white/5',
               day.isHighlight ? 'bg-orange-500/5 border-orange-500/30' : ''
             ]">
 
               <span :class="[
-                'text-lg md:text-2xl font-light inline-block w-8 h-8 md:w-10 md:h-10 text-center leading-8 md:leading-[40px] rounded-full transition-all mb-2',
+                'text-lg md:text-2xl font-light inline-block w-8 h-8 md:w-10 md:h-10 text-center leading-8 md:leading-10 rounded-full transition-all mb-2',
                 isToday(day.fullDate) ? 'bg-orange-500 text-black font-bold shadow-[0_0_15px_rgba(249,115,22,0.5)]' : 'group-hover:text-orange-400',
                 day.isHighlight && !isToday(day.fullDate) ? 'text-orange-500 font-bold border-b-2 border-orange-500 rounded-none h-auto leading-normal' : ''
               ]">
@@ -128,7 +146,7 @@
               <div class="flex-1 flex flex-col gap-1 w-full relative">
                 <div v-for="(event, idx) in day.slottedEvents" :key="event ? event.id : `empty-${day.date}-${idx}`"
                   class="min-h-7 md:min-h-8 py-0.5 flex flex-col justify-center text-[9px] md:text-[10px] font-bold uppercase transition-all leading-tight"
-                  :class="event ? getEventClasses(event, day) : 'opacity-0 pointer-events-none h-[1.75rem] md:h-[2rem]'"
+                  :class="event ? getEventClasses(event, day) : 'opacity-0 pointer-events-none h-7 md:h-8'"
                   :style="event ? getEventStyle(event) : {}">
 
                   <template v-if="event && isEventStart(event, day)">
@@ -234,6 +252,40 @@ const years = computed(() => {
   return Array.from({ length: 10 }, (_, i) => current - 2 + i)
 })
 
+// ----- Logic: Search Filter & Dropdown -----
+const filteredDbEvents = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return dbEvents.value
+
+  return dbEvents.value.filter(event =>
+    event.title.toLowerCase().includes(query)
+  )
+})
+
+const isSearchFocused = ref(false)
+
+const handleSearchBlur = () => {
+  // Small delay allows the mousedown event on the dropdown item to fire before hiding
+  setTimeout(() => {
+    isSearchFocused.value = false
+  }, 150)
+}
+
+const openSearchedEvent = (event: DatabaseEvent) => {
+  // Format the single event into the array format expected by the modal
+  selectedEvents.value = [{
+    title: event.title,
+    venue: event.venue || event.Venue || 'TBA',
+    description: event.content || 'No description provided.',
+    start_time: event.start_time,
+    end_time: event.end_time || null
+  }]
+
+  showEventDetailModal.value = true
+  searchQuery.value = '' // Clear the search bar after selection
+  isSearchFocused.value = false // Close the dropdown
+}
+
 // ----- Integration Logic: Formatting & Tracks -----
 const formatTime = (timeStr?: string | null): string => {
   if (!timeStr) return ''
@@ -311,7 +363,7 @@ const fetchEvents = async () => {
     // Check if Laravel ignored us and sent HTML anyway
     if (contentType && contentType.includes("text/html")) {
       const htmlText = await response.text();
-      console.error("❌ LARAVEL RETURNED HTML ERROR:");
+      console.error("ERROR: LARAVEL RETURNED HTML:");
 
       // This will grab the title tag out of Laravel's error page
       const titleMatch = htmlText.match(/<title>(.*?)<\/title>/);
@@ -339,6 +391,7 @@ const fetchEvents = async () => {
     isLoading.value = false
   }
 }
+
 watch([currentMonth, currentYear], () => {
   fetchEvents()
 })
@@ -376,7 +429,7 @@ const calendarDays = computed(() => {
     days.push({ date: nextMonthDay++, fullDate, isCurrentMonth: false, events: [] })
   }
 
-  // Map events
+  // Map events USING ALL dbEvents (reverted to maintain full calendar view)
   dbEvents.value.forEach(event => {
     if (!event.start_time) return
 
@@ -469,6 +522,7 @@ const processedDays = computed(() => {
 const goBack = () => {
   window.history.back()
 }
+
 const isToday = (dateString?: string) => {
   if (!dateString) return false
   const d = new Date()

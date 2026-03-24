@@ -34,56 +34,59 @@ class DatabaseSeeder extends Seeder
         ];
         foreach ($boards as $b) Board::create($b);
 
-        // 3. Create Announcements
-        
-        // --- ACTIVE ---
-        Announcement::create([
-            'announcement_id' => 1001, 'board_id' => 1, 'author_id' => 101,
-            'title' => 'Capstone Orientation', 'content' => 'Mandatory for 4th years.', 'topic' => 'Academic'
-        ]);
-        Announcement::create([
-            'announcement_id' => 1004, 'board_id' => 4, 'author_id' => 104,
-            'title' => 'No Classes Tomorrow', 'content' => 'Due to inclement weather.', 'topic' => 'Urgent'
-        ]);
+        // 3. GENERATE 100 ANNOUNCEMENTS
+        for ($i = 1; $i <= 100; $i++) {
+            $daysOld = rand(0, 70); // Random age up to 70 days
+            $id = 2000 + $i;
+            
+            if ($daysOld > 60) {
+                // Stage 2: Ready to Prune
+                $this->createPrunableAnnouncement($id, rand(1, 5), rand(101, 105), "Bulk Post $i", "Content for $i", "Topic", $daysOld, rand(31, 40));
+            } elseif ($daysOld > 30) {
+                // Stage 1: Ready to Soft Delete
+                $this->createOldAnnouncement($id, rand(1, 5), rand(101, 105), "Bulk Post $i", "Content for $i", "Topic", $daysOld);
+            } else {
+                // Active
+                Announcement::create([
+                    'announcement_id' => $id,
+                    'board_id' => rand(1, 5),
+                    'author_id' => rand(101, 105),
+                    'title' => "Bulk Post $i",
+                    'content' => "Fresh content for post $i",
+                    'topic' => 'General'
+                ]);
+            }
+        }
 
-        // --- READY TO SOFT DELETE (30+ Days Old) ---
-        $this->createOldAnnouncement(1002, 1, 101, 'Old Job Hiring', 'This is 35 days old.', 'Career', 35);
-        $this->createOldAnnouncement(1005, 2, 103, 'Past Hackathon Results', 'Announcement from last month.', 'Contest', 45);
+        // 4. GENERATE 100 EVENTS
+        for ($i = 1; $i <= 100; $i++) {
+            $daysOld = rand(0, 70);
+            $id = 3000 + $i;
 
-        // --- READY TO PRUNE (Soft Deleted 30+ Days ago) ---
-        $this->createPrunableAnnouncement(1099, 1, 101, 'Spam Post', 'Deleted 40 days ago.', 'Spam', 70, 40);
-
-        // 4. Create Events
-
-        // --- ACTIVE / FUTURE ---
-        Event::create([
-            'event_id' => 501, 'user_id' => 101, 'board_id' => 1,
-            'title' => 'Graduation Ball', 'content' => 'Big party.', 'venue' => 'Gym',
-            'start_time' => now()->addDays(10), 'end_time' => now()->addDays(10)->addHours(4),
-        ]);
-        Event::create([
-            'event_id' => 504, 'user_id' => 102, 'board_id' => 3,
-            'title' => 'IS Quiz Bee', 'content' => 'Departmental level.', 'venue' => 'Lab 3',
-            'start_time' => now()->addDays(2), 'end_time' => now()->addDays(2)->addHours(2),
-        ]);
-
-        // --- EXPIRED (End Time passed) ---
-        Event::create([
-            'event_id' => 502, 'user_id' => 101, 'board_id' => 1,
-            'title' => 'Past Workshop', 'content' => 'Ended recently.', 'venue' => 'Lab 1',
-            'start_time' => now()->subHours(5), 'end_time' => now()->subHours(2),
-        ]);
-
-        // --- READY TO SOFT DELETE (Created 30+ Days ago) ---
-        $this->createOldEvent(505, 103, 2, 'Old Seminar', 'Created 32 days ago.', 'Audio-Visual', 32);
-
-        // --- READY TO PRUNE (Soft Deleted 30+ Days ago) ---
-        $this->createPrunableEvent(599, 101, 1, 'Ancient Meeting', 'Deleted long ago.', 'Room 101', 80, 35);
+            if ($daysOld > 60) {
+                // Stage 2: Ready to Prune
+                $this->createPrunableEvent($id, rand(101, 105), rand(1, 5), "Bulk Event $i", "Desc $i", "Venue $i", $daysOld, rand(31, 40));
+            } elseif ($daysOld > 30) {
+                // Stage 1: Ready to Soft Delete
+                $this->createOldEvent($id, rand(101, 105), rand(1, 5), "Bulk Event $i", "Desc $i", "Venue $i", $daysOld);
+            } else {
+                // Active / Future
+                Event::create([
+                    'event_id' => $id,
+                    'user_id' => rand(101, 105),
+                    'board_id' => rand(1, 5),
+                    'title' => "Bulk Event $i",
+                    'content' => "Active event description $i",
+                    'venue' => "Room ".rand(101, 404),
+                    'start_time' => now()->addDays(rand(1, 15)),
+                    'end_time' => now()->addDays(16),
+                ]);
+            }
+        }
     }
 
-    /**
-     * Helper to create old active records (Stage 1 Test)
-     */
+    // --- HELPER METHODS ---
+
     private function createOldAnnouncement($id, $board, $author, $title, $content, $topic, $daysOld) {
         $a = new Announcement([
             'announcement_id' => $id, 'board_id' => $board, 'author_id' => $author,
@@ -103,9 +106,6 @@ class DatabaseSeeder extends Seeder
         $e->save();
     }
 
-    /**
-     * Helper to create records ready for Pruning (Stage 2 Test)
-     */
     private function createPrunableAnnouncement($id, $board, $author, $title, $content, $topic, $createdDays, $deletedDays) {
         $a = new Announcement([
             'announcement_id' => $id, 'board_id' => $board, 'author_id' => $author,
