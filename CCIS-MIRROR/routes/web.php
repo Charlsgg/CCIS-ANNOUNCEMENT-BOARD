@@ -8,11 +8,7 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserAnnouncementController;
 use App\Http\Controllers\AnnouncementBoardController;
 use App\Http\Controllers\NavbarController;
-/*
-|--------------------------------------------------------------------------
-| PUBLIC WEB ROUTES
-|--------------------------------------------------------------------------
-*/
+
 Route::get('/login', function () {
     return view('login'); 
 })->name('login');
@@ -28,13 +24,10 @@ Route::get('/forgot-password', function () {
 })->name('password.request');
 
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-
 Route::get('/reset-password/{token}', function (string $token) {
     return view('reset-password', ['token' => $token]);
 })->middleware('guest')->name('password.reset');
-
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
-
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 Route::get('/announcements-board', function () {
@@ -45,31 +38,17 @@ Route::get('/announcements-events', function () {
     return view('announcements-events');
 })->name('announcements.events');
 
-/*
-|--------------------------------------------------------------------------
-| PUBLIC API ROUTES (No login required)
-|--------------------------------------------------------------------------
-*/
-/*
-|--------------------------------------------------------------------------
-| PUBLIC API ROUTES (No login required)
-|--------------------------------------------------------------------------
-*/
+
 Route::prefix('api')->group(function () {
     Route::get('/board-data', [AnnouncementBoardController::class, 'index']);
     Route::post('/announcements/{id}/like', [AnnouncementBoardController::class, 'like']); 
     Route::get('/events/upcoming', [EventController::class, 'upcoming']);
     
-    // 👇 ADDED THIS HERE: Now the public calendar can read the events!
     Route::get('/events', [EventController::class, 'index']); 
 });
 
 
-/*
-|--------------------------------------------------------------------------
-| PROTECTED ROUTES (Requires Login)
-|--------------------------------------------------------------------------
-*/
+
 Route::middleware('auth')->group(function () {
 
     // IT Instructor Routes
