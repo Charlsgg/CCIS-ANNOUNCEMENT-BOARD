@@ -1,25 +1,27 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// 1. Load Composer
+require __DIR__ . '/../vendor/autoload.php';
 
-echo "<h1>Vercel PHP Health Check</h1>";
-echo "PHP Version: " . PHP_VERSION . "<br>";
+// 2. Boot Laravel 12
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 
-$paths = [
-    'Vendor Autoload' => __DIR__ . '/../vendor/autoload.php',
-    'Bootstrap App'   => __DIR__ . '/../bootstrap/app.php',
-    'Environment'     => __DIR__ . '/../.env'
+// 3. Setup Vercel-friendly storage
+$app->useStoragePath('/tmp/storage');
+
+$storageFolders = [
+    '/app/public',
+    '/framework/cache/data',
+    '/framework/sessions',
+    '/framework/views',
+    '/logs'
 ];
 
-foreach ($paths as $name => $path) {
-    if (file_exists($path)) {
-        echo "✅ $name found.<br>";
-    } else {
-        echo "❌ $name NOT FOUND at: $path<br>";
+foreach ($storageFolders as $folder) {
+    $dir = '/tmp/storage' . $folder;
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
     }
 }
 
-if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    require __DIR__ . '/../vendor/autoload.php';
-    echo "✅ Composer loaded successfully!<br>";
-}
+// 4. Run the App
+$app->handleRequest(Illuminate\Http\Request::capture());
