@@ -22,9 +22,12 @@ foreach ($storageFolders as $folder) {
         mkdir($dir, 0777, true);
     }
 }
+
+// 4. FIX: Handle SQLite on Vercel
 $dbPath = '/tmp/database.sqlite';
 if (!file_exists($dbPath)) {
-    touch($dbPath);
+    touch($dbPath); // Create an empty database file in the writable /tmp
 }
-// 4. Run the App
+
+// 5. Run the App
 $app->handleRequest(Illuminate\Http\Request::capture());
