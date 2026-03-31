@@ -1,33 +1,19 @@
 <?php
+// Let's see if PHP is actually working
+echo "PHP is alive. Version: " . PHP_VERSION;
 
-// 1. Load the Composer Autoloader
-require __DIR__ . '/../vendor/autoload.php';
-
-// 2. Boot the Laravel 12 Application
-// In Laravel 11/12, this returns a ready-to-use Application object
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-
-// 3. Set the storage path to Vercel's writable /tmp directory
-// This is critical for session, cache, and view compilation
-$app->useStoragePath('/tmp/storage');
-
-// 4. Create the required storage sub-directories if they don't exist
-$storageFolders = [
-    '/app/public',
-    '/framework/cache/data',
-    '/framework/sessions',
-    '/framework/testing',
-    '/framework/views',
-    '/logs'
-];
-
-foreach ($storageFolders as $folder) {
-    $dir = '/tmp/storage' . $folder;
-    if (!is_dir($dir)) {
-        mkdir($dir, 0777, true);
-    }
+// Check if files exist
+echo "<br>Checking files...";
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    echo " ✅ Vendor found.";
+} else {
+    echo " ❌ Vendor MISSING.";
 }
 
-// 5. Handle the Incoming Request
-// Laravel 12 uses handleRequest() for the modern entry point
-$app->handleRequest(Illuminate\Http\Request::capture());
+// Try to load composer and stop
+require __DIR__ . '/../vendor/autoload.php';
+echo "<br>Composer loaded.";
+
+// If it gets here, the crash happens INSIDE Laravel's boot process
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+echo "<br>Laravel booted.";
