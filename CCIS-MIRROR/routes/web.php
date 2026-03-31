@@ -9,6 +9,9 @@ use App\Http\Controllers\UserAnnouncementController;
 use App\Http\Controllers\AnnouncementBoardController;
 use App\Http\Controllers\NavbarController;
 
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 Route::get('/login', function () {
     return view('login'); 
 })->name('login');
