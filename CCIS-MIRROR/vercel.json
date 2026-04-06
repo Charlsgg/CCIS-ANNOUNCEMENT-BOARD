@@ -3,16 +3,21 @@
     "builds": [
         {
             "src": "api/index.php",
-            "use": "vercel-php@0.7.4",
-            "config": { "maxDuration": 60 }
+            "use": "vercel-php@0.6.2"
         },
         {
-            "src": "public/**",
+            "src": "/public/**",
             "use": "@vercel/static"
         }
     ],
     "routes": [
-        { "src": "/build/(.*)", "dest": "/public/build/$1" },
-        { "src": "/(.*)", "dest": "/api/index.php" }
+        {
+            "src": "/build/(.*)",
+            "dest": "/public/build/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/api/index.php"
+        }
     ]
 }

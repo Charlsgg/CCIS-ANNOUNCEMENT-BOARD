@@ -10,10 +10,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. SQLite doesn't support "OR REPLACE", so we drop it first to be safe
         DB::statement("DROP VIEW IF EXISTS view_event_filters");
 
-        // 2. Create the view using SQLite's strftime() for date extraction
         DB::statement("
             CREATE VIEW view_event_filters AS
             SELECT 
@@ -26,8 +24,9 @@ return new class extends Migration
                 start_time,
                 end_time,
                 created_at,
-                CAST(strftime('%m', start_time) AS INTEGER) AS event_month,
-                CAST(strftime('%Y', start_time) AS INTEGER) AS event_year
+                -- UPDATED FOR POSTGRESQL: Use EXTRACT instead of strftime
+                CAST(EXTRACT(MONTH FROM start_time) AS INTEGER) AS event_month,
+                CAST(EXTRACT(YEAR FROM start_time) AS INTEGER) AS event_year
             FROM table_events
             WHERE deleted_at IS NULL
         ");
