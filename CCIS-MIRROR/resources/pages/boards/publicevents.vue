@@ -18,12 +18,14 @@
           </svg>
         </div>
         <div>
-          <div class="mb-1 text-[10px] font-bold tracking-[0.2em] uppercase opacity-70 text-orange-500">Butuan City
+          <div class="mb-1 text-[10px] font-bold tracking-[0.2em] uppercase opacity-70 text-orange-500">
+            {{ weatherCity }}
           </div>
           <div class="flex items-baseline gap-2">
-            <span class="text-4xl font-light tracking-tighter">28°C</span>
-            <span class="text-xs font-semibold tracking-widest uppercase opacity-60 text-orange-500">Partly
-              Cloudy</span>
+            <span class="text-4xl font-light tracking-tighter">{{ weatherTemp }}°C</span>
+            <span class="text-xs font-semibold tracking-widest uppercase opacity-60 text-orange-500">
+              {{ weatherDesc }}
+            </span>
           </div>
         </div>
       </div>
@@ -173,13 +175,12 @@
     </Teleport>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 
 // Import the modal and theme just like the parent component
-import PublicEventDetailModal from '../modals/publiceventdetailmodal.vue' // Adjust path if necessary
-import { useTheme } from '../composable/usetheme.ts'       // Adjust path if necessary
+import PublicEventDetailModal from '../modals/publiceventdetailmodal.vue' 
+import { useTheme } from '../composable/usetheme.ts'       
 
 // ----- Types -----
 interface CalendarEvent {
@@ -217,12 +218,16 @@ interface DatabaseEvent {
 }
 
 // ----- Modal & Theme Setup -----
-// Destructure your theme objects so they can be passed down to EventDetailModal
 const { theme, styles, surface, initTheme } = useTheme()
 
 const showEventDetailModal = ref(false)
 const selectedEvents = ref<Array<{ title: string, venue: string, description: string, start_time: string, end_time?: string | null }>>([])
 
+// ----- State: Weather -----
+const weatherCity = ref('Butuan City')
+const weatherTemp = ref<number | string>('--')
+const weatherDesc = ref('Loading...')
+let weatherTimer: ReturnType<typeof setInterval>
 
 // ----- State: Live Header -----
 const currentTime = ref('')
@@ -252,6 +257,43 @@ const years = computed(() => {
   return Array.from({ length: 10 }, (_, i) => current - 2 + i)
 })
 
+// ----- Logic: Weather API -----
+const getWeatherDescription = (code: number): string => {
+  const weatherCodes: Record<number, string> = {
+    0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+    45: 'Fog', 48: 'Depositing Rime Fog', 51: 'Light Drizzle', 53: 'Moderate Drizzle',
+    55: 'Dense Drizzle', 56: 'Light Freezing Drizzle', 57: 'Dense Freezing Drizzle',
+    61: 'Slight Rain', 63: 'Moderate Rain', 65: 'Heavy Rain', 66: 'Light Freezing Rain',
+    67: 'Heavy Freezing Rain', 71: 'Slight Snow Fall', 73: 'Moderate Snow Fall',
+    75: 'Heavy Snow Fall', 77: 'Snow Grains', 80: 'Slight Rain Showers',
+    81: 'Moderate Rain Showers', 82: 'Violent Rain Showers', 85: 'Slight Snow Showers',
+    86: 'Heavy Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm with Slight Hail',
+    99: 'Thunderstorm with Heavy Hail'
+  }
+  return weatherCodes[code] || 'Unknown Conditions'
+}
+
+const fetchWeather = async () => {
+  try {
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&current_weather=true&timezone=Asia%2FManila";
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'omit' // Safely bypass CORS
+    });
+
+    if (!response.ok) throw new Error(`Weather API is down! Status: ${response.status}`);
+
+    const data = await response.json();
+    weatherCity.value = 'Butuan City';
+    weatherTemp.value = Math.round(data.current_weather.temperature);
+    weatherDesc.value = getWeatherDescription(data.current_weather.weathercode);
+  } catch (e: any) {
+    console.error("Weather Sync Error:", e.message);
+    weatherTemp.value = '--';
+    weatherDesc.value = 'Weather Unavailable';
+  }
+}
+
 // ----- Logic: Search Filter & Dropdown -----
 const filteredDbEvents = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -265,14 +307,12 @@ const filteredDbEvents = computed(() => {
 const isSearchFocused = ref(false)
 
 const handleSearchBlur = () => {
-  // Small delay allows the mousedown event on the dropdown item to fire before hiding
   setTimeout(() => {
     isSearchFocused.value = false
   }, 150)
 }
 
 const openSearchedEvent = (event: DatabaseEvent) => {
-  // Format the single event into the array format expected by the modal
   selectedEvents.value = [{
     title: event.title,
     venue: event.venue || event.Venue || 'TBA',
@@ -282,8 +322,8 @@ const openSearchedEvent = (event: DatabaseEvent) => {
   }]
 
   showEventDetailModal.value = true
-  searchQuery.value = '' // Clear the search bar after selection
-  isSearchFocused.value = false // Close the dropdown
+  searchQuery.value = '' 
+  isSearchFocused.value = false 
 }
 
 // ----- Integration Logic: Formatting & Tracks -----
@@ -353,34 +393,21 @@ const fetchEvents = async () => {
 
     const response = await fetch(`/api/events?${queryParams.toString()}`, {
       headers: {
-        'Accept': 'application/json', // Ask Laravel nicely for JSON
+        'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       }
     })
 
     const contentType = response.headers.get("content-type");
 
-    // Check if Laravel ignored us and sent HTML anyway
     if (contentType && contentType.includes("text/html")) {
       const htmlText = await response.text();
-      console.error("ERROR: LARAVEL RETURNED HTML:");
-
-      // This will grab the title tag out of Laravel's error page
-      const titleMatch = htmlText.match(/<title>(.*?)<\/title>/);
-      if (titleMatch) {
-        console.error("Error Title:", titleMatch[1]);
-      } else {
-        console.error(htmlText.substring(0, 500)); // Print first 500 chars
-      }
-
+      console.error("ERROR: LARAVEL RETURNED HTML");
       dbEvents.value = [];
       return;
     }
 
-    if (!response.ok) {
-      console.error(`HTTP Error: ${response.status}`);
-      return;
-    }
+    if (!response.ok) return;
 
     const data = await response.json()
     dbEvents.value = data.events || []
@@ -429,7 +456,7 @@ const calendarDays = computed(() => {
     days.push({ date: nextMonthDay++, fullDate, isCurrentMonth: false, events: [] })
   }
 
-  // Map events USING ALL dbEvents (reverted to maintain full calendar view)
+  // Map events USING ALL dbEvents
   dbEvents.value.forEach(event => {
     if (!event.start_time) return
 
@@ -554,56 +581,17 @@ const updateClock = () => {
 }
 
 onMounted(() => {
-  if (initTheme) initTheme(); // Initialize theme correctly
+  if (initTheme) initTheme() 
   updateClock()
-  clockTimer = setInterval(updateClock, 1000)
   fetchEvents()
+  fetchWeather() // <-- Kick off weather fetch on load
+  
+  clockTimer = setInterval(updateClock, 1000)
+  weatherTimer = setInterval(fetchWeather, 1800000) // <-- Update weather every 30 minutes
 })
 
 onUnmounted(() => {
   clearInterval(clockTimer)
+  clearInterval(weatherTimer) // <-- Cleanup the timer to prevent memory leaks
 })
 </script>
-
-<style scoped>
-.glow-text {
-  text-shadow: 0 0 30px rgba(249, 115, 22, 0.4);
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.25rem;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(249, 115, 22, 0.3);
-}
-
-.glass-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  outline: none;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(249, 115, 22, 0.3);
-  border-radius: 20px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.5);
-}
-</style>
