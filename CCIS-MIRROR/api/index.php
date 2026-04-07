@@ -2,10 +2,9 @@
 
 use Illuminate\Http\Request;
 
-// 1. Load Composer
 require __DIR__ . '/../vendor/autoload.php';
 
-// 2. Create the required directories BEFORE Laravel boots
+// 1. Create the required directories BEFORE Laravel boots
 $tmpDir = '/tmp/storage';
 $directories = [
     "$tmpDir/app/public",
@@ -22,8 +21,18 @@ foreach ($directories as $dir) {
     }
 }
 
+// 2. THE NUCLEAR OPTION: Destroy any cache files generated during Vercel's build step
+$defaultCacheDir = __DIR__ . '/../bootstrap/cache';
+$filesToNuke = ['services.php', 'packages.php', 'config.php', 'routes.php', 'events.php'];
+
+foreach ($filesToNuke as $file) {
+    $badCacheFile = "$defaultCacheDir/$file";
+    if (file_exists($badCacheFile)) {
+        @unlink($badCacheFile); // Delete the file so Laravel doesn't get confused
+    }
+}
+
 // 3. Bruteforce ENV variables for Vercel's read-only system
-// We set putenv, $_ENV, and $_SERVER to ensure Laravel's env() helper catches it
 $overrides = [
     'VIEW_COMPILED_PATH' => "$tmpDir/framework/views",
     'APP_SERVICES_CACHE' => "$tmpDir/bootstrap/cache/services.php",
