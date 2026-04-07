@@ -312,7 +312,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
-import { fetchWeatherApi } from 'openmeteo'
+// Notice: I removed the openmeteo import because we are using native fetch now to bypass CORS!
 
 // State
 const announcements = ref([])
@@ -350,7 +350,8 @@ const filteredAnnouncements = computed(() => {
 // Methods
 const fetchAnnouncements = async () => {
   try {
-    const response = await axios.get('/board-data')
+    // FIX 1: Explicitly use /api/board-data to prevent stacking bugs
+    const response = await axios.get('/api/board-data')
     announcements.value = response.data.announcements.map(a => ({
       ...a,
       isLiked: false,
@@ -385,7 +386,8 @@ const handleLike = async (item) => {
   startCooldown(item)
 
   try {
-    const response = await axios.post(`/announcements/${item.id}/like`)
+    // FIX 1: Explicitly use /api/announcements to prevent stacking bugs
+    const response = await axios.post(`/api/announcements/${item.id}/like`)
     item.likes_count = response.data.likes_count
   } catch (e) {
     item.likes_count = originalCount
@@ -424,29 +426,21 @@ const getWeatherDescription = (code) => {
   return weatherCodes[code] || 'Unknown Conditions'
 }
 
+// FIX 2: Replaced the package with a raw fetch call to bypass CORS
 const fetchWeather = async () => {
   try {
-    const params = {
-      latitude: 8.9492,
-      longitude: 125.5436,
-      daily: "weather_code",
-      hourly: "temperature_2m",
-      current: ["temperature_2m", "weather_code"],
-      timezone: "auto",
-    };
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&daily=weather_code&hourly=temperature_2m&current=temperature_2m,weather_code&timezone=auto";
     
-    const url = "https://api.open-meteo.com/v1/forecast";
-    const responses = await fetchWeatherApi(url, params);
-    
-    const response = responses[0];
-    const current = response.current();
-    
-    const currentTemp = current.variables(0).value();
-    const currentCode = current.variables(1).value();
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'omit' // THIS IS THE MAGIC WORD! It drops the cookies and stops the CORS block.
+    });
+
+    const data = await response.json();
 
     weatherCity.value = 'Butuan City';
-    weatherTemp.value = Math.round(currentTemp);
-    weatherDesc.value = getWeatherDescription(currentCode);
+    weatherTemp.value = Math.round(data.current.temperature_2m);
+    weatherDesc.value = getWeatherDescription(data.current.weather_code);
 
   } catch (e) {
     console.error("Weather Sync Error", e)
@@ -479,6 +473,7 @@ const updateClock = () => {
   currentDate.value = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()
   currentMonthYear.value = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase()
 }
+
 let clockTimer, fetchTimer, weatherTimer
 onMounted(() => {
   fetchAnnouncements()
