@@ -42,14 +42,12 @@ class AnnouncementController extends Controller
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
+                // Store the file and get the relative path
                 $path = $file->store('announcements', 's3');
 
-                /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-                $disk = Storage::disk('s3');
-                $publicUrl = $disk->url($path);
-
+                // Save ONLY the relative path to the database
                 $announcement->attachments()->create([
-                    'file_path' => $publicUrl,
+                    'file_path' => $path,
                     'file_type' => $file->getClientMimeType(),
                 ]);
             }
@@ -85,9 +83,12 @@ class AnnouncementController extends Controller
         }
 
         foreach ($announcement->attachments as $file) {
-            // 🚀 CHANGED HERE: Extract the path from the URL and delete it from S3
-            $path = str_replace(env('AWS_ENDPOINT') . '/' . env('AWS_BUCKET') . '/', '', $file->file_path);
-            Storage::disk('s3')->delete($path);
+            // Delete directly using the stored relative path
+            Storage::disk('s3')->delete($file->file_path);
+            
+            // Delete the attachment record from the database 
+            // (Assuming you do not have cascading deletes set up on the DB schema)
+            $file->delete(); 
         }
 
         $announcement->delete();
