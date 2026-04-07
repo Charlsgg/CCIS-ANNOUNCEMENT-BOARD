@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -57,9 +58,10 @@ $app->useStoragePath($tmpDir);
 // 6. Execute Request with manual Error Catching
 try {
     $request = Request::capture();
-    $response = $app->handleRequest($request);
+    $kernel = $app->make(Kernel::class);
+    $response = $kernel->handle($request);
     $response->send();
-    $app->terminate($request, $response);
+    $kernel->terminate($request, $response);
 } catch (\Throwable $e) {
     // If ANYTHING fails, we bypass Laravel's error handler and print it raw
     http_response_code(500);
