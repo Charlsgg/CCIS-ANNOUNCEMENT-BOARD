@@ -425,26 +425,30 @@ const getWeatherDescription = (code) => {
   }
   return weatherCodes[code] || 'Unknown Conditions'
 }
-
-// FIX 2: Replaced the package with a raw fetch call to bypass CORS
 const fetchWeather = async () => {
   try {
-    const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&daily=weather_code&hourly=temperature_2m&current=temperature_2m,weather_code&timezone=auto";
+    // We simplified the URL to the most stable "current_weather" endpoint
+    // and explicitly set the timezone to Asia/Manila for Butuan City!
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&current_weather=true&timezone=Asia%2FManila";
     
-    const response = await fetch(url, {
-      method: 'GET',
-      credentials: 'omit' // THIS IS THE MAGIC WORD! It drops the cookies and stops the CORS block.
-    });
+    // Standard fetch - Open-Meteo allows all origins as long as the URL doesn't crash them
+    const response = await fetch(url);
+
+    // If Open-Meteo is having a bad day (like a 502 Bad Gateway), catch it nicely!
+    if (!response.ok) {
+      throw new Error(`Weather API is down! Status: ${response.status}`);
+    }
 
     const data = await response.json();
 
     weatherCity.value = 'Butuan City';
-    weatherTemp.value = Math.round(data.current.temperature_2m);
-    weatherDesc.value = getWeatherDescription(data.current.weather_code);
+    weatherTemp.value = Math.round(data.current_weather.temperature);
+    weatherDesc.value = getWeatherDescription(data.current_weather.weathercode);
 
   } catch (e) {
-    console.error("Weather Sync Error", e)
-    weatherDesc.value = 'Weather Unavailable'
+    console.error("Weather Sync Error:", e.message);
+    weatherTemp.value = '--';
+    weatherDesc.value = 'Weather Unavailable';
   }
 }
 
