@@ -350,7 +350,7 @@ const filteredAnnouncements = computed(() => {
 // Methods
 const fetchAnnouncements = async () => {
   try {
-    const response = await axios.get('/api/board-data')
+    const response = await axios.get('/board-data')
     announcements.value = response.data.announcements.map(a => ({
       ...a,
       isLiked: false,
@@ -385,7 +385,7 @@ const handleLike = async (item) => {
   startCooldown(item)
 
   try {
-    const response = await axios.post(`/api/announcements/${item.id}/like`)
+    const response = await axios.post(`/announcements/${item.id}/like`)
     item.likes_count = response.data.likes_count
   } catch (e) {
     item.likes_count = originalCount
