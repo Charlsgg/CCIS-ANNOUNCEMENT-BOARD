@@ -14,9 +14,8 @@ class AnnouncementController extends Controller
      */
     public function index()
     {
-        // Updated: Added 'author.profile' to get the UserProfile data
         $announcements = Announcement::with(['author.profile', 'attachments'])
-            ->latest() 
+            ->latest()
             ->get();
 
         return response()->json($announcements);
@@ -29,7 +28,7 @@ class AnnouncementController extends Controller
             'content'       => 'required|string',
             'board_id'      => 'required|integer',
             'topic'         => 'nullable|string|max:255',
-            'attachments.*' => 'file|max:10240',    
+            'attachments.*' => 'file|max:10240',
         ]);
 
         // Create the Announcement record
@@ -38,53 +37,61 @@ class AnnouncementController extends Controller
             'content'   => $validated['content'],
             'topic'     => $validated['topic'] ?? 'General',
             'board_id'  => $validated['board_id'],
-            'author_id' => Auth::id(), 
+            'author_id' => Auth::id(),
         ]);
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('announcements', 'public');
+                $path = $file->store('announcements', 's3');
+
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+                $disk = Storage::disk('s3');
+                $publicUrl = $disk->url($path);
 
                 $announcement->attachments()->create([
-                    'file_path' => $path,
+                    'file_path' => $publicUrl,
                     'file_type' => $file->getClientMimeType(),
                 ]);
             }
         }
 
         return response()->json(
-            $announcement->load(['author.profile', 'attachments']), 
+            $announcement->load(['author.profile', 'attachments']),
             201
         );
     }
+
     public function update(Request $request, Announcement $announcement)
-{
-    if ($announcement->author_id !== Auth::id()) {
-        return response()->json(['message' => 'Unauthorized'], 403);
+    {
+        if ($announcement->author_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'title'   => 'required|string|max:255',
+            'content' => 'required|string',
+            'topic'   => 'nullable|string|max:255',
+        ]);
+
+        $announcement->update($validated);
+
+        return response()->json($announcement->load(['author.profile', 'attachments']));
     }
 
-    $validated = $request->validate([
-        'title'   => 'required|string|max:255',
-        'content' => 'required|string',
-        'topic'   => 'nullable|string|max:255',
-    ]);
+    public function destroy(Announcement $announcement)
+    {
+        if ($announcement->author_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
-    $announcement->update($validated);
+        foreach ($announcement->attachments as $file) {
+            // 🚀 CHANGED HERE: Extract the path from the URL and delete it from S3
+            $path = str_replace(env('AWS_ENDPOINT') . '/' . env('AWS_BUCKET') . '/', '', $file->file_path);
+            Storage::disk('s3')->delete($path);
+        }
 
-    return response()->json($announcement->load(['author.profile', 'attachments']));
-}
-    
-public function destroy(Announcement $announcement)
-{
-    if ($announcement->author_id !== Auth::id()) {
-        return response()->json(['message' => 'Unauthorized'], 403);
+        $announcement->delete();
+
+        return response()->json(['message' => 'Announcement deleted successfully']);
     }
-    foreach ($announcement->attachments as $file) {
-        Storage::disk('public')->delete($file->file_path);
-    }
-
-    $announcement->delete();
-
-    return response()->json(['message' => 'Announcement deleted successfully']);
-}
 }
