@@ -54,5 +54,14 @@ $app = require_once __DIR__ . '/../bootstrap/app.php';
 // 5. Force Laravel to use the writable /tmp directory
 $app->useStoragePath($tmpDir);
 
-// 6. Execute Request
-$app->handleRequest(Request::capture());
+// 6. God-Mode Error Catcher & Request Execution
+try {
+    $app->handleRequest(Request::capture());
+} catch (\Throwable $e) {
+    http_response_code(500);
+    echo "<div style='background:#111; color:#ff5555; padding:20px; font-family:monospace; border-radius:8px;'>";
+    echo "<h2>🚨 Vercel Laravel Error!</h2>";
+    echo "<b>Message:</b> " . $e->getMessage() . "<br><br>";
+    echo "<b>File:</b> " . $e->getFile() . " (Line " . $e->getLine() . ")<br><br>";
+    echo "</div>";
+}
