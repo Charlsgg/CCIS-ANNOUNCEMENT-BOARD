@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 require __DIR__ . '/../vendor/autoload.php';
 
 // 2. Create the required directories BEFORE Laravel boots
-// This is critical. If these don't exist when Laravel loads its config, it will crash.
 $directories = [
     '/tmp/storage/app/public',
     '/tmp/storage/framework/cache/data',
@@ -22,11 +21,19 @@ foreach ($directories as $dir) {
     }
 }
 
-// 3. Boot Application
+// 3. CRITICAL: Override bootstrap/cache paths to use the writable /tmp directory
+$tmpBootstrapCache = '/tmp/storage/bootstrap/cache';
+putenv("APP_SERVICES_CACHE={$tmpBootstrapCache}/services.php");
+putenv("APP_PACKAGES_CACHE={$tmpBootstrapCache}/packages.php");
+putenv("APP_CONFIG_CACHE={$tmpBootstrapCache}/config.php");
+putenv("APP_ROUTES_CACHE={$tmpBootstrapCache}/routes.php");
+putenv("APP_EVENTS_CACHE={$tmpBootstrapCache}/events.php");
+
+// 4. Boot Application
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// 4. Force Laravel to use the writable /tmp directory
+// 5. Force Laravel to use the writable /tmp directory for standard storage
 $app->useStoragePath('/tmp/storage');
 
-// 5. Execute Request (Laravel 11 natively handles send() and terminate() here)
+// 6. Execute Request
 $app->handleRequest(Request::capture());
