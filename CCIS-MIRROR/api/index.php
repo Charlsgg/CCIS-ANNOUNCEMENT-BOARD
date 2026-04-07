@@ -6,13 +6,14 @@ use Illuminate\Http\Request;
 require __DIR__ . '/../vendor/autoload.php';
 
 // 2. Create the required directories BEFORE Laravel boots
+$tmpDir = '/tmp/storage';
 $directories = [
-    '/tmp/storage/app/public',
-    '/tmp/storage/framework/cache/data',
-    '/tmp/storage/framework/sessions',
-    '/tmp/storage/framework/views',
-    '/tmp/storage/logs',
-    '/tmp/storage/bootstrap/cache'
+    "$tmpDir/app/public",
+    "$tmpDir/framework/cache/data",
+    "$tmpDir/framework/sessions",
+    "$tmpDir/framework/views",
+    "$tmpDir/logs",
+    "$tmpDir/bootstrap/cache"
 ];
 
 foreach ($directories as $dir) {
@@ -21,19 +22,28 @@ foreach ($directories as $dir) {
     }
 }
 
-// 3. CRITICAL: Override bootstrap/cache paths to use the writable /tmp directory
-$tmpBootstrapCache = '/tmp/storage/bootstrap/cache';
-putenv("APP_SERVICES_CACHE={$tmpBootstrapCache}/services.php");
-putenv("APP_PACKAGES_CACHE={$tmpBootstrapCache}/packages.php");
-putenv("APP_CONFIG_CACHE={$tmpBootstrapCache}/config.php");
-putenv("APP_ROUTES_CACHE={$tmpBootstrapCache}/routes.php");
-putenv("APP_EVENTS_CACHE={$tmpBootstrapCache}/events.php");
+// 3. Bruteforce ENV variables for Vercel's read-only system
+// We set putenv, $_ENV, and $_SERVER to ensure Laravel's env() helper catches it
+$overrides = [
+    'VIEW_COMPILED_PATH' => "$tmpDir/framework/views",
+    'APP_SERVICES_CACHE' => "$tmpDir/bootstrap/cache/services.php",
+    'APP_PACKAGES_CACHE' => "$tmpDir/bootstrap/cache/packages.php",
+    'APP_CONFIG_CACHE'   => "$tmpDir/bootstrap/cache/config.php",
+    'APP_ROUTES_CACHE'   => "$tmpDir/bootstrap/cache/routes.php",
+    'APP_EVENTS_CACHE'   => "$tmpDir/bootstrap/cache/events.php",
+];
+
+foreach ($overrides as $key => $value) {
+    putenv("$key=$value");
+    $_ENV[$key] = $value;
+    $_SERVER[$key] = $value;
+}
 
 // 4. Boot Application
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// 5. Force Laravel to use the writable /tmp directory for standard storage
-$app->useStoragePath('/tmp/storage');
+// 5. Force Laravel to use the writable /tmp directory
+$app->useStoragePath($tmpDir);
 
 // 6. Execute Request
 $app->handleRequest(Request::capture());
