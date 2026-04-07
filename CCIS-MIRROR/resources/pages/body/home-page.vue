@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, shallowRef, onMounted, computed } from 'vue' 
-import { Megaphone, Trash2 } from 'lucide-vue-next' // Removed Edit3 and X as they are no longer needed here
+import { Megaphone, Trash2 } from 'lucide-vue-next'
 import { useTheme } from '../composable/usetheme.ts'
 import AppSidebar from '../components/appsidebar.vue'
 import AppNavbar from '../components/appnavbar.vue'
 import AnnouncementComposer from '../components/announcementcomposer.vue'
 import RecentAnnouncements from '../components/recentannouncements.vue'
+import axios from 'axios' // <-- 1. ADDED AXIOS IMPORT
 
 const props = defineProps<{
     user?: { name: string; email: string; user_type: string; profile?: { profile_picture: string } }
@@ -50,14 +51,14 @@ onMounted(() => {
 const fetchAnnouncements = async () => {
     isLoading.value = true
     try {
-        const response = await fetch('/api/my-announcements')
-        if (response.ok) {
-            const data = await response.json()
-            announcements.value = data.announcements.map((post: any) => ({
-                ...post,
-                icon: shallowRef(Megaphone),
-            }))
-        }
+        // 2. CHANGED FROM FETCH TO AXIOS
+        const response = await axios.get('/my-announcements')
+        
+        // Axios automatically parses JSON, so we just use response.data
+        announcements.value = response.data.announcements.map((post: any) => ({
+            ...post,
+            icon: shallowRef(Megaphone),
+        }))
     } catch (error) {
         console.error('Error fetching announcements:', error)
     } finally {
@@ -83,20 +84,12 @@ const deleteAnnouncement = async () => {
     
     isDeleting.value = true
     try {
-        const response = await fetch(`/api/my-announcements/${announcementToDelete.value}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken.value,
-                'Content-Type': 'application/json'
-            }
-        })
+        // 3. CHANGED FROM FETCH TO AXIOS
+        await axios.delete(`/my-announcements/${announcementToDelete.value}`)
 
-        if (response.ok) {
-            announcements.value = announcements.value.filter(a => a.id !== announcementToDelete.value)
-            isDeleteDialogOpen.value = false
-        } else {
-            console.error('Failed to delete announcement')
-        }
+        // If no error is thrown, it succeeded
+        announcements.value = announcements.value.filter(a => a.id !== announcementToDelete.value)
+        isDeleteDialogOpen.value = false
     } catch (error) {
         console.error('Error deleting announcement:', error)
     } finally {
@@ -105,7 +98,7 @@ const deleteAnnouncement = async () => {
     }
 }
 
-// --- Edit Handlers (Receives Payload from Child Component) ---// --- Edit Handlers (Receives Payload from Child Component) ---
+// --- Edit Handlers ---
 const handleUpdate = async (payload: { 
     id: number | string, 
     data: { title: string, content: string, topic: string },
@@ -116,55 +109,37 @@ const handleUpdate = async (payload: {
     try {
         const formData = new FormData()
         
-        // Append text fields
         formData.append('title', payload.data.title)
         formData.append('content', payload.data.content)
         if (payload.data.topic) {
             formData.append('topic', payload.data.topic)
         }
 
-        // Append new files
         if (payload.attachments && payload.attachments.newFiles.length > 0) {
             payload.attachments.newFiles.forEach((file) => {
                 formData.append('newFiles[]', file)
             })
         }
 
-        // Append IDs of files to delete
         if (payload.attachments && payload.attachments.deletedIds.length > 0) {
             payload.attachments.deletedIds.forEach((id) => {
                 formData.append('deletedIds[]', String(id))
             })
         }
 
-        const response = await fetch(`/api/my-announcements/${payload.id}`, {
-            method: 'POST', 
-            headers: {
-                'X-CSRF-TOKEN': csrfToken.value,
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
+        // 4. CHANGED FROM FETCH TO AXIOS
+        const response = await axios.post(`/my-announcements/${payload.id}`, formData)
 
-        if (response.ok) {
-            const responseData = await response.json()
-            
-            // 1. Check if the backend successfully returned the updated announcement object
-            if (responseData.announcement) {
-                const index = announcements.value.findIndex(a => a.id === payload.id)
-                if (index !== -1) {
-                    // 2. Safely replace the data while preserving the local Vue icon reference
-                    announcements.value[index] = {
-                        ...responseData.announcement,
-                        icon: shallowRef(Megaphone)
-                    }
+        if (response.data.announcement) {
+            const index = announcements.value.findIndex(a => a.id === payload.id)
+            if (index !== -1) {
+                announcements.value[index] = {
+                    ...response.data.announcement,
+                    icon: shallowRef(Megaphone)
                 }
-            } else {
-                // 3. Fallback: If the specific record couldn't be fetched, refresh the whole list safely
-                await fetchAnnouncements()
             }
         } else {
-            console.error('Failed to update announcement', await response.text())
+            await fetchAnnouncements()
         }
     } catch (error) {
         console.error('Error updating announcement:', error)
