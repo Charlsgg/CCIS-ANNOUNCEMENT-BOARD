@@ -23,40 +23,49 @@ class AnnouncementController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title'         => 'required|string|max:255',
-            'content'       => 'required|string',
-            'board_id'      => 'required|integer',
-            'topic'         => 'nullable|string|max:255',
-            'attachments.*' => 'file|max:10240',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title'         => 'required|string|max:255',
+                'content'       => 'required|string',
+                'board_id'      => 'required|integer',
+                'topic'         => 'nullable|string|max:255',
+                'attachments.*' => 'file|max:10240',
+            ]);
 
-        // Create the Announcement record
-        $announcement = Announcement::create([
-            'title'     => $validated['title'],
-            'content'   => $validated['content'],
-            'topic'     => $validated['topic'] ?? 'General',
-            'board_id'  => $validated['board_id'],
-            'author_id' => Auth::id(),
-        ]);
+            // Create the Announcement record
+            $announcement = Announcement::create([
+                'title'     => $validated['title'],
+                'content'   => $validated['content'],
+                'topic'     => $validated['topic'] ?? 'General',
+                'board_id'  => $validated['board_id'],
+                'author_id' => Auth::id(),
+            ]);
 
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                // Store the file and get the relative path
-                $path = $file->store('announcements', 's3');
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $path = $file->store('announcements', 's3');
 
-                // Save ONLY the relative path to the database
-                $announcement->attachments()->create([
-                    'file_path' => $path,
-                    'file_type' => $file->getClientMimeType(),
-                ]);
+                    $announcement->attachments()->create([
+                        'file_path' => $path,
+                        'file_type' => $file->getClientMimeType(),
+                    ]);
+                }
             }
-        }
 
-        return response()->json(
-            $announcement->load(['author.profile', 'attachments']),
-            201
-        );
+            return response()->json(
+                $announcement->load(['author.profile', 'attachments']),
+                201
+            );
+            
+        } catch (\Exception $e) {
+            // This will force the exact error to appear in your browser's Network tab
+            return response()->json([
+                'message' => 'Upload failed',
+                'error_detail' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 
     public function update(Request $request, Announcement $announcement)
