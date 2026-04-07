@@ -55,7 +55,6 @@ Route::prefix('api')->group(function () {
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
-    // Public data fetching
     Route::get('/board-data', [AnnouncementBoardController::class, 'index']);
     Route::post('/announcements/{id}/like', [AnnouncementBoardController::class, 'like']); 
     Route::get('/events/upcoming', [EventController::class, 'upcoming']);
