@@ -9,9 +9,13 @@ use App\Http\Controllers\UserAnnouncementController;
 use App\Http\Controllers\AnnouncementBoardController;
 use App\Http\Controllers\NavbarController;
 
+// ==========================================
+// 1. PAGE ROUTES (Returns Vue/HTML Views)
+// ==========================================
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
 Route::get('/login', function () {
     return view('login'); 
 })->name('login');
@@ -20,18 +24,13 @@ Route::get('/signup', function () {
     return view('signup'); 
 })->name('signup');
 
-Route::post('/register', [AuthController::class, 'register']);
-
 Route::get('/forgot-password', function () {
     return view('forgot-password'); 
 })->name('password.request');
 
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::get('/reset-password/{token}', function (string $token) {
     return view('reset-password', ['token' => $token]);
 })->middleware('guest')->name('password.reset');
-Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 Route::get('/announcements-board', function () {
     return view('announcement-board');
@@ -41,17 +40,32 @@ Route::get('/announcements-events', function () {
     return view('announcements-events');
 })->name('announcements.events');
 
+Route::get('/events', function () {
+    return view('events-calendar'); 
+})->name('events.index');
 
+
+// ==========================================
+// 2. PUBLIC API ROUTES (No Login Required)
+// ==========================================
 Route::prefix('api')->group(function () {
+    // Auth actions
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+    // Public data fetching
     Route::get('/board-data', [AnnouncementBoardController::class, 'index']);
     Route::post('/announcements/{id}/like', [AnnouncementBoardController::class, 'like']); 
     Route::get('/events/upcoming', [EventController::class, 'upcoming']);
-    
     Route::get('/events', [EventController::class, 'index']); 
 });
 
 
-
+// ==========================================
+// 3. PROTECTED ROUTES (Must be Logged In)
+// ==========================================
 Route::middleware('auth')->group(function () {
 
     // IT Instructor Routes
@@ -97,22 +111,20 @@ Route::middleware('auth')->group(function () {
         Route::resource('announcements', AnnouncementController::class)->except(['index']);
         Route::resource('events', EventController::class);
     });
-
-    Route::get('/events', function () {
-        return view('events-calendar'); 
-    })->name('events.index');
-    
     
     // PROTECTED API ROUTES
     Route::prefix('api')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout'])->name('logout'); // <-- Moved inside API prefix
+
         Route::post('/my-announcements/{id}', [UserAnnouncementController::class, 'update']);
-    
-    Route::delete('/my-announcements/{id}', [UserAnnouncementController::class, 'destroy']);
-    Route::get('/my-announcements', [UserAnnouncementController::class, 'index']);
+        Route::delete('/my-announcements/{id}', [UserAnnouncementController::class, 'destroy']);
+        Route::get('/my-announcements', [UserAnnouncementController::class, 'index']);
+        
         Route::get('/announcements', [AnnouncementController::class, 'index']);
         Route::post('/announcements', [AnnouncementController::class, 'store']);
         Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']); 
+        
         Route::post('/events', [EventController::class, 'store']);     
         Route::put('/events/{id}', [EventController::class, 'update']);
         Route::delete('/events/{id}', [EventController::class, 'destroy']); 
@@ -122,7 +134,4 @@ Route::middleware('auth')->group(function () {
         Route::put('/profile/password', [UserProfileController::class, 'updatePassword']);
         Route::get('/navbar/user', [NavbarController::class, 'getUserData']);
     });
-
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
 });
