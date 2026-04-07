@@ -351,7 +351,7 @@ const filteredAnnouncements = computed(() => {
 const fetchAnnouncements = async () => {
   try {
     // FIX 1: Explicitly use /api/board-data to prevent stacking bugs
-    const response = await axios.get('board-data')
+    const response = await axios.get('/api/board-data')
     announcements.value = response.data.announcements.map(a => ({
       ...a,
       isLiked: false,
