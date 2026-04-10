@@ -54,12 +54,13 @@ class AnnouncementController extends Controller
                             'file_type' => $file->getClientMimeType(),
                         ]);
 
-                    } catch (\Exception $s3Error) {
-                        // 🚨 THIS catches the REAL Supabase error!
+                   } catch (\Exception $s3Error) {
+                        $rawAwsError = $s3Error->getPrevious() ? $s3Error->getPrevious()->getMessage() : $s3Error->getMessage();
+                        
                         DB::rollBack();
                         return response()->json([
                             'message' => 'Vercel S3 Upload Crashed!',
-                            'error_detail' => $s3Error->getMessage(), // This will tell us the exact AWS issue
+                            'error_detail' => $rawAwsError,
                             'file' => $s3Error->getFile(),
                             'line' => $s3Error->getLine()
                         ], 500);
