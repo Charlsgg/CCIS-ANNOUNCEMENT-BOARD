@@ -28,16 +28,17 @@ class AnnouncementAttachment extends Model
      * Accessor to generate the full S3 URL on the fly.
      * Accessible in your frontend as attachment.url
      */
-    public function getUrlAttribute()
+   public function getUrlAttribute()
     {
         if (!$this->file_path) {
             return null;
         }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('s3');
+        $supabaseBaseUrl = 'https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/';
 
-        return $disk->url($this->file_path);
+        $cleanPath = str_replace('announcements/', '', $this->file_path);
+
+        return $supabaseBaseUrl . $cleanPath;
     }
 
     public function announcement(): BelongsTo
