@@ -37,9 +37,15 @@ const emit = defineEmits<{
 const { theme, styles, surface } = useTheme()
 
 const getFileUrl = (path?: string | null) => {
+
     if (!path) return '#'
-    if (path.startsWith('http')) return path 
-    return `/storage/${path}`
+    
+
+    if (path.startsWith('http')) return path
+   
+    const cleanPath = path.replace('announcements/', '')
+
+    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/${cleanPath}`
 }
 
 const isImage = (type: string | null) => {
