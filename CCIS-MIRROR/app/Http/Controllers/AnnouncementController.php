@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB; // <-- ADDED THIS
 
 class AnnouncementController extends Controller
 {
@@ -32,6 +33,9 @@ class AnnouncementController extends Controller
                 'attachments.*' => 'file|max:10240',
             ]);
 
+            // <-- ADDED THIS: Start a database transaction
+            DB::beginTransaction(); 
+
             // Create the Announcement record
             $announcement = Announcement::create([
                 'title'     => $validated['title'],
@@ -43,8 +47,19 @@ class AnnouncementController extends Controller
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
+                    // Attempt to upload to Supabase
                     $path = $file->store('announcements', 's3');
 
+                    // <-- ADDED THIS: Check if the upload actually succeeded
+                    if (!$path) {
+                        DB::rollBack(); // Cancel the announcement creation
+                        return response()->json([
+                            'message' => 'Upload failed',
+                            'error_detail' => 'Supabase rejected the upload. Check your bucket policies and .env credentials.'
+                        ], 500);
+                    }
+
+                    // Save the attachment record to the DB
                     $announcement->attachments()->create([
                         'file_path' => $path,
                         'file_type' => $file->getClientMimeType(),
@@ -52,12 +67,18 @@ class AnnouncementController extends Controller
                 }
             }
 
+            // <-- ADDED THIS: Save everything permanently if there are no errors
+            DB::commit(); 
+
             return response()->json(
                 $announcement->load(['author.profile', 'attachments']),
                 201
             );
             
         } catch (\Exception $e) {
+            // <-- ADDED THIS: Roll back the database if anything crashes
+            DB::rollBack(); 
+
             // This will force the exact error to appear in your browser's Network tab
             return response()->json([
                 'message' => 'Upload failed',
@@ -96,7 +117,6 @@ class AnnouncementController extends Controller
             Storage::disk('s3')->delete($file->file_path);
             
             // Delete the attachment record from the database 
-            // (Assuming you do not have cascading deletes set up on the DB schema)
             $file->delete(); 
         }
 

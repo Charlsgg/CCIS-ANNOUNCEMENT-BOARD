@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('table_announcement_attachment', function (Blueprint $table) {
-            $table->integer('attachment_id')->primary();
+            // 🚨 THIS IS THE FIX: id() automatically makes it an auto-incrementing primary key
+            $table->id('attachment_id'); 
+            
             $table->unsignedBigInteger('announcement_id');
             $table->string('file_path');
             $table->string('file_type');
