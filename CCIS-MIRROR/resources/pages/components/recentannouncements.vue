@@ -37,15 +37,21 @@ const emit = defineEmits<{
 const { theme, styles, surface } = useTheme()
 
 const getFileUrl = (path?: string | null) => {
+    // 🚨 FAILSAFE: Catch empty paths and ghost undefined
     if (!path || path === 'undefined') {
-        return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' 
+        return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
     }
 
     if (path.startsWith('http')) return path
-    const cleanPath = path.replace('announcements/', '')
+
+    // 1. Remove 'announcements/' folder name if it's there
+    let cleanPath = path.replace('announcements/', '')
+
+    // 2. 🚨 THE FIX: Remove ANY leading slashes to destroy the double-slash 400 bug
+    cleanPath = cleanPath.replace(/^\/+/, '')
+
     return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/${cleanPath}`
 }
-
 const isImage = (type: string | null) => {
     if (!type) return false
     return type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(type)
@@ -379,7 +385,7 @@ const submitEdit = () => {
                         <div v-else class="text-center pointer-events-auto">
                             <span class="material-symbols-outlined text-6xl text-orange-500 mb-4">draft</span>
                             <p class="text-white font-medium mb-6">Preview not available for this file type.</p>
-                            <a :href="getFileUrl(activePreview.file_path)" download
+                            <a :href="`${getFileUrl(activePreview.file_path)}?download=`" download
                                 class="inline-block bg-orange-500 hover:bg-orange-400 text-black px-6 py-2 rounded-full font-bold transition-colors">
                                 Download File
                             </a>
