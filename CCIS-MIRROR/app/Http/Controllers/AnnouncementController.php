@@ -6,13 +6,10 @@ use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB; // <-- ADDED THIS
+use Illuminate\Support\Facades\DB;
 
 class AnnouncementController extends Controller
 {
-    /**
-     * Fetch all announcements with their author, author's profile, and attachments.
-     */
     public function index()
     {
         $announcements = Announcement::with(['author.profile', 'attachments'])
@@ -33,10 +30,8 @@ class AnnouncementController extends Controller
                 'attachments.*' => 'file|max:10240',
             ]);
 
-            // <-- ADDED THIS: Start a database transaction
             DB::beginTransaction(); 
 
-            // Create the Announcement record
             $announcement = Announcement::create([
                 'title'     => $validated['title'],
                 'content'   => $validated['content'],
@@ -47,27 +42,31 @@ class AnnouncementController extends Controller
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
-                    // Attempt to upload to Supabase
-                    $path = $file->store('announcements', 's3');
+                    
+                    try {
+                        // Attempt to upload to Supabase. 
+                        // Because 'throw' is true, this will CRASH and go to the catch block if it fails.
+                        $path = $file->store('announcements', 's3');
 
-                    // <-- ADDED THIS: Check if the upload actually succeeded
-                    if (!$path) {
-                        DB::rollBack(); // Cancel the announcement creation
+                        // Save the attachment record to the DB
+                        $announcement->attachments()->create([
+                            'file_path' => $path,
+                            'file_type' => $file->getClientMimeType(),
+                        ]);
+
+                    } catch (\Exception $s3Error) {
+                        // 🚨 THIS catches the REAL Supabase error!
+                        DB::rollBack();
                         return response()->json([
-                            'message' => 'Upload failed',
-                            'error_detail' => 'Supabase rejected the upload. Check your bucket policies and .env credentials.'
+                            'message' => 'Vercel S3 Upload Crashed!',
+                            'error_detail' => $s3Error->getMessage(), // This will tell us the exact AWS issue
+                            'file' => $s3Error->getFile(),
+                            'line' => $s3Error->getLine()
                         ], 500);
                     }
-
-                    // Save the attachment record to the DB
-                    $announcement->attachments()->create([
-                        'file_path' => $path,
-                        'file_type' => $file->getClientMimeType(),
-                    ]);
                 }
             }
 
-            // <-- ADDED THIS: Save everything permanently if there are no errors
             DB::commit(); 
 
             return response()->json(
@@ -76,12 +75,9 @@ class AnnouncementController extends Controller
             );
             
         } catch (\Exception $e) {
-            // <-- ADDED THIS: Roll back the database if anything crashes
             DB::rollBack(); 
-
-            // This will force the exact error to appear in your browser's Network tab
             return response()->json([
-                'message' => 'Upload failed',
+                'message' => 'General Server Error',
                 'error_detail' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
@@ -113,10 +109,7 @@ class AnnouncementController extends Controller
         }
 
         foreach ($announcement->attachments as $file) {
-            // Delete directly using the stored relative path
             Storage::disk('s3')->delete($file->file_path);
-            
-            // Delete the attachment record from the database 
             $file->delete(); 
         }
 
