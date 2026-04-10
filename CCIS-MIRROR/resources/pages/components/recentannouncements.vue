@@ -6,6 +6,7 @@ interface Attachment {
     attachment_id: number | string
     file_type: string
     file_path: string
+    url?: string
 }
 
 interface Announcement {
@@ -35,9 +36,9 @@ const emit = defineEmits<{
 
 const { theme, styles, surface } = useTheme()
 
-// --- Helper Functions ---
 const getFileUrl = (path?: string | null) => {
     if (!path) return '#'
+    if (path.startsWith('http')) return path 
     return `/storage/${path}`
 }
 
@@ -222,7 +223,7 @@ const submitEdit = () => {
                             class="h-44 w-full rounded-lg bg-cover bg-center border cursor-pointer hover:opacity-90 transition-opacity relative group"
                             title="Preview Image"
                             :style="{ 
-                                backgroundImage: `url('${getFileUrl(attachment.file_path)}')`, 
+                                backgroundImage: `url('${attachment.url}')`,
                                 borderColor: surface.borderSubtle 
                             }"
                             @click="openPreview(attachment)"
