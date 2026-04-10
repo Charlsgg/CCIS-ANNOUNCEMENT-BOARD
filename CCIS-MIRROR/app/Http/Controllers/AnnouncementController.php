@@ -21,6 +21,7 @@ class AnnouncementController extends Controller
 
     public function store(Request $request)
     {
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
         try {
             $validated = $request->validate([
                 'title'         => 'required|string|max:255',
@@ -46,7 +47,7 @@ class AnnouncementController extends Controller
                     try {
                         // Attempt to upload to Supabase. 
                         // Because 'throw' is true, this will CRASH and go to the catch block if it fails.
-                        $path = $file->store('announcements', 's3');
+                        $path = $file->store('/', 's3');
 
                         // Save the attachment record to the DB
                         $announcement->attachments()->create([
