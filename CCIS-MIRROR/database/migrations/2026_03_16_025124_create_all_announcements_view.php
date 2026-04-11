@@ -20,13 +20,11 @@ return new class extends Migration
                 a.author_id,
                 u.name AS author_name,
                 u.user_type AS author_type,
-                -- ADDED: Join profile picture so the avatar shows up
                 up.profile_picture AS author_avatar, 
                 a.title,
                 a.content,
                 a.topic,
                 a.likes_count,
-                -- IMPORTANT: Keep the raw created_at so we can use diffForHumans()
                 a.created_at,
                 a.created_at AS announcement_date,
                 aa.attachment_id,
@@ -35,7 +33,6 @@ return new class extends Migration
             FROM table_announcement a
             JOIN table_users u 
                 ON a.author_id = u.user_id
-            -- ADDED: Join user_profiles to get the avatar
             LEFT JOIN user_profiles up
                 ON u.user_id = up.user_id
             LEFT JOIN table_announcement_attachment aa 

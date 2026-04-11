@@ -45,11 +45,7 @@ class AnnouncementController extends Controller
                 foreach ($request->file('attachments') as $file) {
                     
                     try {
-                        // Attempt to upload to Supabase. 
-                        // Because 'throw' is true, this will CRASH and go to the catch block if it fails.
                         $path = $file->store('/', 's3');
-
-                        // Save the attachment record to the DB
                         $announcement->attachments()->create([
                             'file_path' => $path,
                             'file_type' => $file->getClientMimeType(),
@@ -86,7 +82,6 @@ class AnnouncementController extends Controller
             ], 500);
         }
     }
-
     public function update(Request $request, Announcement $announcement)
     {
         if ($announcement->author_id !== Auth::id()) {
