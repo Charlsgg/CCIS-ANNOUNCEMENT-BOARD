@@ -4,7 +4,7 @@ import { useTheme } from '../composable/usetheme.ts'
 
 interface Attachment {
     id: number | string
-    file_path: string // Full Supabase URL
+    file_path: string
     file_type: string
 }
 
@@ -15,7 +15,7 @@ interface Announcement {
     topic: string
     date: string
     author_name: string
-    author_avatar: string | null // Full Supabase URL
+    author_avatar: string | null
     likes_count: number
     attachments: Attachment[]
 }
@@ -27,10 +27,7 @@ defineProps<{
 
 const { theme, styles, surface } = useTheme()
 
-// Track which posts have their attachments expanded
 const expandedPosts = ref<Set<number | string>>(new Set())
-
-// Track the active file being previewed
 const activePreview = ref<Attachment | null>(null)
 
 const toggleAttachments = (postId: number | string) => {
@@ -41,7 +38,6 @@ const toggleAttachments = (postId: number | string) => {
     }
 }
 
-// Open and close modal functions
 const openPreview = (file: Attachment) => {
     activePreview.value = file
     document.body.style.overflow = 'hidden'
@@ -55,20 +51,27 @@ const closePreview = () => {
 // --- Helpers ---
 
 /**
- * Ensures we don't accidentally create "double URLs".
- * If the database string already has 'http', return it directly.
+ * BULLETPROOF URL CLEANER
+ * Strips out rogue Laravel local path prefixes and fixes mangled protocols.
  */
 const getFileUrl = (path?: string | null) => {
     if (!path) return '#'
-    
-    // THE FIX: If it's already a full URL (like an avatar or correctly formatted S3 link), return it!
-    if (path.startsWith('http')) {
-        return path
+
+    let cleanPath = path
+
+    // 1. Strip out rogue Laravel "/storage/" or "storage/" prefixes
+    cleanPath = cleanPath.replace(/^\/?storage\//, '')
+
+    // 2. Fix mangled HTTP protocols (e.g., if "https://" became "https:/")
+    cleanPath = cleanPath.replace(/^https?:\/([^\/])/, 'https://$1')
+
+    // 3. If it's now a valid absolute URL, return it!
+    if (cleanPath.startsWith('http')) {
+        return cleanPath
     }
 
-    // Fallback just in case the database sends a raw, relative path
-    // Update this base URL if you ever change your Supabase project
-    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/${path}`
+    // 4. Fallback for actual relative paths
+    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/${cleanPath}`
 }
 
 const isImage = (type: string | null) => {
@@ -81,18 +84,12 @@ const isPdf = (type: string | null) => {
     return type === 'application/pdf' || /\.(pdf)$/i.test(type)
 }
 
-/**
- * Extracts the filename from the Supabase URL.
- * Handles cleaning up the UUID-prefixed names Laravel/S3 generates.
- */
 const getFileName = (path?: string | null) => {
     if (!path) return 'Download File'
     const name = path.split('/').pop()?.split('?')[0] || 'Download File'
-    // Remove Laravel's default path prefix if present in the filename string
     return name.replace('announcement-files/', '')
 }
 
-// Dynamic fallback avatar using UI Avatars
 const getDefaultAvatar = (name: string) => {
     return `https://ui-avatars.com/api/?background=random&color=fff&name=${encodeURIComponent(name)}`
 }
