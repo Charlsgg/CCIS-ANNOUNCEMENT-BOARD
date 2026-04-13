@@ -1,19 +1,20 @@
-import { createApp } from 'vue'
+import { createApp, Component } from 'vue'
 import axios from 'axios'
 
 declare global {
     interface Window {
         axios: typeof axios;
+        csrfToken?: string; // Adding this to the global interface
     }
 }
 
-// 2. SET UP AXIOS FOR VERCEL & SANCTUM
+// 1. SET UP AXIOS
 window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-window.axios.defaults.withCredentials = true; // Send secure cookies
-window.axios.defaults.baseURL = '/api';       // Force routes to use /api
+window.axios.defaults.withCredentials = true; 
+window.axios.defaults.baseURL = '/api';
 
-// 3. Imports
+// 2. Imports
 import Login from '../pages/authpages/login.vue'
 import Home from '../pages/body/home-page.vue'
 import Events from '../pages/body/events-page.vue'
@@ -24,29 +25,39 @@ import PublicEvents from '../pages/boards/publicevents.vue'
 import Signup from '../pages/authpages/signup.vue'
 import ForgotPassword from '../pages/authpages/forgot-password.vue'
 
-const el = document.getElementById('app')
+const el = document.getElementById('app');
 
 if (el) {
-    const page = el.dataset.page
-    const user = JSON.parse(el.dataset.user || '{}')
+    const page = el.dataset.page;
+    const user = JSON.parse(el.dataset.user || '{}');
+    const csrfToken = (window as any).csrfToken; // Grab token from window
 
+    // Helper function to mount with global props
+    const mountApp = (component: Component, props = {}) => {
+        createApp(component, { 
+            ...props, 
+            csrfToken: csrfToken // Passes token to every page
+        }).mount('#app');
+    };
+
+    // 3. Routing Logic
     if (page === 'announcement-board') {
-        createApp(PublicBoard).mount('#app')
+        mountApp(PublicBoard);
     } else if (page === 'announcements-events') {
-        createApp(PublicEvents).mount('#app')
+        mountApp(PublicEvents);
     } else if (page === 'home-page') {
-        createApp(Home, { user }).mount('#app')
+        mountApp(Home, { user });
     } else if (page === 'events-page') {
-        createApp(Events, { user }).mount('#app')
+        mountApp(Events, { user });
     } else if (page === 'announcement-page') {
-        createApp(Announcements, { user }).mount('#app')
+        mountApp(Announcements, { user });
     } else if (page === 'profile-page') {
-        createApp(Profile, { user }).mount('#app')
+        mountApp(Profile, { user });
     } else if (page === 'signup') {
-        createApp(Signup).mount('#app')
+        mountApp(Signup);
     } else if (page === 'forgot-password') {
-        createApp(ForgotPassword).mount('#app')
+        mountApp(ForgotPassword);
     } else {
-        createApp(Login).mount('#app')
+        mountApp(Login);
     }
 }

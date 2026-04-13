@@ -110,10 +110,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('announcements', AnnouncementController::class)->except(['index']);
         Route::resource('events', EventController::class);
     });
-    
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     // PROTECTED API ROUTES
     Route::prefix('api')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout'); // <-- Moved inside API prefix
 
         Route::post('/my-announcements/{id}', [UserAnnouncementController::class, 'update']);
         Route::delete('/my-announcements/{id}', [UserAnnouncementController::class, 'destroy']);
