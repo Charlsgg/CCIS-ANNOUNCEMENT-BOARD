@@ -15,27 +15,33 @@ const { theme, styles, surface, isDark, toggleMode } = useTheme()
 const userName = ref('')
 const userAvatar = ref('')
 const imageHasError = ref(false)
-
 const getFileUrl = (path?: string | null) => {
     if (!path) return ''
 
     let cleanPath = path
 
-    // 1. Log what we received from the DB
-    console.log("Raw path from DB:", path)
+    // 1. RECOVERY LOGIC: If the path contains "https" twice, 
+    // it means your backend accidentally prefixed it.
+    // We will extract everything starting from the SECOND 'https'
+    if ((cleanPath.match(/https/g) || []).length > 1) {
+        const parts = cleanPath.split('https:/')
+        // Grab the last part and fix the protocol
+        cleanPath = 'https:/' + parts[parts.length - 1]
+    }
 
+    // 2. Strip out rogue Laravel "/storage/" or "storage/" prefixes
     cleanPath = cleanPath.replace(/^\/?storage\//, '')
+
+    // 3. Fix the "https:/" vs "https://" issue (single vs double slash)
     cleanPath = cleanPath.replace(/^https?:\/([^\/])/, 'https://$1')
 
+    // 4. If it's a valid absolute URL now, return it!
     if (cleanPath.startsWith('http')) {
         return cleanPath
     }
 
-    // 2. This is the path we are building
-    const finalUrl = `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
-    console.log("Constructed URL:", finalUrl)
-    
-    return finalUrl
+    // 5. Fallback for relative paths
+    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
 }
 // --- Methods ---
 const fetchUserData = async () => {
