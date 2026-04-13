@@ -6,66 +6,43 @@ use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage; 
 use Carbon\Carbon;
 
 class UserAnnouncementController extends Controller
 {
-    /**
-     * Helper to format attachments with full Supabase URLs.
-     * Uses manual construction to avoid S3-driver URL inconsistencies.
-     */
-    private function formatAttachments($group, $baseStorageUrl)
-    {
-        return $group->whereNotNull('attachment_id')
-            ->map(fn($item) => [
-                'attachment_id' => $item->attachment_id,
-                'file_type'     => $item->file_type,
-                // If the path in DB is already a URL, use it. 
-                // Otherwise, join the base URL with the cleaned file path.
-                'file_path'     => str_starts_with($item->file_path, 'http') 
-                    ? $item->file_path 
-                    : $baseStorageUrl . ltrim($item->file_path, '/'),
-            ])->values()->toArray();
-    }
-
     public function index()
     {
         $user = Auth::user();
+        $userAvatar = $user->profile->profile_picture ?? null;
         
-        // --- Setup Supabase Base URL ---
-        $supabaseUrl = rtrim(env('SUPABASE_URL'), '/'); 
-        $bucket = env('AWS_BUCKET'); // Usually 'announcements'
-        $baseStorageUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/";
-
-        // Fetch User Avatar
-        $userProfile = DB::table('user_profiles')->where('user_id', $user->user_id)->first();
-        $userAvatar = null;
-        if ($userProfile && $userProfile->profile_picture) {
-            $userAvatar = str_starts_with($userProfile->profile_picture, 'http') 
-                ? $userProfile->profile_picture 
-                : $baseStorageUrl . ltrim($userProfile->profile_picture, '/');
-        }
-
-        // Fetch Data from the View
         $rawData = DB::table('user_announcements_attachments_view')
-            ->where('author_id', $user->user_id)
+            ->where('author_id', $user->user_id) 
             ->orderBy('announcement_date', 'desc')
             ->get();
 
-        $formattedAnnouncements = $rawData->groupBy('announcement_id')->map(function ($group) use ($user, $userAvatar, $baseStorageUrl) {
+        $groupedAnnouncements = $rawData->groupBy('announcement_id');
+
+        $formattedAnnouncements = $groupedAnnouncements->map(function ($group) use ($user, $userAvatar) {
             $main = $group->first();
+
+            $attachments = $group->filter(fn($item) => !is_null($item->attachment_id))
+                ->map(fn($item) => [
+                    'attachment_id' => $item->attachment_id,
+                    'file_type'     => $item->file_type,
+                    'file_path'     => $item->file_path,
+                ])->values()->toArray();
 
             return [
                 'id'            => $main->announcement_id,
                 'title'         => $main->title,
                 'content'       => $main->content,
                 'topic'         => $main->topic,
-                'date'          => Carbon::parse($main->announcement_date)->diffForHumans(),
-                'likes_count'   => (int) ($main->likes_count ?? 0),
+                'date'          => Carbon::parse($main->announcement_date)->diffForHumans(), 
+                'likes_count'   => (int) ($main->likes_count ?? 0), 
                 'author_name'   => $user->name,
-                'author_avatar' => $userAvatar,
-                'attachments'   => $this->formatAttachments($group, $baseStorageUrl),
+                'author_avatar' => $userAvatar, 
+                'attachments'   => $attachments,
             ];
         })->values()->toArray();
 
@@ -74,11 +51,15 @@ class UserAnnouncementController extends Controller
         ]);
     }
 
+    /**
+     * Update the specified announcement.
+     */
     public function update(Request $request, $id)
     {
         $user = Auth::user();
         $announcement = Announcement::findOrFail($id);
 
+        // Verify the user owns this announcement
         if ($announcement->author_id !== $user->user_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -87,7 +68,7 @@ class UserAnnouncementController extends Controller
             'title'      => 'required|string|max:255',
             'content'    => 'required|string',
             'topic'      => 'nullable|string|max:255',
-            'newFiles.*' => 'nullable|file|max:10240',
+            'newFiles.*' => 'nullable|file|max:10240', // Validates each file (e.g., max 10MB)
             'deletedIds' => 'nullable',
         ]);
 
@@ -100,28 +81,32 @@ class UserAnnouncementController extends Controller
         // 1. Process Deleted Attachments
         if ($request->has('deletedIds')) {
             $deletedIds = $request->input('deletedIds');
-            if (is_string($deletedIds)) $deletedIds = json_decode($deletedIds, true);
+            
+            // Depending on how FormData is appended, it might arrive as a JSON string
+            if (is_string($deletedIds)) {
+                $deletedIds = json_decode($deletedIds, true);
+            }
 
             if (is_array($deletedIds) && count($deletedIds) > 0) {
-                // Ensure this matches your Primary Key (attachment_id)
-                $attachmentsToDelete = $announcement->attachments()
-                    ->whereIn('attachment_id', $deletedIds)
-                    ->get();
-
+                // Ensure 'id' matches the primary key of your attachments table. 
+                // Change to 'attachment_id' if your model uses that.
+                $attachmentsToDelete = $announcement->attachments()->whereIn('id', $deletedIds)->get();
+                
                 foreach ($attachmentsToDelete as $attachment) {
-                    if (Storage::disk('s3')->exists($attachment->file_path)) {
-                        Storage::disk('s3')->delete($attachment->file_path);
+                    if (Storage::disk('public')->exists($attachment->file_path)) {
+                        Storage::disk('public')->delete($attachment->file_path);
                     }
                     $attachment->forceDelete();
                 }
             }
         }
 
-        // 2. Upload New Attachments
+        // 2. Process New Attachments
         if ($request->hasFile('newFiles')) {
             foreach ($request->file('newFiles') as $file) {
-                $path = $file->store('/', 's3');
-
+                // Store file in the 'announcements' directory within the 'public' disk
+                $path = $file->store('announcements', 'public');
+                
                 $announcement->attachments()->create([
                     'file_path' => $path,
                     'file_type' => $file->getClientMimeType(),
@@ -129,33 +114,46 @@ class UserAnnouncementController extends Controller
             }
         }
 
-        // 3. Re-fetch fresh data for the response
-        $supabaseUrl = rtrim(env('SUPABASE_URL'), '/'); 
-        $bucket = env('AWS_BUCKET'); 
-        $baseStorageUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/";
-
+        // Fetch the updated data from the view to maintain consistent frontend structure
+        $userAvatar = $user->profile->profile_picture ?? null;
         $rawData = DB::table('user_announcements_attachments_view')
             ->where('announcement_id', $announcement->id)
             ->get();
 
         $main = $rawData->first();
+        
+        if (!$main) {
+            return response()->json(['message' => 'Announcement updated, but could not retrieve view data.'], 200);
+        }
+
+        $attachments = $rawData->filter(fn($item) => !is_null($item->attachment_id))
+            ->map(fn($item) => [
+                'attachment_id' => $item->attachment_id,
+                'file_type'     => $item->file_type,
+                'file_path'     => $item->file_path,
+            ])->values()->toArray();
+
+        $formattedAnnouncement = [
+            'id'            => $main->announcement_id,
+            'title'         => $main->title,
+            'content'       => $main->content,
+            'topic'         => $main->topic,
+            'date'          => Carbon::parse($main->announcement_date)->diffForHumans(), 
+            'likes_count'   => (int) ($main->likes_count ?? 0), 
+            'author_name'   => $user->name,
+            'author_avatar' => $userAvatar, 
+            'attachments'   => $attachments,
+        ];
 
         return response()->json([
-            'message' => 'Announcement updated successfully',
-            'announcement' => [
-                'id'            => $main->announcement_id,
-                'title'         => $main->title,
-                'content'       => $main->content,
-                'topic'         => $main->topic,
-                'date'          => Carbon::parse($main->announcement_date)->diffForHumans(),
-                'likes_count'   => (int) ($main->likes_count ?? 0),
-                'author_name'   => $user->name,
-                'author_avatar' => $user->profile->profile_picture ?? null,
-                'attachments'   => $this->formatAttachments($rawData, $baseStorageUrl),
-            ]
+            'message' => 'Announcement updated successfully', 
+            'announcement' => $formattedAnnouncement
         ]);
     }
 
+    /**
+     * Remove the specified announcement and its files.
+     */
     public function destroy($id)
     {
         $user = Auth::user();
@@ -165,13 +163,15 @@ class UserAnnouncementController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        foreach ($announcement->attachments as $file) {
-            if (Storage::disk('s3')->exists($file->file_path)) {
-                Storage::disk('s3')->delete($file->file_path);
+        if ($announcement->attachments()->exists()) {
+            foreach ($announcement->attachments as $file) {
+                if (Storage::disk('public')->exists($file->file_path)) {
+                    Storage::disk('public')->delete($file->file_path);
+                }
             }
+            $announcement->attachments()->forceDelete();
         }
 
-        $announcement->attachments()->forceDelete();
         $announcement->delete();
 
         return response()->json(['message' => 'Announcement deleted successfully']);
