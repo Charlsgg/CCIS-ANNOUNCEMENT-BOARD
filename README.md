@@ -10,42 +10,37 @@
   <img src="https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
   <img src="https://img.shields.io/badge/Vue.js-3.5-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white" alt="Vue 3">
   <img src="https://img.shields.io/badge/Tailwind_CSS-4.2-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
-  <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase">
 </p>
 
 ## About CCIS-MIRROR
 
-**CCIS-MIRROR** is a modern, full-stack web application built to be robust, responsive, and developer-friendly. It leverages the expressive and elegant syntax of the **Laravel 12** framework for the backend API and routing, paired with a reactive **Vue 3** frontend. 
+**CCIS-MIRROR** is a modern, full-stack web application designed for high performance and scalability. It utilizes **Laravel 12** as a robust API orchestrator and **Supabase** as the primary database and authentication layer. The frontend is a reactive, type-safe interface built with **Vue 3** and **Vite 7**.
 
-The application utilizes **Vite** for lightning-fast asset bundling and is styled with the highly customizable **Tailwind CSS v4**, supplemented by **DaisyUI** and **Flowbite** components.
-
-### Core Technologies & Packages
-- **Backend:** Laravel 12.0, PHP 8.2, SQLite
-- **Frontend:** Vue 3, Vite, TypeScript
-- **Styling:** Tailwind CSS, DaisyUI, Flowbite
-- **Icons:** Material Symbols (`@material-symbols/font-400`), Lucide Icons (`lucide-vue-next`)
-- **Utilities:** VueQuill (Rich Text Editor), OpenMeteo API integration
+### Core Technologies
+- **Backend:** Laravel 12.0 (PHP 8.2+)
+- **Database & Auth:** Supabase (PostgreSQL + RLS)
+- **Frontend:** Vue 3.5, Vite 7, TypeScript 5.9
+- **Styling:** Tailwind CSS 4.2, DaisyUI 5.5, Flowbite 4.0
+- **Utilities:** Lucide Icons, Material Symbols, OpenMeteo API
 
 ---
 
 ## Prerequisites
 
-Ensure your local development environment meets the following requirements before setting up the project:
-
-- **XAMPP** (Must include **PHP 8.2**)
-- **Composer** (Local installer setup)
-  - *Requirement:* Ensure your Composer bin path (e.g., `C:\ProgramData\ComposerSetup\bin`) is added to your system's Environment Variables.
-- **Node.js & NPM** (Latest LTS recommended)
+Before starting, ensure you have the following installed:
+- **PHP 8.2+** & **Composer**
+- **Node.js 20+** & **NPM**
+- A **Supabase Account** (with a created project)
 
 ---
 
 ## Installation & Setup
 
-Follow these steps to get your local environment up and running:
-
-### 1. Install Dependencies
-Open your terminal in the root directory of the project and install the required PHP and Node dependencies:
-
+### 1. Clone & Install Dependencies
 ```bash
+# Install backend dependencies
 composer install
+
+# Install frontend dependencies
 npm install
