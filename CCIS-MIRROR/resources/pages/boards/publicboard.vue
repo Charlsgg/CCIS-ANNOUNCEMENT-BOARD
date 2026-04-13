@@ -390,8 +390,11 @@ const goToEvents = () => {
   window.location.href = '/announcements-events'
 }
 
+
 const goBack = () => {
-  window.history.back()
+  // No history checks, no double-click bugs. 
+  // It simply forces them to the announcements board.
+  window.location.href = '/announcements-board'
 }
 
 const handleLike = async (item) => {
