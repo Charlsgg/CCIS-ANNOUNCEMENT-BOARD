@@ -52,10 +52,15 @@ const closePreview = () => {
     document.body.style.overflow = 'auto'
 }
 
-// --- Helpers ---
+// --- UPDATED Helpers ---
+
+/**
+ * FIX: Backend already provides the full Supabase URL.
+ * We simply return the path as is.
+ */
 const getFileUrl = (path?: string | null) => {
     if (!path) return '#'
-    return `/storage/${path}`
+    return path // No more '/storage/' prefix!
 }
 
 const isImage = (type: string | null) => {
@@ -70,7 +75,8 @@ const isPdf = (type: string | null) => {
 
 const getFileName = (path?: string | null) => {
     if (!path) return 'Download File'
-    return path.split('/').pop() || 'Download File'
+    // Extracts the filename from the end of the Supabase URL
+    return path.split('/').pop()?.split('?')[0] || 'Download File'
 }
 
 const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>`
@@ -81,6 +87,7 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
         <article v-for="post in announcements" :key="post.id"
             class="rounded-xl p-6 space-y-4 shadow-sm border transition-all min-w-0 w-full overflow-hidden"
             :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
+            
             <div class="flex items-center gap-3">
                 <img class="size-10 rounded-full object-cover border" :style="{ borderColor: surface.borderSubtle }"
                     :src="post.author_avatar ? getFileUrl(post.author_avatar) : defaultAvatar" />
@@ -102,8 +109,7 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
                         ...styles.textPrimary
                     }">
                     <span :style="{ color: theme.accent }" class="material-symbols-outlined text-sm">attach_file</span>
-                    {{ expandedPosts.has(post.id) ? 'Hide Attachments' : `View Attachments (${post.attachments.length})`
-                    }}
+                    {{ expandedPosts.has(post.id) ? 'Hide Attachments' : `View Attachments (${post.attachments.length})` }}
                 </button>
 
                 <div v-show="expandedPosts.has(post.id)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
@@ -115,10 +121,8 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
                                 backgroundImage: `url('${getFileUrl(file.file_path)}')`,
                                 borderColor: surface.borderSubtle
                             }" @click="openPreview(file)">
-                            <div
-                                class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
-                                <span
-                                    class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full material-symbols-outlined">visibility</span>
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
+                                <span class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full material-symbols-outlined">visibility</span>
                             </div>
                         </div>
 
@@ -134,8 +138,7 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
                                     {{ getFileName(file.file_path) }}
                                 </span>
                             </div>
-                            <span :style="{ color: theme.accent }"
-                                class="material-symbols-outlined text-sm">visibility</span>
+                            <span :style="{ color: theme.accent }" class="material-symbols-outlined text-sm">visibility</span>
                         </div>
                     </template>
                 </div>
@@ -146,16 +149,16 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="activePreview"
-                class="fixed inset-0 z-110 flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+                class="fixed inset-0 z-[150] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
                 @click.self="closePreview">
                 <button @click="closePreview"
-                    class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
+                    class="absolute top-6 right-6 z-[160] w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
                 <div class="w-full h-full flex items-center justify-center pointer-events-none">
                     <img v-if="isImage(activePreview.file_type)" :src="getFileUrl(activePreview.file_path)"
-                        class="max-w-full max-h-full object-contain pointer-events-auto" />
+                        class="max-w-full max-h-full object-contain pointer-events-auto shadow-2xl" />
 
                     <iframe v-else-if="isPdf(activePreview.file_type)" :src="getFileUrl(activePreview.file_path)"
                         class="w-full h-full md:w-[85%] md:h-[90%] rounded-lg border border-white/10 bg-white pointer-events-auto"
@@ -165,6 +168,7 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
                         <span class="material-symbols-outlined text-6xl text-orange-500 mb-4">draft</span>
                         <p class="text-white font-medium mb-6">Preview not available for this file type.</p>
                         <a :href="getFileUrl(activePreview.file_path)" download
+                            target="_blank"
                             class="inline-block bg-orange-500 hover:bg-orange-400 text-black px-6 py-2 rounded-full font-bold transition-colors">
                             Download File
                         </a>
@@ -174,15 +178,3 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
         </Transition>
     </Teleport>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-</style>
