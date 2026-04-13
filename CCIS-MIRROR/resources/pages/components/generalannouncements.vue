@@ -15,7 +15,7 @@ interface Announcement {
     topic: string
     date: string
     author_name: string
-    author_avatar: string | null
+    author_avatar: string | null // This will be the full Supabase URL
     likes_count: number
     attachments: Attachment[]
 }
@@ -52,15 +52,14 @@ const closePreview = () => {
     document.body.style.overflow = 'auto'
 }
 
-// --- UPDATED Helpers ---
+// --- Helpers ---
 
 /**
- * FIX: Backend already provides the full Supabase URL.
- * We simply return the path as is.
+ * Since your backend provides the full URL, we just return it.
+ * We add a fallback to handle nulls gracefully.
  */
 const getFileUrl = (path?: string | null) => {
-    if (!path) return '#'
-    return path // No more '/storage/' prefix!
+    return path || '#'
 }
 
 const isImage = (type: string | null) => {
@@ -75,38 +74,53 @@ const isPdf = (type: string | null) => {
 
 const getFileName = (path?: string | null) => {
     if (!path) return 'Download File'
-    // Extracts the filename from the end of the Supabase URL
     return path.split('/').pop()?.split('?')[0] || 'Download File'
 }
 
-const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>`
+// Standard placeholder for users without an avatar
+const defaultAvatar = `https://ui-avatars.com/api/?background=random&color=fff&name=User`
+
 </script>
 
 <template>
     <section class="flex-1 min-w-0 flex flex-col gap-6">
+        <div v-if="isLoading" class="animate-pulse space-y-6">
+            <div v-for="i in 3" :key="i" class="h-48 rounded-xl" :style="{ backgroundColor: surface.cardBg }"></div>
+        </div>
+
         <article v-for="post in announcements" :key="post.id"
             class="rounded-xl p-6 space-y-4 shadow-sm border transition-all min-w-0 w-full overflow-hidden"
             :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
             
             <div class="flex items-center gap-3">
-                <img class="size-10 rounded-full object-cover border" :style="{ borderColor: surface.borderSubtle }"
-                    :src="post.author_avatar ? getFileUrl(post.author_avatar) : defaultAvatar" />
+                <div class="relative">
+                    <img 
+                        class="size-10 rounded-full object-cover border" 
+                        :style="{ borderColor: surface.borderSubtle }"
+                        :src="post.author_avatar ? getFileUrl(post.author_avatar) : defaultAvatar" 
+                        @error="(e) => (e.target as HTMLImageElement).src = defaultAvatar"
+                    />
+                </div>
                 <div>
                     <h3 class="text-base font-bold leading-tight" :style="styles.textPrimary">{{ post.title }}</h3>
-                    <p class="text-xs" :style="styles.textSecondary">{{ post.author_name }} • {{ post.date }}</p>
+                    <p class="text-xs font-medium" :style="styles.textSecondary">
+                        {{ post.author_name }} 
+                        <span class="mx-1 opacity-50">•</span> 
+                        {{ post.date }}
+                    </p>
                 </div>
             </div>
 
-            <div class="text-sm leading-relaxed break-all whitespace-pre-wrap overflow-hidden"
+            <div class="text-sm leading-relaxed break-words whitespace-pre-wrap overflow-hidden"
                 :style="styles.textPrimary" v-html="post.content"></div>
 
             <div v-if="post.attachments.length > 0" class="mt-4">
                 <button @click="toggleAttachments(post.id)"
-                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg border transition-all active:scale-95"
                     :style="{
                         backgroundColor: surface.inputBg,
                         borderColor: surface.borderSubtle,
-                        ...styles.textPrimary
+                        color: surface.textPrimary
                     }">
                     <span :style="{ color: theme.accent }" class="material-symbols-outlined text-sm">attach_file</span>
                     {{ expandedPosts.has(post.id) ? 'Hide Attachments' : `View Attachments (${post.attachments.length})` }}
@@ -116,12 +130,12 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
                     <template v-for="file in post.attachments" :key="file.id">
 
                         <div v-if="isImage(file.file_type)"
-                            class="h-44 w-full rounded-lg bg-cover bg-center border cursor-pointer hover:opacity-90 transition-opacity relative group"
+                            class="h-44 w-full rounded-lg bg-cover bg-center border cursor-pointer hover:opacity-90 transition-opacity relative group overflow-hidden"
                             title="Preview Image" :style="{
                                 backgroundImage: `url('${getFileUrl(file.file_path)}')`,
                                 borderColor: surface.borderSubtle
                             }" @click="openPreview(file)">
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                 <span class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full material-symbols-outlined">visibility</span>
                             </div>
                         </div>
@@ -134,7 +148,7 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
                                 <span :style="{ color: theme.accent }" class="material-symbols-outlined text-sm">
                                     {{ isPdf(file.file_type) ? 'picture_as_pdf' : 'description' }}
                                 </span>
-                                <span class="text-xs font-medium truncate" :style="styles.textPrimary">
+                                <span class="text-xs font-medium truncate max-w-[150px]" :style="styles.textPrimary">
                                     {{ getFileName(file.file_path) }}
                                 </span>
                             </div>
@@ -144,6 +158,11 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
                 </div>
             </div>
         </article>
+
+        <div v-if="!isLoading && announcements.length === 0" class="text-center py-20 rounded-xl border-2 border-dashed" :style="{ borderColor: surface.borderSubtle }">
+            <span class="material-symbols-outlined text-4xl mb-2 opacity-30">campaign</span>
+            <p :style="styles.textSecondary">No announcements found.</p>
+        </div>
     </section>
 
     <Teleport to="body">
@@ -151,6 +170,7 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
             <div v-if="activePreview"
                 class="fixed inset-0 z-[150] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
                 @click.self="closePreview">
+                
                 <button @click="closePreview"
                     class="absolute top-6 right-6 z-[160] w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
                     <span class="material-symbols-outlined">close</span>
@@ -178,3 +198,12 @@ const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
         </Transition>
     </Teleport>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+</style>
