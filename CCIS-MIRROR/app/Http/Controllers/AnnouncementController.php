@@ -13,51 +13,42 @@ class UserAnnouncementController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
-
-        // Use the avatars disk to get the full public URL for the author
-        $userAvatar = $user->profile && $user->profile->profile_picture
-            ? $user->profile->profile_picture
-            : null;
-
-        $rawData = DB::table('user_announcements_attachments_view')
-            ->where('author_id', $user->user_id)
-            ->orderBy('announcement_date', 'desc')
+        // 1. Fetch announcements with their authors, profiles, and attachments
+        $announcements = Announcement::with(['author.profile', 'attachments'])
+            ->latest()
             ->get();
 
-        $groupedAnnouncements = $rawData->groupBy('announcement_id');
-
-        $formattedAnnouncements = $groupedAnnouncements->map(function ($group) use ($user, $userAvatar) {
-            $main = $group->first();
-
-            $attachments = $group->filter(fn($item) => !is_null($item->attachment_id))
-                ->map(function ($item) {
-                    // Ensure we are returning the full URL for attachments
-                    // If your DB view already has the full URL, return it directly.
-                    // Otherwise, wrap it: Storage::disk('s3')->url($item->file_path)
-                    return [
-                        'attachment_id' => $item->attachment_id,
-                        'file_type'     => $item->file_type,
-                        'file_path'     => $item->file_path,
-                    ];
-                })->values()->toArray();
-
+        // 2. Map the data to exactly match your Vue frontend's interface
+        $formattedAnnouncements = $announcements->map(function ($post) {
             return [
-                'id'            => $main->announcement_id,
-                'title'         => $main->title,
-                'content'       => $main->content,
-                'topic'         => $main->topic,
-                'date'          => Carbon::parse($main->announcement_date)->diffForHumans(),
-                'likes_count'   => (int) ($main->likes_count ?? 0),
-                'author_name'   => $user->name,
-                'author_avatar' => $userAvatar,
-                'attachments'   => $attachments,
+                'id'            => $post->id,
+                'title'         => $post->title,
+                'content'       => $post->content,
+                'topic'         => $post->topic,
+                // Formats date nicely (e.g., "2 hours ago")
+                'date'          => Carbon::parse($post->created_at)->diffForHumans(), 
+                
+                // Safely dig into the relationships to pull out the name and full Supabase URL
+                'author_name'   => $post->author ? $post->author->name : 'Unknown User',
+                'author_avatar' => ($post->author && $post->author->profile) 
+                                    ? $post->author->profile->profile_picture 
+                                    : null,
+                
+                'likes_count'   => $post->likes_count ?? 0, 
+                
+                // Map the attachments to keep the array clean
+                'attachments'   => $post->attachments->map(function($file) {
+                    return [
+                        'id'        => $file->id,
+                        'file_path' => $file->file_path, // This is already the full Supabase URL from your store() method
+                        'file_type' => $file->file_type,
+                    ];
+                })->toArray(),
             ];
-        })->values()->toArray();
+        });
 
-        return response()->json([
-            'announcements' => $formattedAnnouncements
-        ]);
+        // 3. Return the clean, flat array to Vue
+        return response()->json($formattedAnnouncements);
     }
 
     public function update(Request $request, $id)
