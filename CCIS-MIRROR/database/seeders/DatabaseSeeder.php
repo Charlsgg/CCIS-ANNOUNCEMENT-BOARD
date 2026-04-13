@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
         foreach ($boards as $b) Board::create($b);
 
         // 3. GENERATE 100 ANNOUNCEMENTS
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 7; $i++) {
             $daysOld = rand(0, 70); // Random age up to 70 days
             $id = 2000 + $i;
             
@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // 4. GENERATE 100 EVENTS
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 7; $i++) {
             $daysOld = rand(0, 70);
             $id = 3000 + $i;
 
