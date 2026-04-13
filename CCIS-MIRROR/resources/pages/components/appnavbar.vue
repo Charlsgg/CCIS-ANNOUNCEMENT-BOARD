@@ -36,7 +36,6 @@ const getFileUrl = (path?: string | null) => {
     // 4. Fallback for relative paths 
     return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
 }
-
 // --- Methods ---
 const fetchUserData = async () => {
     try {
@@ -52,9 +51,15 @@ const fetchUserData = async () => {
         if (response.ok) {
             const data = await response.json()
             
-            // Correctly target the nested backend data
-            userName.value = data.user.name
-            userAvatar.value = data.user.profile_picture
+            // 1. Let's see exactly what the backend sent in your console (F12)
+            console.log("Navbar API Data:", data)
+            
+            // 2. BULLETPROOF FIX: Check if it's wrapped in '.user' or if it's direct
+            const userData = data.user ? data.user : data
+            
+            // 3. Safely assign the values (the ? prevents crashes if a field is missing)
+            userName.value = userData?.name || 'Unknown User'
+            userAvatar.value = userData?.profile_picture || null
             
         } else {
             console.error('Failed to fetch user data:', response.statusText)
