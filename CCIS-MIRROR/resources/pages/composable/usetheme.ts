@@ -15,7 +15,7 @@ export interface ThemeColors {
 export type Mode = 'light' | 'dark'
 
 // ─── Shared Reactive State (singleton across components) ────────
-const mode = ref<Mode>('dark')
+const mode = ref<Mode>('light')
 const userType = ref<string>('is_instructor')
 
 // ─── Theme Map ──────────────────────────────────────────────────
