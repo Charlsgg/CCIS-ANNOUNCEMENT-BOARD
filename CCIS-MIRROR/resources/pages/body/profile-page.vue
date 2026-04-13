@@ -3,7 +3,7 @@ export default { layout: null }
 </script>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useTheme } from '../composable/usetheme.ts'
 import AppSidebar from '../components/appsidebar.vue'
 import AppNavbar from '../components/appnavbar.vue'
@@ -24,7 +24,28 @@ const newPassword = ref('')
 const confirmPassword = ref('')
 const isUpdatingPassword = ref(false)
 const passwordError = ref('')
-const showPassword = ref(false) // Toggle for password visibility
+
+// Independent visibility states
+const visibility = reactive({
+    current: false,
+    new: false,
+    confirm: false
+})
+
+const toggleVisibility = (field: 'current' | 'new' | 'confirm') => {
+    visibility[field] = !visibility[field]
+}
+
+const closePasswordModal = () => {
+    showPasswordModal.value = false
+    // Reset fields and visibility when closing
+    currentPassword.value = ''
+    newPassword.value = ''
+    confirmPassword.value = ''
+    visibility.current = false
+    visibility.new = false
+    visibility.confirm = false
+}
 
 const updatePassword = async () => {
     isUpdatingPassword.value = true
@@ -55,11 +76,7 @@ const updatePassword = async () => {
 
         if (response.ok) {
             alert('Password updated successfully!')
-            showPasswordModal.value = false
-            currentPassword.value = ''
-            newPassword.value = ''
-            confirmPassword.value = ''
-            showPassword.value = false
+            closePasswordModal()
         } else {
             if (data.errors) {
                 const firstErrorKey = Object.keys(data.errors)[0]
@@ -81,7 +98,6 @@ const name = ref('')
 const email = ref('')
 const profilePictureUrl = ref('https://ui-avatars.com/api/?name=User&size=200&background=random')
 const isSaving = ref(false)
-
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
 
@@ -93,25 +109,18 @@ const fetchProfileData = async () => {
                 'X-CSRF-TOKEN': csrfToken.value
             }
         })
-
         if (response.ok) {
             const data = await response.json()
             name.value = data.user.name
             email.value = data.user.email
-            if (data.user.profile_picture) {
-                profilePictureUrl.value = data.user.profile_picture
-            } else {
-                profilePictureUrl.value = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name)}&size=200&background=random`
-            }
+            profilePictureUrl.value = data.user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name)}&size=200&background=random`
         }
     } catch (error) {
         console.error('Failed to fetch profile:', error)
     }
 }
 
-const triggerFileInput = () => {
-    fileInput.value?.click()
-}
+const triggerFileInput = () => fileInput.value?.click()
 
 const handleFileUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
@@ -126,9 +135,7 @@ const saveProfile = async () => {
     const formData = new FormData()
     formData.append('name', name.value)
     formData.append('email', email.value)
-    if (selectedFile.value) {
-        formData.append('profile_picture', selectedFile.value)
-    }
+    if (selectedFile.value) formData.append('profile_picture', selectedFile.value)
 
     try {
         const response = await fetch('/api/profile', {
@@ -139,26 +146,17 @@ const saveProfile = async () => {
             },
             body: formData
         })
-
         const data = await response.json()
-
         if (response.ok) {
             alert('Profile updated successfully!')
-            if (data.profile_picture) {
-                profilePictureUrl.value = data.profile_picture
-            }
+            if (data.profile_picture) profilePictureUrl.value = data.profile_picture
             selectedFile.value = null
         } else {
-            if (data.errors) {
-                const errorMessage = Object.values(data.errors).flat().join('\n')
-                alert(errorMessage)
-            } else {
-                alert(data.message || 'Failed to update profile.')
-            }
+            alert(data.errors ? Object.values(data.errors).flat().join('\n') : (data.message || 'Failed to update profile.'))
         }
     } catch (error) {
         console.error('Error saving profile:', error)
-        alert('A network error occurred. Please try again.')
+        alert('A network error occurred.')
     } finally {
         isSaving.value = false
     }
@@ -166,15 +164,9 @@ const saveProfile = async () => {
 
 onMounted(() => {
     initTheme()
-    if (props.user?.user_type) {
-        setUserType(props.user.user_type)
-    }
-
+    if (props.user?.user_type) setUserType(props.user.user_type)
     const tokenTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-    if (tokenTag) {
-        csrfToken.value = tokenTag.content
-    }
-
+    if (tokenTag) csrfToken.value = tokenTag.content
     fetchProfileData()
 })
 </script>
@@ -194,16 +186,14 @@ onMounted(() => {
 
             <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full no-scrollbar">
                 <div class="max-w-7xl mx-auto pb-12">
-
                     <div class="mb-10">
                         <h1 class="text-3xl lg:text-4xl font-black tracking-tight" :style="styles.textPrimary">Edit Profile</h1>
-                        <p class="mt-2 text-lg" :style="styles.textSecondary">Update your professional information for the faculty directory.</p>
+                        <p class="mt-2 text-lg" :style="styles.textSecondary">Update your professional information.</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="lg:col-span-1">
-                            <div class="rounded-2xl shadow-sm p-8 flex flex-col items-center text-center transition-colors"
-                                :style="styles.cardBg">
+                            <div class="rounded-2xl shadow-sm p-8 flex flex-col items-center text-center transition-colors" :style="styles.cardBg">
                                 <div class="relative mb-6">
                                     <div class="h-40 w-40 rounded-full ring-4 overflow-hidden flex items-center justify-center"
                                         :style="{ backgroundColor: surface.inputBg, '--tw-ring-color': surface.borderSubtle }">
@@ -239,22 +229,17 @@ onMounted(() => {
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div class="flex flex-col gap-2">
                                             <label class="text-sm font-bold" :style="styles.textSecondary">Full Name</label>
-                                            <input v-model="name"
-                                                class="w-full px-4 py-3.5 rounded-xl border focus:ring-2 focus:outline-none transition-all"
-                                                type="text" required
-                                                :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
+                                            <input v-model="name" class="w-full px-4 py-3.5 rounded-xl border focus:ring-2 focus:outline-none"
+                                                type="text" required :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
                                         </div>
                                         <div class="flex flex-col gap-2">
                                             <label class="text-sm font-bold" :style="styles.textSecondary">Email Address</label>
-                                            <input v-model="email"
-                                                class="w-full px-4 py-3.5 rounded-xl border focus:ring-2 focus:outline-none transition-all"
-                                                type="email" required
-                                                :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
+                                            <input v-model="email" class="w-full px-4 py-3.5 rounded-xl border focus:ring-2 focus:outline-none"
+                                                type="email" required :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
                                         </div>
                                     </div>
 
-                                    <div v-if="showPasswordModal"
-                                        class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                                    <div v-if="showPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
                                         :style="{ backgroundColor: surface.overlayBg }">
                                         <div class="w-full max-w-md p-8 rounded-2xl shadow-xl transition-colors" :style="styles.cardBg">
                                             <h3 class="text-xl font-bold mb-6" :style="styles.textPrimary">Change Password</h3>
@@ -266,13 +251,13 @@ onMounted(() => {
                                                 <div class="flex flex-col gap-2">
                                                     <label class="text-sm font-bold" :style="styles.textSecondary">Current Password</label>
                                                     <div class="relative">
-                                                        <input v-model="currentPassword" :type="showPassword ? 'text' : 'password'" required
+                                                        <input v-model="currentPassword" :type="visibility.current ? 'text' : 'password'" required
                                                             class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none pr-12"
                                                             :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
-                                                        <button type="button" @click="showPassword = !showPassword"
+                                                        <button type="button" @click="toggleVisibility('current')"
                                                             class="absolute right-3 top-1/2 -translate-y-1/2 p-1 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
                                                             <span class="material-symbols-outlined text-[20px]" :style="{ color: surface.textPrimary }">
-                                                                {{ showPassword ? 'visibility_off' : 'visibility' }}
+                                                                {{ visibility.current ? 'visibility_off' : 'visibility' }}
                                                             </span>
                                                         </button>
                                                     </div>
@@ -281,23 +266,35 @@ onMounted(() => {
                                                 <div class="flex flex-col gap-2">
                                                     <label class="text-sm font-bold" :style="styles.textSecondary">New Password</label>
                                                     <div class="relative">
-                                                        <input v-model="newPassword" :type="showPassword ? 'text' : 'password'" required minlength="8"
+                                                        <input v-model="newPassword" :type="visibility.new ? 'text' : 'password'" required minlength="8"
                                                             class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none pr-12"
                                                             :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
+                                                        <button type="button" @click="toggleVisibility('new')"
+                                                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+                                                            <span class="material-symbols-outlined text-[20px]" :style="{ color: surface.textPrimary }">
+                                                                {{ visibility.new ? 'visibility_off' : 'visibility' }}
+                                                            </span>
+                                                        </button>
                                                     </div>
                                                 </div>
 
                                                 <div class="flex flex-col gap-2">
                                                     <label class="text-sm font-bold" :style="styles.textSecondary">Confirm New Password</label>
                                                     <div class="relative">
-                                                        <input v-model="confirmPassword" :type="showPassword ? 'text' : 'password'" required minlength="8"
+                                                        <input v-model="confirmPassword" :type="visibility.confirm ? 'text' : 'password'" required minlength="8"
                                                             class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none pr-12"
                                                             :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
+                                                        <button type="button" @click="toggleVisibility('confirm')"
+                                                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+                                                            <span class="material-symbols-outlined text-[20px]" :style="{ color: surface.textPrimary }">
+                                                                {{ visibility.confirm ? 'visibility_off' : 'visibility' }}
+                                                            </span>
+                                                        </button>
                                                     </div>
                                                 </div>
 
                                                 <div class="pt-4 flex justify-end gap-3">
-                                                    <button type="button" @click="showPasswordModal = false" class="px-6 py-2.5 font-bold rounded-xl" :style="styles.textSecondary">Cancel</button>
+                                                    <button type="button" @click="closePasswordModal" class="px-6 py-2.5 font-bold rounded-xl" :style="styles.textSecondary">Cancel</button>
                                                     <button type="submit" :disabled="isUpdatingPassword" class="px-6 py-2.5 font-bold rounded-xl shadow-md disabled:opacity-50" :style="styles.button">
                                                         {{ isUpdatingPassword ? 'Updating...' : 'Save Password' }}
                                                     </button>
@@ -311,16 +308,14 @@ onMounted(() => {
                                             <span class="material-symbols-outlined" :style="{ color: theme.accent }">security</span>
                                             Security & Access
                                         </h3>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div class="flex flex-col gap-2">
-                                                <label class="text-sm font-bold" :style="styles.textSecondary">Password</label>
-                                                <button @click="showPasswordModal = true" type="button"
-                                                    class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border transition-all text-left"
-                                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder }">
-                                                    <span :style="styles.textMuted">••••••••••••</span>
-                                                    <span class="text-xs font-bold" :style="{ color: theme.accent }">Update</span>
-                                                </button>
-                                            </div>
+                                        <div class="flex flex-col gap-2 max-w-sm">
+                                            <label class="text-sm font-bold" :style="styles.textSecondary">Password</label>
+                                            <button @click="showPasswordModal = true" type="button"
+                                                class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border transition-all"
+                                                :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder }">
+                                                <span :style="styles.textMuted">••••••••••••</span>
+                                                <span class="text-xs font-bold" :style="{ color: theme.accent }">Update</span>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -332,17 +327,6 @@ onMounted(() => {
                                         </button>
                                     </div>
                                 </form>
-                            </div>
-
-                            <div class="p-6 rounded-2xl border flex items-start gap-4 transition-colors"
-                                :style="{ backgroundColor: theme.accent + '10', borderColor: theme.accent + '20' }">
-                                <span class="material-symbols-outlined mt-0.5" :style="{ color: theme.accent }">info</span>
-                                <div>
-                                    <h4 class="text-sm font-bold" :style="styles.textPrimary">Need to update more info?</h4>
-                                    <p class="text-sm mt-1 leading-relaxed" :style="styles.textSecondary">
-                                        For changes to Department, Rank, or Employee ID, please contact the administrative office directly.
-                                    </p>
-                                </div>
                             </div>
                         </div>
                     </div>
