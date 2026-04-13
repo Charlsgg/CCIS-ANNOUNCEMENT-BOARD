@@ -127,18 +127,18 @@ const handleFileUpload = (event: Event) => {
 const saveProfile = async () => {
     isSaving.value = true
     
-    // We must use FormData to send files via fetch
     const formData = new FormData()
     formData.append('name', name.value)
     formData.append('email', email.value)
     
+    // Crucial: Only append the file if the user actually picked a new one
     if (selectedFile.value) {
         formData.append('profile_picture', selectedFile.value)
     }
 
     try {
         const response = await fetch('/api/profile', {
-            method: 'POST',
+            method: 'POST', // Matches your public function update(Request $request)
             headers: {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': csrfToken.value
@@ -146,21 +146,30 @@ const saveProfile = async () => {
             body: formData
         })
 
+        const data = await response.json()
+
         if (response.ok) {
-            const data = await response.json()
             alert('Profile updated successfully!')
+            
+            // If the backend returns the new Supabase URL, update the view
             if (data.profile_picture) {
                 profilePictureUrl.value = data.profile_picture
             }
-            // Reset the selected file so we don't re-upload it next time
+            
+            // Clear the file selection so we don't send the same file twice if they click save again
             selectedFile.value = null
         } else {
-            const errorData = await response.json()
-            console.error('Validation errors:', errorData.errors)
-            alert('Failed to update profile. Please check the inputs.')
+            // Handle Laravel validation errors (e.g., email already taken)
+            if (data.errors) {
+                const errorMessage = Object.values(data.errors).flat().join('\n')
+                alert(errorMessage)
+            } else {
+                alert(data.message || 'Failed to update profile.')
+            }
         }
     } catch (error) {
         console.error('Error saving profile:', error)
+        alert('A network error occurred. Please try again.')
     } finally {
         isSaving.value = false
     }
