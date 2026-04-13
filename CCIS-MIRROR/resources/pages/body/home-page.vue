@@ -35,16 +35,21 @@ const displayedAnnouncements = computed(() => {
 })
 
 // --- Lifecycle ---
+// Add this inside onMounted or after your imports
 onMounted(() => {
     initTheme()
+    
+    // Set Axios defaults
+    const tokenTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
+    if (tokenTag) {
+        csrfToken.value = tokenTag.content
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken.value
+    }
+    
     if (props.user?.user_type) {
         setUserType(props.user.user_type)
     }
     fetchAnnouncements()
-    const tokenTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-    if (tokenTag) {
-        csrfToken.value = tokenTag.content
-    }
 })
 
 // --- API Calls & Handlers ---
