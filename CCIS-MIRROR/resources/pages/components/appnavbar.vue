@@ -16,6 +16,27 @@ const userName = ref('')
 const userAvatar = ref('')
 const imageHasError = ref(false)
 
+// --- Helpers ---
+const getFileUrl = (path?: string | null) => {
+    if (!path) return ''
+
+    let cleanPath = path
+
+    // 1. Strip out rogue Laravel "/storage/" prefixes
+    cleanPath = cleanPath.replace(/^\/?storage\//, '')
+
+    // 2. Fix mangled HTTP protocols (e.g., if "https://" became "https:/")
+    cleanPath = cleanPath.replace(/^https?:\/([^\/])/, 'https://$1')
+
+    // 3. If it's now a valid absolute URL, return it!
+    if (cleanPath.startsWith('http')) {
+        return cleanPath
+    }
+
+    // 4. Fallback for relative paths 
+    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
+}
+
 // Methods
 const fetchUserData = async () => {
     try {
@@ -98,7 +119,7 @@ onMounted(() => {
             >
                 <img 
                     v-if="userAvatar && !imageHasError" 
-                    :src="userAvatar" 
+                    :src="getFileUrl(userAvatar)" 
                     :alt="userName || 'User'"
                     class="h-full w-full object-cover"
                     @error="imageHasError = true"
