@@ -35,21 +35,16 @@ const emit = defineEmits<{
 }>()
 
 const { theme, styles, surface } = useTheme()
-
 const getFileUrl = (path?: string | null) => {
-    // 🚨 FAILSAFE: Catch empty paths and ghost undefined
     if (!path || path === 'undefined') {
         return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
     }
 
+    // If it's already a full URL (which our Laravel fix now provides), return it directly
     if (path.startsWith('http')) return path
 
-    // 1. Remove 'announcements/' folder name if it's there
-    let cleanPath = path.replace('announcements/', '')
-
-    // 2. 🚨 THE FIX: Remove ANY leading slashes to destroy the double-slash 400 bug
-    cleanPath = cleanPath.replace(/^\/+/, '')
-
+    // Fallback for relative paths just in case
+    let cleanPath = path.replace('announcements/', '').replace(/^\/+/, '')
     return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/${cleanPath}`
 }
 const isImage = (type: string | null) => {
