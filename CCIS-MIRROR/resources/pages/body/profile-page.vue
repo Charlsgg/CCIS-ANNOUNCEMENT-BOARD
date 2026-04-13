@@ -326,6 +326,13 @@ onMounted(() => {
                                                             minlength="8"
                                                             class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none pr-12"
                                                             :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
+                                                        <button type="button" @click="showPassword = !showPassword"
+                                                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                                                            :style="{ color: surface.textPrimary }">
+                                                            <span class="material-symbols-outlined text-[20px]">
+                                                                {{ showPassword ? 'visibility_off' : 'visibility' }}
+                                                            </span>
+                                                        </button>   
                                                     </div>
                                                 </div>
 
@@ -338,6 +345,13 @@ onMounted(() => {
                                                             minlength="8"
                                                             class="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:outline-none pr-12"
                                                             :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
+                                                             <button type="button" @click="showPassword = !showPassword"
+                                                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                                                            :style="{ color: surface.textPrimary }">
+                                                            <span class="material-symbols-outlined text-[20px]">
+                                                                {{ showPassword ? 'visibility_off' : 'visibility' }}
+                                                            </span>
+                                                        </button>
                                                     </div>
                                                 </div>
 
