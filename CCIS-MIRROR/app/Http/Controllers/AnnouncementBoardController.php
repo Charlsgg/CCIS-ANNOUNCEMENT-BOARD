@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class AnnouncementBoardController extends Controller
@@ -14,18 +15,16 @@ class AnnouncementBoardController extends Controller
         $filter = $request->query('topic'); 
         $userId = Auth::id(); // Get current user ID to check like status
 
+        // Tell Intelephense exactly what the disk is to remove the warning
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $s3Disk */
+        $s3Disk = Storage::disk('s3');
+
         // 1. Fetch Announcements
         $query = DB::table('all_announcements_view as av')
             ->leftJoin('user_profiles as up', 'av.author_id', '=', 'up.user_id')
-            // Optional: If you have a 'likes' table to track specific user likes, join it here
-            /* ->leftJoin('announcement_likes as al', function($join) use ($userId) {
-                $join->on('av.announcement_id', '=', 'al.announcement_id')
-                     ->where('al.user_id', '=', $userId);
-            }) */
             ->select(
                 'av.*', 
                 'up.profile_picture as real_avatar'
-                // DB::raw('IF(al.id IS NOT NULL, 1, 0) as is_liked') // Check if current user liked it
             );
 
         if ($filter) {
@@ -35,7 +34,7 @@ class AnnouncementBoardController extends Controller
         $announcements = $query->orderBy('av.announcement_date', 'desc')
             ->get()
             ->groupBy('announcement_id')
-            ->map(function ($group) {
+            ->map(function ($group) use ($s3Disk) {
                 $first = $group->first();
                 $rawDate = Carbon::parse($first->announcement_date);
 
@@ -46,17 +45,21 @@ class AnnouncementBoardController extends Controller
                     'topic'         => $first->topic,
                     'author_name'   => $first->author_name,
                     'author_type'   => $first->author_type,
-                    'author_avatar' => $first->real_avatar ?? null,
-                    'likes_count'   => (int) ($first->likes_count ?? 0),
-                    // 'is_liked'   => (bool) ($first->is_liked ?? false), 
                     
+                    // Generate full Supabase URL for the avatar
+                    'author_avatar' => $first->real_avatar ? $s3Disk->url($first->real_avatar) : null,
+                    
+                    'likes_count'   => (int) ($first->likes_count ?? 0),
                     'date'          => $rawDate->diffForHumans(),
                     'full_date'     => $rawDate->format('M d, Y h:i A'),
                     'created_at'    => $first->announcement_date, 
                     
                     'attachments'   => $group->whereNotNull('attachment_id')->map(fn($item) => [
                         'id'        => $item->attachment_id,
-                        'file_path' => $item->file_path,
+                        
+                        // Generate full Supabase URL for the file attachments
+                        'file_path' => $s3Disk->url($item->file_path),
+                        
                         'file_type' => $item->file_type,
                     ])->values(),
                 ];
@@ -103,12 +106,8 @@ class AnnouncementBoardController extends Controller
         ]);
     }
 
-    /**
-     * Handle the Like/Unlike toggle for an announcement.
-     */
     public function like(Request $request, $id)
     {
-        // 1. Verify the announcement exists in the main table
         $announcement = DB::table('table_announcement')
             ->where('announcement_id', $id)
             ->first();
@@ -117,9 +116,6 @@ class AnnouncementBoardController extends Controller
             return response()->json(['message' => 'Announcement not found'], 404);
         }
 
-        // 2. Increment the count in the database
-        // Note: In a production app, you should use a 'likes' table to prevent 1 user 
-        // from clicking like 100 times.
         DB::table('table_announcement')
             ->where('announcement_id', $id)
             ->increment('likes_count');

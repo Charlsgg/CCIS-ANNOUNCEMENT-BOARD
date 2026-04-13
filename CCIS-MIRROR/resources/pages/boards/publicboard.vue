@@ -387,7 +387,7 @@ const handleLike = async (item) => {
 
   try {
     // FIX 1: Explicitly use /api/announcements to prevent stacking bugs
-    const response = await axios.post(`/api/announcements/${item.id}/like`)
+    const response = await axios.post(`/announcements/${item.id}/like`)
     item.likes_count = response.data.likes_count
   } catch (e) {
     item.likes_count = originalCount
