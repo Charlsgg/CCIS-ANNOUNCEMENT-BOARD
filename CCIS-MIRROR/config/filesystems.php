@@ -57,6 +57,7 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => true,
             'throw' => true,
+            'url' => env('SUPABASE_URL') . '/storage/v1/object/public/' . env('AWS_BUCKET'),
         ],
 
     ],
