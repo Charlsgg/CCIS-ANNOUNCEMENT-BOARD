@@ -3,30 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserProfile extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'user_profiles';
+    // Point Eloquent to your custom primary key
     protected $primaryKey = 'user_id';
-    
-    // This is vital since the ID matches the User ID and doesn't auto-increment itself
+
+    // Tell Eloquent this isn't an auto-incrementing integer (since it comes from the users table)
     public $incrementing = false;
 
+    // Define which fields can be mass-assigned
     protected $fillable = [
-        'user_id',
         'profile_picture',
         'bio',
     ];
 
     /**
-     * Relationship back to the User
+     * Get the user that owns this profile.
      */
     public function user(): BelongsTo
     {
+        // Assuming your User model is App\Models\User and its primary key is 'user_id'
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 }

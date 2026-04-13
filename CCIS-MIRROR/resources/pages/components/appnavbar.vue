@@ -37,7 +37,7 @@ const getFileUrl = (path?: string | null) => {
     return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
 }
 
-// Methods
+// --- Methods ---
 const fetchUserData = async () => {
     try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
@@ -51,8 +51,11 @@ const fetchUserData = async () => {
         
         if (response.ok) {
             const data = await response.json()
-            userName.value = data.name
-            userAvatar.value = data.profile_picture
+            
+            // Correctly target the nested backend data
+            userName.value = data.user.name
+            userAvatar.value = data.user.profile_picture
+            
         } else {
             console.error('Failed to fetch user data:', response.statusText)
         }

@@ -66,7 +66,7 @@ Route::prefix('api')->group(function () {
 // 3. PROTECTED ROUTES (Must be Logged In)
 // ==========================================
 Route::middleware('auth')->group(function () {
-
+    Route::get('/navbar/user', [UserProfileController::class, 'show']);
     // IT Instructor Routes
     Route::middleware('check_type:it_instructor')->prefix('it')->name('it.')->group(function () {
          Route::get('/home-page', function() { return view('home-page'); })->name('home.page');
