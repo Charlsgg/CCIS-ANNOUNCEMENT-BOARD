@@ -120,7 +120,7 @@ class UserAnnouncementController extends Controller
         // 2. Upload New Attachments
         if ($request->hasFile('newFiles')) {
             foreach ($request->file('newFiles') as $file) {
-                $path = $file->store('announcements', 's3');
+                $path = $file->store('/', 's3');
 
                 $announcement->attachments()->create([
                     'file_path' => $path,

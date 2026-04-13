@@ -39,22 +39,24 @@ const { theme, styles, surface } = useTheme()
 /**
  * FIXED URL CLEANER
  * Syncs with Laravel Storage::disk('s3')->url() output and manual relative paths.
- */
-const getFileUrl = (path?: string | null) => {
+ */const getFileUrl = (path?: string | null) => {
+    // 1. Failsafe for null/ghost values
     if (!path || path === 'undefined' || path === 'null') {
         return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
     }
 
-    // 1. If it's already a full URL (backend logic), use it directly
+    // 2. CRITICAL FIX: Since your JSON already shows a full URL:
+    // "https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/..."
+    // Just return it exactly as it is. Do NOT add prefixes.
     if (path.startsWith('http')) {
         return path
     }
 
-    // 2. Manual construction for relative paths (e.g. "announcements/file.jpg")
+    // 3. Fallback for old records that might still be relative paths
     const PROJECT_ID = 'hahocarxbknajzqjacuk'
     const BUCKET = 'announcements'
     
-    // Remove "announcements/" from path if it already exists to avoid double-folder 404
+    // Remove any leading slashes or redundant bucket names from the relative path
     let cleanPath = path.replace(/^announcements\//, '').replace(/^\/+/, '')
     
     return `https://${PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET}/${cleanPath}`
