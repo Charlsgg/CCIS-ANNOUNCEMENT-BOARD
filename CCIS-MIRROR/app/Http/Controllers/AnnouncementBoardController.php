@@ -14,14 +14,14 @@ class AnnouncementBoardController extends Controller
         $filter = $request->query('topic'); 
         $userId = Auth::id(); 
 
-        // 1. Build the base Supabase public URL dynamically from your .env
+        // Build the base Supabase public URL dynamically from your .env
         $supabaseUrl = rtrim(env('SUPABASE_URL'), '/'); // e.g., https://xyz.supabase.co
         $bucket = env('AWS_BUCKET'); // e.g., your bucket name, usually 'public'
         
         // This is the exact format Supabase uses for public bucket URLs
         $baseStorageUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/";
 
-        // 2. Fetch Announcements
+        // Fetch Announcements
         $query = DB::table('all_announcements_view as av')
             ->leftJoin('user_profiles as up', 'av.author_id', '=', 'up.user_id')
             ->select(
@@ -67,7 +67,7 @@ class AnnouncementBoardController extends Controller
                 ];
             })->values();
 
-        // 3. Fetch Upcoming Events
+        // Fetch Upcoming Events
         $upcomingEvents = DB::table('table_events')
             ->where('start_time', '>=', now())
             ->orderBy('start_time', 'asc')
@@ -88,7 +88,7 @@ class AnnouncementBoardController extends Controller
                 ];
             });
 
-        // 4. Calculate Stats
+        // Calculate Stats
         $statsRaw = DB::table('all_announcements_view')
             ->select('author_type', DB::raw('count(DISTINCT announcement_id) as total'))
             ->groupBy('author_type')

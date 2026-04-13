@@ -189,9 +189,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div v-for="file in selectedAnnouncement.attachments" :key="file.id" @click="previewFile(file)" class="group relative rounded-2xl overflow-hidden border border-white/5 bg-white/3 hover:bg-white/6 hover:border-orange-500/50 transition-all duration-300 cursor-pointer">
-
                     <img v-if="file.file_type.includes('image')" :src="file.file_path" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700" />
-
                     <div v-else class="p-6 flex items-center gap-4 h-48 justify-center flex-col">
                       <span class="material-symbols-outlined text-4xl text-orange-500 group-hover:scale-110 transition-transform duration-300">
                         {{ file.file_type.includes('pdf') ? 'picture_as_pdf' : 'description' }}
@@ -237,13 +235,11 @@
 
           <div class="w-full h-full flex items-center justify-center">
             <img v-if="activePreview.file_type.includes('image')" :src="activePreview.file_path" class="max-w-full max-h-full object-contain animate-in zoom-in duration-300" />
-
             <iframe v-else-if="activePreview.file_type.includes('pdf')" :src="activePreview.file_path" class="w-full h-full md:w-[85%] md:h-[90%] rounded-2xl border border-white/10 bg-white shadow-[0_0_50px_rgba(0,0,0,0.5)]" frameborder="0"></iframe>
 
             <div v-else class="text-center bg-white/3 border border-white/10 p-12 rounded-3xl backdrop-blur-xl">
               <span class="material-symbols-outlined text-6xl text-orange-500 mb-4 block">draft</span>
               <p class="text-white/70 mb-8 font-light tracking-wide">Preview not available for this file type.</p>
-              
               <a :href="activePreview.file_path" download class="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-400 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] text-black px-8 py-3 rounded-xl font-bold transition-all duration-300">
                 <span class="material-symbols-outlined text-[20px]">download</span>
                 Download File
@@ -259,6 +255,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
+
+// 1. The Vercel Production Fix (Connects Vue to Laravel securely)
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+axios.defaults.baseURL = baseURL;
 
 // State
 const announcements = ref([])
@@ -296,7 +296,6 @@ const filteredAnnouncements = computed(() => {
 // Methods
 const fetchAnnouncements = async () => {
   try {
-    // FIX 1: Added /api/ prefix to prevent 404s
     const response = await axios.get('/api/board-data')
     announcements.value = response.data.announcements.map(a => ({
       ...a,
@@ -332,7 +331,6 @@ const handleLike = async (item) => {
   startCooldown(item)
 
   try {
-    // FIX 2: Added /api/ prefix so Vercel forwards it correctly
     const response = await axios.post(`/api/announcements/${item.id}/like`)
     item.likes_count = response.data.likes_count
   } catch (e) {
@@ -375,7 +373,6 @@ const getWeatherDescription = (code) => {
 const fetchWeather = async () => {
   try {
     const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&current_weather=true&timezone=Asia%2FManila";
-
     const response = await fetch(url);
 
     if (!response.ok) {
