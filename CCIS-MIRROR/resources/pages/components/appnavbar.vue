@@ -16,25 +16,26 @@ const userName = ref('')
 const userAvatar = ref('')
 const imageHasError = ref(false)
 
-// --- Helpers ---
 const getFileUrl = (path?: string | null) => {
     if (!path) return ''
 
     let cleanPath = path
 
-    // 1. Strip out rogue Laravel "/storage/" prefixes
-    cleanPath = cleanPath.replace(/^\/?storage\//, '')
+    // 1. Log what we received from the DB
+    console.log("Raw path from DB:", path)
 
-    // 2. Fix mangled HTTP protocols (e.g., if "https://" became "https:/")
+    cleanPath = cleanPath.replace(/^\/?storage\//, '')
     cleanPath = cleanPath.replace(/^https?:\/([^\/])/, 'https://$1')
 
-    // 3. If it's now a valid absolute URL, return it!
     if (cleanPath.startsWith('http')) {
         return cleanPath
     }
 
-    // 4. Fallback for relative paths 
-    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
+    // 2. This is the path we are building
+    const finalUrl = `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
+    console.log("Constructed URL:", finalUrl)
+    
+    return finalUrl
 }
 // --- Methods ---
 const fetchUserData = async () => {
