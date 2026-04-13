@@ -36,16 +36,26 @@ const emit = defineEmits<{
 
 const { theme, styles, surface } = useTheme()
 const getFileUrl = (path?: string | null) => {
-    if (!path || path === 'undefined') {
+    // 1. Failsafe for null/ghost values
+    if (!path || path === 'undefined' || path === 'null') {
         return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
     }
 
-    // If it's already a full URL (which our Laravel fix now provides), return it directly
-    if (path.startsWith('http')) return path
+    // 2. Priority: If it's already a full URL, use it immediately
+    if (path.startsWith('http')) {
+        return path
+    }
 
-    // Fallback for relative paths just in case
-    let cleanPath = path.replace('announcements/', '').replace(/^\/+/, '')
-    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/${cleanPath}`
+    // 3. Fallback: Manual construction for relative paths
+    // Clean rogue prefixes and leading slashes
+    let cleanPath = path
+        .replace(/^announcements\//, '') // Remove redundant folder prefix
+        .replace(/^\/+/, '')             // Remove leading slashes
+
+    const PROJECT_ID = 'hahocarxbknajzqjacuk'
+    const BUCKET = 'announcements'
+    
+    return `https://${PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET}/${cleanPath}`
 }
 const isImage = (type: string | null) => {
     if (!type) return false
