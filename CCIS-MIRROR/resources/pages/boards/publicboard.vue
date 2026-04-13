@@ -94,7 +94,7 @@
 
           <div class="flex items-center gap-4 mb-6 relative z-10">
             <div class="relative">
-              <img v-if="item.author_avatar" :src="'/storage/' + item.author_avatar"
+              <img v-if="item.author_avatar" :src="item.author_avatar"
                 class="w-12 h-12 rounded-lg object-cover shadow-lg border border-white/10 group-hover:border-orange-500/50 transition-all duration-500" />
               <div v-else
                 :class="['w-12 h-12 rounded-lg flex items-center justify-center font-black text-xl italic transition-all duration-500 group-hover:rotate-3 shadow-lg', getPosBg(item.author_type)]">
@@ -333,10 +333,10 @@
     </Teleport>
   </div>
 </template>
+
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
-// Notice: I removed the openmeteo import because we are using native fetch now to bypass CORS!
 
 // State
 const announcements = ref([])
@@ -374,7 +374,6 @@ const filteredAnnouncements = computed(() => {
 // Methods
 const fetchAnnouncements = async () => {
   try {
-    // FIX 1: Explicitly use /api/board-data to prevent stacking bugs
     const response = await axios.get('board-data')
     announcements.value = response.data.announcements.map(a => ({
       ...a,
@@ -410,7 +409,6 @@ const handleLike = async (item) => {
   startCooldown(item)
 
   try {
-    // FIX 1: Explicitly use /api/announcements to prevent stacking bugs
     const response = await axios.post(`/announcements/${item.id}/like`)
     item.likes_count = response.data.likes_count
   } catch (e) {
@@ -451,14 +449,9 @@ const getWeatherDescription = (code) => {
 }
 const fetchWeather = async () => {
   try {
-    // We simplified the URL to the most stable "current_weather" endpoint
-    // and explicitly set the timezone to Asia/Manila for Butuan City!
     const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&current_weather=true&timezone=Asia%2FManila";
-
-    // Standard fetch - Open-Meteo allows all origins as long as the URL doesn't crash them
     const response = await fetch(url);
 
-    // If Open-Meteo is having a bad day (like a 502 Bad Gateway), catch it nicely!
     if (!response.ok) {
       throw new Error(`Weather API is down! Status: ${response.status}`);
     }

@@ -65,7 +65,7 @@ const getFileUrl = (path?: string | null) => {
     // 2. Fix mangled HTTP protocols (e.g., if "https://" became "https:/")
     cleanPath = cleanPath.replace(/^https?:\/([^\/])/, 'https://$1')
 
-    // 3. If it's now a valid absolute URL, return it!
+    // 3. If it's now a valid absolute URL, return it! (Your backend hits this now)
     if (cleanPath.startsWith('http')) {
         return cleanPath
     }

@@ -21,6 +21,20 @@ class AnnouncementBoardController extends Controller
         // This is the exact format Supabase uses for public bucket URLs
         $baseStorageUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/";
 
+        // 1. Fetch the Current Logged-in User's Avatar
+        $currentUserAvatar = null;
+        if ($userId) {
+            $userProfile = DB::table('user_profiles')->where('user_id', $userId)->first();
+            
+            if ($userProfile && $userProfile->profile_picture) {
+                // If it already starts with 'http' (from your new logic), use it.
+                // Otherwise, attach the base storage URL.
+                $currentUserAvatar = str_starts_with($userProfile->profile_picture, 'http') 
+                    ? $userProfile->profile_picture 
+                    : $baseStorageUrl . ltrim($userProfile->profile_picture, '/');
+            }
+        }
+
         // Fetch Announcements
         $query = DB::table('all_announcements_view as av')
             ->leftJoin('user_profiles as up', 'av.author_id', '=', 'up.user_id')
@@ -49,7 +63,9 @@ class AnnouncementBoardController extends Controller
                     'author_type'   => $first->author_type,
                     
                     // Attach the full Supabase URL to the avatar
-                    'author_avatar' => $first->real_avatar ? $baseStorageUrl . ltrim($first->real_avatar, '/') : null,
+                    'author_avatar' => $first->real_avatar 
+                        ? (str_starts_with($first->real_avatar, 'http') ? $first->real_avatar : $baseStorageUrl . ltrim($first->real_avatar, '/')) 
+                        : null,
                     
                     'likes_count'   => (int) ($first->likes_count ?? 0),
                     'date'          => $rawDate->diffForHumans(),
@@ -60,7 +76,7 @@ class AnnouncementBoardController extends Controller
                         'id'        => $item->attachment_id,
                         
                         // Attach the full Supabase URL to the uploaded file
-                        'file_path' => $baseStorageUrl . ltrim($item->file_path, '/'),
+                        'file_path' => str_starts_with($item->file_path, 'http') ? $item->file_path : $baseStorageUrl . ltrim($item->file_path, '/'),
                         
                         'file_type' => $item->file_type,
                     ])->values(),
@@ -94,10 +110,12 @@ class AnnouncementBoardController extends Controller
             ->groupBy('author_type')
             ->pluck('total', 'author_type');
 
+        // 2. Add current_user_avatar to your JSON response
         return response()->json([
-            'announcements'   => $announcements,
-            'upcoming_events' => $upcomingEvents,
-            'active_filter'   => $filter,
+            'current_user_avatar' => $currentUserAvatar,
+            'announcements'       => $announcements,
+            'upcoming_events'     => $upcomingEvents,
+            'active_filter'       => $filter,
             'stats' => [
                 'cs'  => (int) $statsRaw->get('cs_instructor', 0),
                 'it'  => (int) $statsRaw->get('it_instructor', 0),
@@ -110,6 +128,7 @@ class AnnouncementBoardController extends Controller
 
     public function like(Request $request, $id)
     {
+        // ... (unchanged)
         $announcement = DB::table('table_announcement')
             ->where('announcement_id', $id)
             ->first();
