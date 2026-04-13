@@ -55,11 +55,20 @@ const closePreview = () => {
 // --- Helpers ---
 
 /**
- * Returns the URL as is since backend provides the full path.
- * Fallback to '#' to prevent empty src attributes.
+ * Ensures we don't accidentally create "double URLs".
+ * If the database string already has 'http', return it directly.
  */
 const getFileUrl = (path?: string | null) => {
-    return path || '#'
+    if (!path) return '#'
+    
+    // THE FIX: If it's already a full URL (like an avatar or correctly formatted S3 link), return it!
+    if (path.startsWith('http')) {
+        return path
+    }
+
+    // Fallback just in case the database sends a raw, relative path
+    // Update this base URL if you ever change your Supabase project
+    return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/announcements/${path}`
 }
 
 const isImage = (type: string | null) => {
