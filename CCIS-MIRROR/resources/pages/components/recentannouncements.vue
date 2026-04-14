@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useTheme } from '../composable/usetheme.ts'
 
 interface Attachment {
@@ -21,7 +21,7 @@ interface Announcement {
     author_avatar?: string | null
 }
 
-defineProps<{
+const props = defineProps<{
     announcements: Announcement[]
 }>()
 
@@ -35,6 +35,13 @@ const emit = defineEmits<{
 }>()
 
 const { theme, styles, surface } = useTheme()
+
+// --- Computed Sorting ---
+const sortedAnnouncements = computed(() => {
+    return [...props.announcements].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+    })
+})
 
 /**
  * FIXED URL CLEANER
@@ -181,7 +188,7 @@ const submitEdit = () => {
 
 <template>
     <div class="flex flex-col gap-6 relative">
-        <div v-for="post in announcements" :key="post.id"
+        <div v-for="post in sortedAnnouncements" :key="post.id"
             class="rounded-xl p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow relative"
             :style="styles.cardBg">
 
