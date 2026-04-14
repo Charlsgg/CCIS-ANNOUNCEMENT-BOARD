@@ -69,30 +69,62 @@ const showCreateModal = ref(false)
 const showEventDetailModal = ref(false)
 const selectedDay = ref<CalendarDay | null>(null)
 
-const fetchEvents = async () => {
-    isLoading.value = true
-    try {
-        const queryParams = new URLSearchParams({
-            month: String(currentMonth.value + 1),
-            year: String(currentYear.value)
-        })
 
-        const response = await fetch(`/api/events?${queryParams.toString()}`)
-        
-        if (response.ok) {
-            const data = await response.json()
-            dbEvents.value = data.events 
-        }
-    } catch (error) {
-        console.error('Error fetching events:', error)
-    } finally {
-        isLoading.value = false
+// ----- Logic: API Fetch Integration -----// Helper function for individual month fetches
+const fetchMonthEvents = async (month: number, year: number) => {
+  const queryParams = new URLSearchParams({
+    month: String(month),
+    year: String(year)
+  })
+
+  const response = await fetch(`/api/events?${queryParams.toString()}`, {
+    headers: {
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
     }
+  })
+
+  const contentType = response.headers.get("content-type")
+  if (contentType && contentType.includes("text/html")) {
+    console.error("ERROR: LARAVEL RETURNED HTML")
+    return []
+  }
+
+  if (!response.ok) return []
+
+  const data = await response.json()
+  return data.events || []
 }
 
-watch([currentMonth, currentYear], () => {
-    fetchEvents()
-})
+// Main fetch function handling previous, current, and next months
+const fetchEvents = async () => {
+  isLoading.value = true
+  try {
+    // Calculate previous and next month/year safely
+    const prevDate = new Date(currentYear.value, currentMonth.value - 1, 1)
+    const nextDate = new Date(currentYear.value, currentMonth.value + 1, 1)
+
+    // Fire all three requests concurrently 
+    const [prevEvents, currentEvents, nextEvents] = await Promise.all([
+      fetchMonthEvents(prevDate.getMonth() + 1, prevDate.getFullYear()),
+      fetchMonthEvents(currentMonth.value + 1, currentYear.value),
+      fetchMonthEvents(nextDate.getMonth() + 1, nextDate.getFullYear())
+    ])
+
+    // Combine all results
+    const combinedEvents = [...prevEvents, ...currentEvents, ...nextEvents]
+
+    // Deduplicate by event_id (in case a multi-day event spans across months and the backend returns it twice)
+    const uniqueEvents = Array.from(new Map(combinedEvents.map(e => [e.event_id, e])).values())
+
+    dbEvents.value = uniqueEvents
+
+  } catch (error) {
+    console.error('Network/Parsing Error:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 
 const calendarDays = computed(() => {
     const days: CalendarDay[] = []
