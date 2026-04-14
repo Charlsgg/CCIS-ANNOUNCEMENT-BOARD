@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { Calendar, User, Home, Megaphone, LogOut, X } from 'lucide-vue-next'
 import { useTheme } from '../composable/usetheme'
 
-
 const emit = defineEmits<{
     close: []
 }>()
@@ -12,7 +11,6 @@ const { theme, styles, surface } = useTheme()
 const currentPath = ref('')
 
 // Fallback logic: Use the prop if available, otherwise look for the window global we set in app.ts
-// Inside <script setup lang="ts">
 const props = defineProps<{
     isOpen: boolean
     csrfToken?: string 
@@ -25,6 +23,7 @@ const effectiveToken = computed(() => {
            document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
            '';
 })
+
 onMounted(() => {
     currentPath.value = window.location.pathname
 })
@@ -53,10 +52,11 @@ const navItems = computed(() => [
             </button>
 
             <div class="flex items-center gap-3 mb-8 mt-2 md:mt-0">
-                <div class="h-10 w-10 shrink-0 rounded-full flex items-center justify-center border shadow-lg"
+                <div class="h-10 w-10 shrink-0 rounded-full flex items-center justify-center border shadow-lg overflow-hidden"
                     :style="styles.badge">
-                    <span class="font-black text-sm tracking-wider">{{ theme.abbr }}</span>
+                    <img :src="theme.image" :alt="theme.abbr" class="w-full h-full object-contain" />
                 </div>
+                
                 <h1 class="text-sm font-bold uppercase tracking-wide leading-tight" :style="styles.textPrimary">
                     {{ theme.label }}
                 </h1>

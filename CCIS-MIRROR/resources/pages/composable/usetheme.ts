@@ -1,5 +1,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
+
 type Color = string 
+
 export interface ThemeColors {
     text: Color | undefined
     primary: Color | undefined
@@ -10,6 +12,8 @@ export interface ThemeColors {
     eventsPath: string
     announcementPath: string
     profilePath: string
+    // 1. Add the image property here
+    image: string 
 }
 
 export type Mode = 'light' | 'dark'
@@ -30,6 +34,7 @@ const themeMap: Record<string, ThemeColors> = {
         eventsPath: '/it/events-page',
         announcementPath: '/it/announcement-page',
         profilePath: '/it/profile-page',
+        image: '/images/2.png', // 2. Mapped to 1.png
     },
     cs_instructor: {
         text:'#9a0303',
@@ -41,6 +46,7 @@ const themeMap: Record<string, ThemeColors> = {
         eventsPath: '/cs/events-page',
         announcementPath: '/cs/announcement-page',
         profilePath: '/cs/profile-page',
+        image: '/images/3.png', // 2. Mapped to 2.png
     },
     is_instructor: {
         text:'#008000',
@@ -52,6 +58,7 @@ const themeMap: Record<string, ThemeColors> = {
         eventsPath: '/is/events-page',
         announcementPath: '/is/announcement-page',
         profilePath: '/is/profile-page',
+        image: '/images/1.png', // 2. Mapped to 3.png
     },
     lsg_officer: {
         text:'#ec5b13',
@@ -63,6 +70,7 @@ const themeMap: Record<string, ThemeColors> = {
         eventsPath: '/lsg/events-page',
         announcementPath: '/lsg/announcement-page',
         profilePath: '/lsg/profile-page',
+        image: '/images/4.png', // Placeholder for LSG
     },
 }
 
@@ -110,8 +118,6 @@ export function useTheme() {
             inputBg: '#f8fafc',
             inputBorder: '#e2e8f0',
             overlayBg: 'rgba(0,0,0,0.5)',
-        
-        
         }
     })
 
