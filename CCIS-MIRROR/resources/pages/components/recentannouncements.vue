@@ -274,7 +274,7 @@ const submitEdit = () => {
         </div>
 
         <Teleport to="body">
-            <div v-if="isEditModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div v-if="isEditModalOpen" class="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                 <div class="w-full max-w-lg rounded-xl shadow-lg flex flex-col overflow-hidden border"
                     :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
 
@@ -355,10 +355,10 @@ const submitEdit = () => {
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="activePreview"
-                    class="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+                    class="fixed inset-0 z-110 flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
                     @click.self="closePreview">
                     <button @click="closePreview"
-                        class="absolute top-6 right-6 z-[120] w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
+                        class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
                         <span class="material-symbols-outlined">close</span>
                     </button>
 

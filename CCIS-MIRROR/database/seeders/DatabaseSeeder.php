@@ -34,96 +34,69 @@ class DatabaseSeeder extends Seeder
         ];
         foreach ($boards as $b) Board::create($b);
 
-        // 3. GENERATE 100 ANNOUNCEMENTS
-        for ($i = 1; $i <= 7; $i++) {
-            $daysOld = rand(0, 70); // Random age up to 70 days
+        // Official Announcement Templates
+        $officialAnnouncements = [
+            ['title' => 'Midterm Examination Schedule Released', 'content' => 'Please be advised that the official schedule for the Midterm Examinations is now posted. Students are required to secure their examination permits prior to their first exam. No permit, no exam policy will be strictly implemented.'],
+            ['title' => 'Call for Capstone Project Proposals', 'content' => 'All graduating students must submit their initial capstone project proposals to their respective advisers by the end of the week. Late submissions will incur deductions.'],
+            ['title' => 'CCIS General Assembly', 'content' => 'Attendance is mandatory for all CCIS students for the upcoming General Assembly. Matters regarding academic policies, new faculty introductions, and upcoming college weeks will be discussed.'],
+            ['title' => 'Suspension of Afternoon Classes', 'content' => 'Due to the scheduled university-wide power maintenance, all afternoon classes (from 1:00 PM onwards) are officially suspended today. Online asynchronous tasks may be assigned by your instructors.'],
+            ['title' => 'Application for Dean\'s List', 'content' => 'The Office of the College Dean is now accepting applications for the Dean\'s List for the previous semester. Please submit your printed grades and completed forms to the college secretary.'],
+            ['title' => 'Cybersecurity Seminar Pre-Registration', 'content' => 'The IT Department is hosting a free seminar on modern Cybersecurity threats. Limited seats are available. Interested students must pre-register via the university portal.'],
+            ['title' => 'LSG Election: Filing of Candidacy', 'content' => 'The Local Student Government Commission on Elections is officially opening the filing of Certificates of Candidacy for the upcoming academic year. Please refer to the attached guidelines for qualifications.'],
+            ['title' => 'Library System Maintenance Downtime', 'content' => 'The digital library access and online academic journals will be temporarily unavailable this weekend for scheduled system upgrades. Please plan your research activities accordingly.'],
+            ['title' => 'New Elective Course Offerings', 'content' => 'We are pleased to announce the addition of two new elective courses: Cloud Computing Architecture and Advanced AI Ethics. Enrollment for these subjects will open next week.'],
+            ['title' => 'Code of Conduct Reminder', 'content' => 'A gentle reminder to all students to strictly observe the proper university dress code and display your IDs at all times while inside the campus premises.'],
+        ];
+
+        $topics = ['Academic', 'Extracurricular', 'Administrative', 'Events', 'General'];
+
+        // 3. GENERATE 100 ANNOUNCEMENTS (Strictly this month)
+        for ($i = 1; $i <= 100; $i++) {
             $id = 2000 + $i;
             
-            if ($daysOld > 60) {
-                // Stage 2: Ready to Prune
-                $this->createPrunableAnnouncement($id, rand(1, 5), rand(101, 105), "Bulk Post $i", "Content for $i", "Topic", $daysOld, rand(31, 40));
-            } elseif ($daysOld > 30) {
-                // Stage 1: Ready to Soft Delete
-                $this->createOldAnnouncement($id, rand(1, 5), rand(101, 105), "Bulk Post $i", "Content for $i", "Topic", $daysOld);
-            } else {
-                // Active
-                Announcement::create([
-                    'announcement_id' => $id,
-                    'board_id' => rand(1, 5),
-                    'author_id' => rand(101, 105),
-                    'title' => "Bulk Post $i",
-                    'content' => "Fresh content for post $i",
-                    'topic' => 'General'
-                ]);
-            }
+            // Pick a random day within the current month
+            $randomDay = rand(1, now()->daysInMonth);
+            $createdAt = now()->startOfMonth()->addDays($randomDay - 1)->addHours(rand(8, 18));
+            
+            // Select random official data
+            $sample = $officialAnnouncements[array_rand($officialAnnouncements)];
+            $refNumber = str_pad($i, 3, '0', STR_PAD_LEFT);
+            
+            Announcement::create([
+                'announcement_id' => $id,
+                'board_id' => rand(1, 5),
+                'author_id' => rand(101, 105),
+                'title' => "[REF-CCIS-$refNumber] " . $sample['title'],
+                'content' => $sample['content'],
+                'topic' => $topics[array_rand($topics)],
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
         }
 
-        // 4. GENERATE 100 EVENTS
-        for ($i = 1; $i <= 7; $i++) {
-            $daysOld = rand(0, 70);
+        // 4. GENERATE 100 EVENTS (Strictly this month)
+        for ($i = 1; $i <= 100; $i++) {
             $id = 3000 + $i;
 
-            if ($daysOld > 60) {
-                // Stage 2: Ready to Prune
-                $this->createPrunableEvent($id, rand(101, 105), rand(1, 5), "Bulk Event $i", "Desc $i", "Venue $i", $daysOld, rand(31, 40));
-            } elseif ($daysOld > 30) {
-                // Stage 1: Ready to Soft Delete
-                $this->createOldEvent($id, rand(101, 105), rand(1, 5), "Bulk Event $i", "Desc $i", "Venue $i", $daysOld);
-            } else {
-                // Active / Future
-                Event::create([
-                    'event_id' => $id,
-                    'user_id' => rand(101, 105),
-                    'board_id' => rand(1, 5),
-                    'title' => "Bulk Event $i",
-                    'content' => "Active event description $i",
-                    'venue' => "Room ".rand(101, 404),
-                    'start_time' => now()->addDays(rand(1, 15)),
-                    'end_time' => now()->addDays(16),
-                ]);
-            }
+            // Pick a random day within the current month
+            $randomDay = rand(1, now()->daysInMonth);
+            
+            // Set start time and make the end time 2 to 4 hours later
+            $startTime = now()->startOfMonth()->addDays($randomDay - 1)->addHours(rand(8, 16));
+            $endTime = (clone $startTime)->addHours(rand(2, 4));
+
+            Event::create([
+                'event_id' => $id,
+                'user_id' => rand(101, 105),
+                'board_id' => rand(1, 5),
+                'title' => "Official Department Event $i",
+                'content' => "This is a scheduled event for faculty and students. Attendance may be required depending on the respective program head.",
+                'venue' => "Room ".rand(101, 404),
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'created_at' => $startTime,
+                'updated_at' => $startTime,
+            ]);
         }
-    }
-
-    // --- HELPER METHODS ---
-
-    private function createOldAnnouncement($id, $board, $author, $title, $content, $topic, $daysOld) {
-        $a = new Announcement([
-            'announcement_id' => $id, 'board_id' => $board, 'author_id' => $author,
-            'title' => $title, 'content' => $content, 'topic' => $topic
-        ]);
-        $a->created_at = now()->subDays($daysOld);
-        $a->save();
-    }
-
-    private function createOldEvent($id, $user, $board, $title, $content, $venue, $daysOld) {
-        $e = new Event([
-            'event_id' => $id, 'user_id' => $user, 'board_id' => $board,
-            'title' => $title, 'content' => $content, 'venue' => $venue,
-            'start_time' => now()->subDays($daysOld), 'end_time' => now()->subDays($daysOld)->addHours(2)
-        ]);
-        $e->created_at = now()->subDays($daysOld);
-        $e->save();
-    }
-
-    private function createPrunableAnnouncement($id, $board, $author, $title, $content, $topic, $createdDays, $deletedDays) {
-        $a = new Announcement([
-            'announcement_id' => $id, 'board_id' => $board, 'author_id' => $author,
-            'title' => $title, 'content' => $content, 'topic' => $topic
-        ]);
-        $a->created_at = now()->subDays($createdDays);
-        $a->deleted_at = now()->subDays($deletedDays);
-        $a->save();
-    }
-
-    private function createPrunableEvent($id, $user, $board, $title, $content, $venue, $createdDays, $deletedDays) {
-        $e = new Event([
-            'event_id' => $id, 'user_id' => $user, 'board_id' => $board,
-            'title' => $title, 'content' => $content, 'venue' => $venue,
-            'start_time' => now()->subDays($createdDays), 'end_time' => now()->subDays($createdDays)->addHours(2)
-        ]);
-        $e->created_at = now()->subDays($createdDays);
-        $e->deleted_at = now()->subDays($deletedDays);
-        $e->save();
     }
 }
