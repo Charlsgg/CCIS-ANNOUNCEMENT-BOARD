@@ -107,7 +107,7 @@ class UserAnnouncementController extends Controller
                 }
 
                 if (is_array($deletedIds) && count($deletedIds) > 0) {
-                    $attachmentsToDelete = $announcement->attachments()->whereIn('id', $deletedIds)->get();
+                    $attachmentsToDelete = $announcement->attachments()->whereIn('attachment_id', $deletedIds)->get();
                     
                     foreach ($attachmentsToDelete as $attachment) {
                         try {
