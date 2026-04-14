@@ -504,7 +504,7 @@ onMounted(() => {
   updateClock()
   fetchWeather()
   clockTimer = setInterval(updateClock, 1000)
-  fetchTimer = setInterval(fetchAnnouncements, 30000)
+  fetchTimer = setInterval(fetchAnnouncements, 5000)
   weatherTimer = setInterval(fetchWeather, 1800000)
 })
 
