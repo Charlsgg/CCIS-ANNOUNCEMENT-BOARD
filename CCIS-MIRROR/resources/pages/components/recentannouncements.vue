@@ -39,7 +39,8 @@ const { theme, styles, surface } = useTheme()
 /**
  * FIXED URL CLEANER
  * Syncs with Laravel Storage::disk('s3')->url() output and manual relative paths.
- */const getFileUrl = (path?: string | null) => {
+ */
+const getFileUrl = (path?: string | null) => {
     // 1. Failsafe for null/ghost values
     if (!path || path === 'undefined' || path === 'null') {
         return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
