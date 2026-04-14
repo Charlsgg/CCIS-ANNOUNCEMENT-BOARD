@@ -50,13 +50,16 @@ class DatabaseSeeder extends Seeder
 
         $topics = ['Academic', 'Extracurricular', 'Administrative', 'Events', 'General'];
 
-        // 3. GENERATE 100 ANNOUNCEMENTS (Strictly this month)
+        $startOfMonthStamp = now()->startOfMonth()->timestamp;
+        $nowStamp = now()->timestamp;
+
+        // 3. GENERATE 100 ANNOUNCEMENTS (Strictly this month, ONLY IN THE PAST)
         for ($i = 1; $i <= 100; $i++) {
             $id = 2000 + $i;
             
-            // Pick a random day within the current month
-            $randomDay = rand(1, now()->daysInMonth);
-            $createdAt = now()->startOfMonth()->addDays($randomDay - 1)->addHours(rand(8, 18));
+            // Pick a random timestamp between the start of the month and strictly right now
+            $randomTimestamp = rand($startOfMonthStamp, $nowStamp);
+            $createdAt = Carbon::createFromTimestamp($randomTimestamp);
             
             // Select random official data
             $sample = $officialAnnouncements[array_rand($officialAnnouncements)];
@@ -74,16 +77,26 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // 4. GENERATE 100 EVENTS (Strictly this month)
+        // 4. GENERATE 100 EVENTS (Strictly this month, ONLY IN THE PAST)
+        // Offset the max start time by 4 hours to ensure end_time also stays in the past
+        $maxStartStamp = now()->subHours(4)->timestamp;
+        
+        // Edge case: If the month just started (less than 4 hours ago), fallback to start of month
+        $maxStartStamp = max($startOfMonthStamp, $maxStartStamp);
+
         for ($i = 1; $i <= 100; $i++) {
             $id = 3000 + $i;
 
-            // Pick a random day within the current month
-            $randomDay = rand(1, now()->daysInMonth);
+            $randomTimestamp = rand($startOfMonthStamp, $maxStartStamp);
+            $startTime = Carbon::createFromTimestamp($randomTimestamp);
             
-            // Set start time and make the end time 2 to 4 hours later
-            $startTime = now()->startOfMonth()->addDays($randomDay - 1)->addHours(rand(8, 16));
+            // Set end time 2 to 4 hours later
             $endTime = (clone $startTime)->addHours(rand(2, 4));
+
+            // Final safety check to cap it at now() just in case of edge bounds
+            if ($endTime->isFuture()) {
+                $endTime = now();
+            }
 
             Event::create([
                 'event_id' => $id,

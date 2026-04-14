@@ -65,7 +65,7 @@
     </header>
 
     <main class="max-w-6xl mx-auto relative z-10 flex flex-col h-full">
-      <section class="flex flex-col md:flex-row gap-4 mb-8 items-center">
+      <section class="flex flex-col md:flex-row gap-4 mb-8 items-center relative">
         <button @click="goBack"
           class="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-orange-500/10 border border-white/10 hover:border-orange-500 transition-all duration-300 text-sm font-medium whitespace-nowrap group">
           <span
@@ -73,29 +73,41 @@
           <span>Back</span>
         </button>
 
-        <div class="relative grow w-full z-50">
-          <input
-            class="w-full glass-input rounded-xl px-12 py-3 text-lg hover:border-orange-500 focus:border-orange-500 transition-all duration-300"
-            placeholder="Search events..." type="text" v-model="searchQuery" @focus="isSearchFocused = true"
-            @blur="handleSearchBlur" />
-          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 opacity-40">search</span>
-
-          <div v-if="searchQuery && isSearchFocused"
-            class="absolute top-full left-0 w-full mt-2 glass-card overflow-hidden max-h-60 overflow-y-auto custom-scrollbar shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-orange-500/30">
-            <ul v-if="filteredDbEvents.length > 0">
-              <li v-for="event in filteredDbEvents" :key="event.event_id" @mousedown="openSearchedEvent(event)"
-                class="px-5 py-3 border-b border-white/5 hover:bg-orange-500/20 cursor-pointer transition-colors flex flex-col gap-1 last:border-0">
-                <span class="font-bold text-orange-500">{{ event.title }}</span>
-                <span class="text-xs opacity-70">
-                  {{ formatTime(event.start_time) }} <span v-if="event.venue || event.Venue">• {{ event.venue ||
-                    event.Venue }}</span>
-                </span>
-              </li>
-            </ul>
-            <div v-else class="px-5 py-4 text-center opacity-50 text-sm italic">
-              No events found matching "{{ searchQuery }}"
-            </div>
+        <div class="relative w-full z-[100]">
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-4 opacity-40 pointer-events-none">search</span>
+            <input
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-3 text-lg hover:border-orange-500/50 focus:border-orange-500 focus:bg-white/10 focus:ring-1 focus:ring-orange-500/50 transition-all duration-300 outline-none"
+              placeholder="Search events..." type="text" v-model="searchQuery" @focus="isSearchFocused = true"
+              @blur="handleSearchBlur" />
           </div>
+
+          <transition enter-active-class="transition duration-200 ease-out" enter-from-class="translate-y-1 opacity-0"
+            enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-150 ease-in"
+            leave-from-class="translate-y-0 opacity-100" leave-to-class="translate-y-1 opacity-0">
+            <div v-if="searchQuery && isSearchFocused"
+              class="absolute top-full left-0 w-full mt-2 glass-card overflow-hidden max-h-[400px] overflow-y-auto custom-scrollbar shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-orange-500/30 z-[110] backdrop-blur-xl">
+              <ul v-if="filteredDbEvents.length > 0">
+                <li v-for="event in filteredDbEvents" :key="event.event_id" @mousedown="openSearchedEvent(event)"
+                  class="px-5 py-4 border-b border-white/5 hover:bg-orange-500/20 cursor-pointer transition-all flex flex-col gap-1 last:border-0 group">
+                  <span class="font-bold text-orange-500 group-hover:text-white transition-colors">{{ event.title
+                    }}</span>
+                  <div class="flex items-center gap-2 text-xs opacity-60">
+                    <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                    <span>{{ new Date(event.start_time).toLocaleDateString() }}</span>
+                    <span v-if="event.venue || event.Venue" class="flex items-center gap-1">
+                      <span class="opacity-40">•</span>
+                      <span class="material-symbols-outlined text-[14px]">location_on</span>
+                      {{ event.venue || event.Venue }}
+                    </span>
+                  </div>
+                </li>
+              </ul>
+              <div v-else class="px-5 py-8 text-center opacity-50 text-sm italic">
+                No events found matching "{{ searchQuery }}"
+              </div>
+            </div>
+          </transition>
         </div>
       </section>
 
@@ -179,8 +191,8 @@
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 
 // Import the modal and theme just like the parent component
-import PublicEventDetailModal from '../modals/publiceventdetailmodal.vue' 
-import { useTheme } from '../composable/usetheme.ts'       
+import PublicEventDetailModal from '../modals/publiceventdetailmodal.vue'
+import { useTheme } from '../composable/usetheme.ts'
 
 // ----- Types -----
 interface CalendarEvent {
@@ -322,8 +334,8 @@ const openSearchedEvent = (event: DatabaseEvent) => {
   }]
 
   showEventDetailModal.value = true
-  searchQuery.value = '' 
-  isSearchFocused.value = false 
+  searchQuery.value = ''
+  isSearchFocused.value = false
 }
 
 // ----- Integration Logic: Formatting & Tracks -----
@@ -382,35 +394,54 @@ const getEventStyle = (event: CalendarEvent): Record<string, string> => {
   }
 }
 
-// ----- Logic: API Fetch Integration -----
+// ----- Logic: API Fetch Integration -----// Helper function for individual month fetches
+const fetchMonthEvents = async (month: number, year: number) => {
+  const queryParams = new URLSearchParams({
+    month: String(month),
+    year: String(year)
+  })
+
+  const response = await fetch(`/api/events?${queryParams.toString()}`, {
+    headers: {
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+
+  const contentType = response.headers.get("content-type")
+  if (contentType && contentType.includes("text/html")) {
+    console.error("ERROR: LARAVEL RETURNED HTML")
+    return []
+  }
+
+  if (!response.ok) return []
+
+  const data = await response.json()
+  return data.events || []
+}
+
+// Main fetch function handling previous, current, and next months
 const fetchEvents = async () => {
   isLoading.value = true
   try {
-    const queryParams = new URLSearchParams({
-      month: String(currentMonth.value + 1),
-      year: String(currentYear.value)
-    })
+    // Calculate previous and next month/year safely
+    const prevDate = new Date(currentYear.value, currentMonth.value - 1, 1)
+    const nextDate = new Date(currentYear.value, currentMonth.value + 1, 1)
 
-    const response = await fetch(`/api/events?${queryParams.toString()}`, {
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
+    // Fire all three requests concurrently 
+    const [prevEvents, currentEvents, nextEvents] = await Promise.all([
+      fetchMonthEvents(prevDate.getMonth() + 1, prevDate.getFullYear()),
+      fetchMonthEvents(currentMonth.value + 1, currentYear.value),
+      fetchMonthEvents(nextDate.getMonth() + 1, nextDate.getFullYear())
+    ])
 
-    const contentType = response.headers.get("content-type");
+    // Combine all results
+    const combinedEvents = [...prevEvents, ...currentEvents, ...nextEvents]
 
-    if (contentType && contentType.includes("text/html")) {
-      const htmlText = await response.text();
-      console.error("ERROR: LARAVEL RETURNED HTML");
-      dbEvents.value = [];
-      return;
-    }
+    // Deduplicate by event_id (in case a multi-day event spans across months and the backend returns it twice)
+    const uniqueEvents = Array.from(new Map(combinedEvents.map(e => [e.event_id, e])).values())
 
-    if (!response.ok) return;
-
-    const data = await response.json()
-    dbEvents.value = data.events || []
+    dbEvents.value = uniqueEvents
 
   } catch (error) {
     console.error('Network/Parsing Error:', error)
@@ -418,10 +449,6 @@ const fetchEvents = async () => {
     isLoading.value = false
   }
 }
-
-watch([currentMonth, currentYear], () => {
-  fetchEvents()
-})
 
 const calendarDays = computed(() => {
   const days: CalendarDay[] = []
@@ -581,11 +608,11 @@ const updateClock = () => {
 }
 
 onMounted(() => {
-  if (initTheme) initTheme() 
+  if (initTheme) initTheme()
   updateClock()
   fetchEvents()
   fetchWeather() // <-- Kick off weather fetch on load
-  
+
   clockTimer = setInterval(updateClock, 1000)
   weatherTimer = setInterval(fetchWeather, 1800000) // <-- Update weather every 30 minutes
 })
