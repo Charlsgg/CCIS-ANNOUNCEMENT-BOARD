@@ -264,7 +264,7 @@ onMounted(() => {
 
 <template>
     <div
-        class="fixed inset-0 w-full h-full overflow-hidden font-['Space_Grotesk'] flex transition-colors duration-300"
+        class="fixed inset-0 w-full h-full overflow-hidden font-sans flex transition-colors duration-300"
         :style="{ ...styles.pageBg, color: surface.textPrimary }"
     >
         <div

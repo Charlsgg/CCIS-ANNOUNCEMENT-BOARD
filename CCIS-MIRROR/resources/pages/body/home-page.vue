@@ -155,7 +155,7 @@ const handleUpdate = async (payload: {
 </script>
 
 <template>
-    <div class="fixed inset-0 w-full h-full overflow-hidden font-['Space_Grotesk'] flex transition-colors duration-300"
+    <div class="fixed inset-0 w-full h-full overflow-hidden font-sans flex transition-colors duration-300"
         :style="styles.pageBg">
         
         <div v-if="isSidebarOpen" @click="isSidebarOpen = false"

@@ -73,7 +73,7 @@
           <span>Back</span>
         </button>
 
-        <div class="relative w-full z-[100]">
+        <div class="relative w-full z-100">
           <div class="relative flex items-center">
             <span class="material-symbols-outlined absolute left-4 opacity-40 pointer-events-none">search</span>
             <input
@@ -86,7 +86,7 @@
             enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-150 ease-in"
             leave-from-class="translate-y-0 opacity-100" leave-to-class="translate-y-1 opacity-0">
             <div v-if="searchQuery && isSearchFocused"
-              class="absolute top-full left-0 w-full mt-2 glass-card overflow-hidden max-h-[400px] overflow-y-auto custom-scrollbar shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-orange-500/30 z-[110] backdrop-blur-xl">
+              class="absolute top-full left-0 w-full mt-2 glass-card overflow-hidden max-h-100 overflow-y-auto custom-scrollbar shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-orange-500/30 z-110 backdrop-blur-xl">
               <ul v-if="filteredDbEvents.length > 0">
                 <li v-for="event in filteredDbEvents" :key="event.event_id" @mousedown="openSearchedEvent(event)"
                   class="px-5 py-4 border-b border-white/5 hover:bg-orange-500/20 cursor-pointer transition-all flex flex-col gap-1 last:border-0 group">
