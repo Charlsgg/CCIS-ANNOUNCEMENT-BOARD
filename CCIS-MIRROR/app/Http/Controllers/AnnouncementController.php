@@ -33,7 +33,7 @@ class AnnouncementController extends Controller
                 'attachments.*' => 'file|max:10240',
             ]);
 
-            DB::beginTransaction(); 
+            DB::beginTransaction();
 
             $announcement = Announcement::create([
                 'title'     => $validated['title'],
@@ -60,7 +60,6 @@ class AnnouncementController extends Controller
                             'file_path' => $fullUrl, // Saving full URL here
                             'file_type' => $file->getClientMimeType(),
                         ]);
-
                     } catch (\Exception $s3Error) {
                         DB::rollBack();
                         Log::error("S3 Upload Failed: " . $s3Error->getMessage());
@@ -72,15 +71,14 @@ class AnnouncementController extends Controller
                 }
             }
 
-            DB::commit(); 
+            DB::commit();
 
             return response()->json(
                 $announcement->load(['author.profile', 'attachments']),
                 201
             );
-            
         } catch (\Exception $e) {
-            DB::rollBack(); 
+            DB::rollBack();
             Log::error("General Error: " . $e->getMessage());
             return response()->json([
                 'message' => 'General Server Error',
@@ -95,15 +93,89 @@ class AnnouncementController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $validated = $request->validate([
-            'title'   => 'required|string|max:255',
-            'content' => 'required|string',
-            'topic'   => 'nullable|string|max:255',
-        ]);
+        try {
+            // 1. Validate incoming data (including new and deleted attachments)
+            $validated = $request->validate([
+                'title'                 => 'required|string|max:255',
+                'content'               => 'required|string',
+                'topic'                 => 'nullable|string|max:255',
+                'new_attachments.*'     => 'file|max:10240',
+                'deleted_attachments.*' => 'integer',
+            ]);
 
-        $announcement->update($validated);
+            DB::beginTransaction();
 
-        return response()->json($announcement->load(['author.profile', 'attachments']));
+            // 2. Update basic text fields
+            $announcement->update([
+                'title'   => $validated['title'],
+                'content' => $validated['content'],
+                'topic'   => $validated['topic'] ?? 'General',
+            ]);
+
+            // 3. Handle Deleted Attachments
+            if ($request->has('deleted_attachments')) {
+                // Find the attachments that belong to this announcement and match the deleted IDs
+                // Note: Change 'attachment_id' to 'id' if your database primary key for attachments is just 'id'
+                $filesToDelete = $announcement->attachments()
+                    ->whereIn('attachment_id', $request->input('deleted_attachments'))
+                    ->get();
+
+                foreach ($filesToDelete as $file) {
+                    try {
+                        // Extract relative path to delete from S3
+                        $urlPath = parse_url($file->file_path, PHP_URL_PATH);
+                        $segments = explode('/public/' . env('AWS_BUCKET') . '/', $urlPath);
+
+                        if (isset($segments[1])) {
+                            Storage::disk('s3')->delete($segments[1]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Failed to delete announcement file on update: " . $e->getMessage());
+                    }
+
+                    // Remove from database
+                    $file->delete();
+                }
+            }
+
+            // 4. Handle New Attachments
+            if ($request->hasFile('new_attachments')) {
+                foreach ($request->file('new_attachments') as $file) {
+                    try {
+                        // Store file and get URL
+                        $path = $file->store('announcement-files', 's3');
+
+                        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+                        $disk = Storage::disk('s3');
+                        $fullUrl = $disk->url($path);
+
+                        // Save to database
+                        $announcement->attachments()->create([
+                            'file_path' => $fullUrl,
+                            'file_type' => $file->getClientMimeType(),
+                        ]);
+                    } catch (\Exception $s3Error) {
+                        DB::rollBack();
+                        Log::error("S3 Upload Failed during Update: " . $s3Error->getMessage());
+                        return response()->json([
+                            'message' => 'Supabase Storage Upload Failed',
+                            'error_detail' => $s3Error->getMessage(),
+                        ], 500);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json($announcement->load(['author.profile', 'attachments']));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("General Error during Update: " . $e->getMessage());
+            return response()->json([
+                'message' => 'General Server Error',
+                'error_detail' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function destroy(Announcement $announcement)
@@ -117,15 +189,15 @@ class AnnouncementController extends Controller
                 // Extract relative path from the stored full URL to delete it
                 $urlPath = parse_url($file->file_path, PHP_URL_PATH);
                 $segments = explode('/public/' . env('AWS_BUCKET') . '/', $urlPath);
-                
+
                 if (isset($segments[1])) {
                     Storage::disk('s3')->delete($segments[1]);
                 }
             } catch (\Exception $e) {
                 Log::error("Failed to delete announcement file: " . $e->getMessage());
             }
-            
-            $file->delete(); 
+
+            $file->delete();
         }
 
         $announcement->delete();
