@@ -143,6 +143,14 @@
       </TransitionGroup>
     </main>
 
+    <button @click="toggleFullScreen"
+      class="fixed bottom-6 left-6 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-black/40 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500 transition-all duration-300 group shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md"
+      title="Toggle Fullscreen">
+      <span class="material-symbols-outlined text-white/70 group-hover:text-orange-500 transition-colors text-2xl">
+        {{ isFullScreen ? 'fullscreen_exit' : 'fullscreen' }}
+      </span>
+    </button>
+
     <Teleport to="body">
       <Transition name="modal-fade">
         <div v-if="isModalOpen" class="fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6">
@@ -348,11 +356,7 @@ const currentMonthYear = ref('')
 const isModalOpen = ref(false)
 const selectedAnnouncement = ref(null)
 const activePreview = ref(null)
-
-// Weather State
-const weatherCity = ref('Butuan City')
-const weatherTemp = ref('--')
-const weatherDesc = ref('Loading...')
+const isFullScreen = ref(false) // Added fullscreen state
 
 // Computed
 const daysInMonth = computed(() => {
@@ -390,11 +394,23 @@ const goToEvents = () => {
   window.location.href = '/announcements-events'
 }
 
-
 const goBack = () => {
   // No history checks, no double-click bugs. 
   // It simply forces them to the announcements board.
   window.location.href = '/announcements-board'
+}
+
+// Fullscreen Toggle logic
+const toggleFullScreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      console.error(`Error attempting to enable fullscreen: ${err.message}`)
+    })
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen()
+    }
+  }
 }
 
 const handleLike = async (item) => {
@@ -503,6 +519,12 @@ onMounted(() => {
   fetchAnnouncements()
   updateClock()
   fetchWeather()
+  
+  // Listen for fullscreen changes (e.g. user hitting ESC key)
+  document.addEventListener('fullscreenchange', () => {
+    isFullScreen.value = !!document.fullscreenElement
+  })
+
   clockTimer = setInterval(updateClock, 1000)
   fetchTimer = setInterval(fetchAnnouncements, 5000)
   weatherTimer = setInterval(fetchWeather, 1800000)
@@ -512,5 +534,10 @@ onUnmounted(() => {
   clearInterval(clockTimer)
   clearInterval(fetchTimer)
   clearInterval(weatherTimer)
+  
+  // Good practice to remove event listeners
+  document.removeEventListener('fullscreenchange', () => {
+    isFullScreen.value = !!document.fullscreenElement
+  })
 })
 </script>
