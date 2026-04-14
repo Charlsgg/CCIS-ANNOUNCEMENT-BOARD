@@ -356,6 +356,11 @@ const currentMonthYear = ref('')
 const isModalOpen = ref(false)
 const selectedAnnouncement = ref(null)
 const activePreview = ref(null)
+// Weather State
+const weatherCity = ref('Butuan City')
+const weatherTemp = ref('--')
+const weatherDesc = ref('Loading...')
+
 const isFullScreen = ref(false) // Added fullscreen state
 
 // Computed
