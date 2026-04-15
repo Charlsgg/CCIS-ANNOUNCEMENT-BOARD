@@ -1,10 +1,10 @@
-import { createApp, Component } from 'vue'
+import { createApp, h, Component } from 'vue'
 import axios from 'axios'
 
 declare global {
     interface Window {
         axios: typeof axios;
-        csrfToken?: string; // Adding this to the global interface
+        csrfToken?: string; 
     }
 }
 
@@ -15,6 +15,7 @@ window.axios.defaults.withCredentials = true;
 window.axios.defaults.baseURL = '/api';
 
 // 2. Imports
+import MainLayout from '../pages/layout/mainlayout.vue' // <-- IMPORT YOUR LAYOUT HERE
 import Login from '../pages/authpages/login.vue'
 import Home from '../pages/body/home-page.vue'
 import Events from '../pages/body/events-page.vue'
@@ -30,34 +31,51 @@ const el = document.getElementById('app');
 if (el) {
     const page = el.dataset.page;
     const user = JSON.parse(el.dataset.user || '{}');
-    const csrfToken = (window as any).csrfToken; // Grab token from window
+    const csrfToken = (window as any).csrfToken; 
 
-    // Helper function to mount with global props
+    // Helper 1: Mount standalone pages (NO navbar/sidebar)
     const mountApp = (component: Component, props = {}) => {
         createApp(component, { 
             ...props, 
-            csrfToken: csrfToken // Passes token to every page
+            csrfToken: csrfToken 
+        }).mount('#app');
+    };
+
+    // Helper 2: Mount pages INSIDE the MainLayout automatically
+    const mountWithLayout = (component: Component, props: any = {}) => {
+        createApp({
+            render() {
+                // This tells Vue to wrap the requested page inside MainLayout's <slot />
+                return h(MainLayout, { user: props.user }, {
+                    default: () => h(component, { ...props, csrfToken: csrfToken })
+                })
+            }
         }).mount('#app');
     };
 
     // 3. Routing Logic
+    // --- NO LAYOUT PAGES ---
     if (page === 'announcement-board') {
         mountApp(PublicBoard);
     } else if (page === 'announcements-events') {
         mountApp(PublicEvents);
-    } else if (page === 'home-page') {
-        mountApp(Home, { user });
-    } else if (page === 'events-page') {
-        mountApp(Events, { user });
-    } else if (page === 'announcement-page') {
-        mountApp(Announcements, { user });
-    } else if (page === 'profile-page') {
-        mountApp(Profile, { user });
     } else if (page === 'signup') {
         mountApp(Signup);
     } else if (page === 'forgot-password') {
         mountApp(ForgotPassword);
-    } else {
+    } else if (page === 'login') {
         mountApp(Login);
+    } 
+    // --- PAGES WITH LAYOUT (Uses mountWithLayout) ---
+    else if (page === 'home-page') {
+        mountWithLayout(Home, { user });
+    } else if (page === 'events-page') {
+        mountWithLayout(Events, { user });
+    } else if (page === 'announcement-page') {
+        mountWithLayout(Announcements, { user });
+    } else if (page === 'profile-page') {
+        mountWithLayout(Profile, { user });
+    } else {
+        mountApp(Login); // Fallback
     }
 }

@@ -1,13 +1,7 @@
-<script lang="ts">
-export default { layout: null }
-</script>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useTheme } from '../composable/usetheme.ts'
 
-import AppSidebar from '../components/appsidebar.vue'
-import AppNavbar from '../components/appnavbar.vue'
 import GeneralAnnouncements from '../components/generalannouncements.vue'
 import UpcomingDeadlines from '../components/upcomingdeadlines.vue'
 import AnnouncementFilters from '../components/announcementfilters.vue'
@@ -16,14 +10,12 @@ const props = defineProps<{
     user?: { name: string; email: string; user_type: string }
 }>()
 
-const { styles, surface, isDark, setUserType, initTheme } = useTheme()
+const { isDark, setUserType, initTheme } = useTheme()
 
 const activeTopic = ref<string | null>(null)
-const isSidebarOpen = ref(false)
 const announcements = ref<any[]>([])
 const upcomingEvents = ref([])
 const stats = ref({ cs: 0, it: 0, is: 0, lsg: 0, all: 0 })
-const csrfToken = ref('')
 const isLoading = ref(true)
 
 // --- ADDED FOR PREVIEW ---
@@ -35,11 +27,6 @@ onMounted(() => {
         setUserType(props.user.user_type)
     }
     fetchBoardData()
-    
-    const tokenTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-    if (tokenTag) {
-        csrfToken.value = tokenTag.content
-    }
 })
 
 const fetchBoardData = async (topic: string | null = null) => {
@@ -69,60 +56,35 @@ const handleFilterChange = (role: string | null) => {
 </script>
 
 <template>
-    <div
-        class="fixed inset-0 w-full h-full overflow-hidden font-sans flex transition-colors duration-300"
-    :style="{ ...styles.pageBg, color: surface.textPrimary }"
-    >   
-        <div
-            v-if="isSidebarOpen"
-            @click="isSidebarOpen = false"
-            class="absolute inset-0 z-40 md:hidden backdrop-blur-sm transition-opacity"
-            :style="{ backgroundColor: surface.overlayBg }"
-        ></div>
-
-        <AppSidebar
-            :is-open="isSidebarOpen"
-            :csrf-token="csrfToken"
-            @close="isSidebarOpen = false"
-        />
-
-        <main class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
-            <AppNavbar
-                :user-name="user?.name"
-                @toggle-sidebar="isSidebarOpen = true"
+    <div class="max-w-7xl mx-auto pb-12 flex flex-col xl:flex-row gap-8 items-start w-full min-w-0">
+        
+        <div class="w-full flex-1 order-2 xl:order-1 min-w-0">
+            <GeneralAnnouncements 
+                :announcements="announcements"
+                :is-loading="isLoading"
+                @preview="activePreview = $event"
             />
+        </div>
 
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full custom-scrollbar">
-                <div class="max-w-7xl mx-auto pb-12 flex flex-col xl:flex-row gap-8 items-start">
-                    
-                    <div class="w-full flex-1 order-2 xl:order-1">
-                        <GeneralAnnouncements 
-                            :announcements="announcements"
-                            :is-loading="isLoading"
-                            @preview="activePreview = $event"
-                        />
-                    </div>
+        <aside class="w-full xl:w-80 shrink-0 flex flex-col gap-6 order-1 xl:order-2 xl:sticky xl:top-0 min-w-0">
+            <UpcomingDeadlines 
+                :events="upcomingEvents"
+                :is-dark="isDark"
+            />
+            
+            <AnnouncementFilters 
+                :stats="stats"
+                @filter-change="handleFilterChange"
+            />
+        </aside>
+    </div>
 
-                    <aside class="w-full xl:w-80 shrink-0 flex flex-col gap-6 order-1 xl:order-2 xl:sticky xl:top-0">
-                        <UpcomingDeadlines 
-                            :events="upcomingEvents"
-                            :is-dark="isDark"
-                        />
-                        
-                        <AnnouncementFilters 
-                            :stats="stats"
-                            @filter-change="handleFilterChange"
-                        />
-                    </aside>
-                </div>
-            </div>
-        </main>
-
+    <Teleport to="body">
         <Transition name="fade">
             <div v-if="activePreview"
-                class="fixed inset-0 z-200 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+                class="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
                 <button @click="activePreview = null"
-                    class="absolute top-6 right-6 z-210 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all hover:rotate-90">
+                    class="absolute top-6 right-6 z-[210] w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all hover:rotate-90">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
@@ -143,7 +105,7 @@ const handleFilterChange = (role: string | null) => {
                 </div>
             </div>
         </Transition>
-    </div>
+    </Teleport>
 </template>
 
 <style scoped>

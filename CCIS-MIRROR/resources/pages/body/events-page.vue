@@ -1,12 +1,6 @@
-<script lang="ts">
-export default { layout: null }
-</script>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '../composable/usetheme.ts'
-import AppSidebar from '../components/appsidebar.vue'
-import AppNavbar from '../components/appnavbar.vue'
 import EventCreateModal from '../modals/eventcreatemodal.vue'
 import EventDetailModal from '../modals/eventdetailmodal.vue'
 import MonthYearSelector from '../components/monthyearselector.vue'
@@ -49,14 +43,13 @@ interface DatabaseEvent {
     event_year?: number
 }
 
+// Added csrfToken to props since your app.ts passes it globally now
 const props = defineProps<{
     user?: { name: string; email: string; user_type: string }
+    csrfToken?: string 
 }>()
 
-const { theme, styles, surface, isDark, setUserType, initTheme } = useTheme()
-
-const isSidebarOpen = ref(false)
-const csrfToken = ref('')
+const { theme, styles, surface, setUserType, initTheme } = useTheme()
 
 const today = new Date()
 const currentMonth = ref(today.getMonth()) 
@@ -69,8 +62,7 @@ const showCreateModal = ref(false)
 const showEventDetailModal = ref(false)
 const selectedDay = ref<CalendarDay | null>(null)
 
-
-// ----- Logic: API Fetch Integration -----// Helper function for individual month fetches
+// ----- Logic: API Fetch Integration -----
 const fetchMonthEvents = async (month: number, year: number) => {
   const queryParams = new URLSearchParams({
     month: String(month),
@@ -96,25 +88,19 @@ const fetchMonthEvents = async (month: number, year: number) => {
   return data.events || []
 }
 
-// Main fetch function handling previous, current, and next months
 const fetchEvents = async () => {
   isLoading.value = true
   try {
-    // Calculate previous and next month/year safely
     const prevDate = new Date(currentYear.value, currentMonth.value - 1, 1)
     const nextDate = new Date(currentYear.value, currentMonth.value + 1, 1)
 
-    // Fire all three requests concurrently 
     const [prevEvents, currentEvents, nextEvents] = await Promise.all([
       fetchMonthEvents(prevDate.getMonth() + 1, prevDate.getFullYear()),
       fetchMonthEvents(currentMonth.value + 1, currentYear.value),
       fetchMonthEvents(nextDate.getMonth() + 1, nextDate.getFullYear())
     ])
 
-    // Combine all results
     const combinedEvents = [...prevEvents, ...currentEvents, ...nextEvents]
-
-    // Deduplicate by event_id (in case a multi-day event spans across months and the backend returns it twice)
     const uniqueEvents = Array.from(new Map(combinedEvents.map(e => [e.event_id, e])).values())
 
     dbEvents.value = uniqueEvents
@@ -173,9 +159,9 @@ const calendarDays = computed(() => {
             venue: event.venue || event.Venue, 
             description: event.content,        
             start_time: event.start_time,
-            end_time: event.end_time, // This now safely accepts null
+            end_time: event.end_time, 
             startTime: event.start_time, 
-            endTime: event.end_time,  // This now safely accepts null
+            endTime: event.end_time,  
             color: theme.value.accent
         }
 
@@ -198,7 +184,6 @@ const calendarDays = computed(() => {
 const openEventDetail = (day: CalendarDay) => {
     selectedDay.value = day
     if (day.events && day.events.length > 0) {
-        // UPDATED: Include end_time mapping
         selectedEvents.value = day.events.map(e => ({
             title: e.title,
             venue: e.venue || 'TBA',
@@ -216,7 +201,6 @@ const openUpcomingEventDetail = async (eventId: number) => {
     const event = dbEvents.value.find(e => e.event_id === eventId)
     
     if (event) {
-        // UPDATED: Include end_time
         selectedEvents.value = [{
             title: event.title,
             venue: event.venue || event.Venue || 'TBA',
@@ -232,7 +216,6 @@ const openUpcomingEventDetail = async (eventId: number) => {
             const futureEvent = data.events?.find((e: any) => e.event_id === eventId || e.id === eventId)
             
             if (futureEvent) {
-                // UPDATED: Include end_time
                 selectedEvents.value = [{
                     title: futureEvent.title,
                     venue: futureEvent.venue || futureEvent.Venue || 'TBA', 
@@ -253,132 +236,90 @@ onMounted(() => {
     if (props.user?.user_type) {
         setUserType(props.user.user_type)
     }
-    
-    const tokenTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
-    if (tokenTag) {
-        csrfToken.value = tokenTag.content
-    }
     fetchEvents()
 })
 </script>
 
 <template>
-    <div
-        class="fixed inset-0 w-full h-full overflow-hidden font-sans flex transition-colors duration-300"
-        :style="{ ...styles.pageBg, color: surface.textPrimary }"
-    >
-        <div
-            v-if="isSidebarOpen"
-            @click="isSidebarOpen = false"
-            class="absolute inset-0 z-40 md:hidden backdrop-blur-sm transition-opacity"
-            :style="{ backgroundColor: surface.overlayBg }"
-        ></div>
+    <div class="max-w-7xl mx-auto pb-12 w-full min-w-0">
+        
+        <div class="mb-6 md:mb-8 flex flex-col xl:flex-row xl:items-center justify-between gap-4 w-full">
+            <div class="flex flex-col gap-2">
+                <h3 class="text-2xl md:text-3xl font-bold tracking-tight" :style="styles.textPrimary">
+                    Academic Calendar
+                </h3>
+                <p :style="styles.textSecondary" class="text-sm md:text-base max-w-2xl">
+                    Manage and track upcoming university events, exams, and holidays.
+                </p>
+            </div>
 
-        <AppSidebar
-            :is-open="isSidebarOpen"
-            :csrf-token="csrfToken"
-            @close="isSidebarOpen = false"
-        />
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
+                <MonthYearSelector 
+                    :theme="theme" 
+                    :surface="surface" 
+                    v-model:month="currentMonth"
+                    v-model:year="currentYear"
+                    class="w-full sm:w-auto"
+                />
 
-        <main class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
-            <AppNavbar
-                :user-name="user?.name"
-                @toggle-sidebar="isSidebarOpen = true"
-            />
+                <button 
+                    @click="showCreateModal = true" 
+                    class="flex items-center justify-center gap-2 px-4 h-10 w-full sm:w-auto rounded-lg font-semibold text-sm transition-all"
+                    :style="styles.button"
+                    @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '0.9'"
+                    @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '1'"
+                >
+                    <span class="material-symbols-outlined text-[20px]">add</span>
+                    Post New Event
+                </button>
+            </div>
+        </div>
 
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full min-w-0 custom-scrollbar">
-                <div class="max-w-7xl mx-auto pb-12 w-full min-w-0">
-                    
-                    <div class="mb-6 md:mb-8 flex flex-col xl:flex-row xl:items-center justify-between gap-4 w-full">
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-2xl md:text-3xl font-bold tracking-tight" :style="styles.textPrimary">
-                                Academic Calendar
-                            </h3>
-                            <p :style="styles.textSecondary" class="text-sm md:text-base max-w-2xl">
-                                Manage and track upcoming university events, exams, and holidays.
-                            </p>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
-                            <MonthYearSelector 
-                                :theme="theme" 
-                                :surface="surface" 
-                                v-model:month="currentMonth"
-                                v-model:year="currentYear"
-                                class="w-full sm:w-auto"
-                            />
-
-                            <button 
-                                @click="showCreateModal = true" 
-                                class="flex items-center justify-center gap-2 px-4 h-10 w-full sm:w-auto rounded-lg font-semibold text-sm transition-all"
-                                :style="styles.button"
-                                @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '0.9'"
-                                @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '1'"
-                            >
-                                <span class="material-symbols-outlined text-[20px]">add</span>
-                                Post New Event
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col xl:flex-row gap-6 items-start w-full min-w-0">
-                        
-                        <div class="w-full xl:flex-1 min-w-0 max-w-full flex flex-col">
-                            <div class="w-full pb-4">
-                                <CalendarGrid 
-                                    :theme="theme" 
-                                    :surface="surface" 
-                                    :styles="styles"
-                                    :days="calendarDays"
-                                    @show-detail="openEventDetail"
-                                />
-                            </div>
-                        </div>
-                        
-                        <aside class="w-full xl:w-87.5 shrink-0 min-w-0">
-                            <UpcomingEvents 
-                                :theme="theme" 
-                                :surface="surface" 
-                                :styles="styles"
-                                @show-detail="openUpcomingEventDetail" 
-                                class="w-full"
-                            />
-                        </aside>
-
-                    </div>
-
+        <div class="flex flex-col xl:flex-row gap-6 items-start w-full min-w-0">
+            
+            <div class="w-full xl:flex-1 min-w-0 max-w-full flex flex-col">
+                <div class="w-full pb-4">
+                    <CalendarGrid 
+                        :theme="theme" 
+                        :surface="surface" 
+                        :styles="styles"
+                        :days="calendarDays"
+                        @show-detail="openEventDetail"
+                    />
                 </div>
             </div>
-        </main>
+            
+            <aside class="w-full xl:w-87.5 shrink-0 min-w-0">
+                <UpcomingEvents 
+                    :theme="theme" 
+                    :surface="surface" 
+                    :styles="styles"
+                    @show-detail="openUpcomingEventDetail" 
+                    class="w-full"
+                />
+            </aside>
 
-        <Teleport to="body">
-            <EventCreateModal 
-                :show="showCreateModal"
-                :theme="theme"
-                :surface="surface"
-                :styles="styles"
-                @close="showCreateModal = false"
-                @created="fetchEvents" 
-            />
+        </div>
 
-            <EventDetailModal 
-                :show="showEventDetailModal"
-                :theme="theme"
-                :surface="surface"
-                :styles="styles"
-                :events="selectedEvents" 
-                @close="showEventDetailModal = false"
-            />
-        </Teleport>
     </div>
+
+    <Teleport to="body">
+        <EventCreateModal 
+            :show="showCreateModal"
+            :theme="theme"
+            :surface="surface"
+            :styles="styles"
+            @close="showCreateModal = false"
+            @created="fetchEvents" 
+        />
+
+        <EventDetailModal 
+            :show="showEventDetailModal"
+            :theme="theme"
+            :surface="surface"
+            :styles="styles"
+            :events="selectedEvents" 
+            @close="showEventDetailModal = false"
+        />
+    </Teleport>
 </template>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-
-.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>

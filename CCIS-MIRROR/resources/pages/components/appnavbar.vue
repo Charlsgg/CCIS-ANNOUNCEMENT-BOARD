@@ -9,8 +9,9 @@ const emit = defineEmits<{
 
 const { theme, styles, surface, isDark, toggleMode } = useTheme()
 
-const userName = ref('')
-const userAvatar = ref('')
+// --- INSTANT LOAD: Grab from localStorage first to prevent flashing ---
+const userName = ref(localStorage.getItem('cached_user_name') || '')
+const userAvatar = ref(localStorage.getItem('cached_profile_pic') || '')
 const imageHasError = ref(false)
 
 // --- Search State ---
@@ -99,8 +100,20 @@ const fetchUserData = async () => {
         if (response.ok) {
             const data = await response.json()
             const userData = data.user ? data.user : data
-            userName.value = userData?.name || 'Unknown User'
-            userAvatar.value = userData?.profile_picture || null
+            
+            const fetchedName = userData?.name || 'Unknown User'
+            const fetchedAvatar = userData?.profile_picture || ''
+
+            // Update Vue state
+            userName.value = fetchedName
+            userAvatar.value = fetchedAvatar
+
+            // --- CACHE IN BROWSER MEMORY ---
+            // Save it so the next page load is perfectly instant
+            localStorage.setItem('cached_user_name', fetchedName)
+            if (fetchedAvatar) {
+                localStorage.setItem('cached_profile_pic', fetchedAvatar)
+            }
         }
     } catch (error) {
         console.error('Network error loading navbar data:', error)
@@ -119,6 +132,7 @@ onUnmounted(() => {
 
 <template>
     <header class="shrink-0 flex items-center justify-between px-4 md:px-8 py-3 md:py-4 z-30 transition-colors duration-300" :style="styles.headerBg">
+        
         <div class="flex items-center gap-3">
             <button
                 @click="emit('toggleSidebar')"
@@ -144,7 +158,7 @@ onUnmounted(() => {
                         backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                         color: surface.textPrimary,
                         borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                        '--tw-ring-color': theme.accent + '20', // Subtle focus ring using accent color
+                        '--tw-ring-color': theme.accent + '20',
                         caretColor: theme.accent
                     }"
                     placeholder="Search users, announcements, events..."
@@ -166,7 +180,7 @@ onUnmounted(() => {
                     No results found in {{ theme.label }}
                 </div>
 
-                <div v-else class="overflow-y-auto overflow-x-hidden p-2 space-y-1">
+                <div v-else class="overflow-y-auto overflow-x-hidden p-2 space-y-1 custom-scrollbar">
                     <a 
                         v-for="result in searchResults" 
                         :key="result.id"
@@ -208,8 +222,8 @@ onUnmounted(() => {
                 <Moon v-else :size="20" />
             </button>
             
-            <div class="h-8 w-8 md:h-9 md:w-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden cursor-pointer" 
-                 :style="styles.avatar">
+            <a :href="theme.profilePath" class="h-8 w-8 md:h-9 md:w-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden cursor-pointer ring-2 transition-all hover:scale-105" 
+                 :style="{ ...styles.avatar, '--tw-ring-color': surface.borderSubtle }">
                 <img 
                     v-if="userAvatar && !imageHasError" 
                     :src="getFileUrl(userAvatar)" 
@@ -220,13 +234,13 @@ onUnmounted(() => {
                 <span v-else>
                     {{ userName?.charAt(0) || 'U' }}
                 </span>
-            </div>
+            </a>
         </div>
     </header>
 </template>
 
 <style scoped>
-/* Added to handle the ring color variable properly with Tailwind focus utility */
+/* Focus ring styling for dynamic theme accent */
 input:focus {
     border-color: v-bind('theme.accent');
     box-shadow: 0 0 0 4px v-bind('theme.accent + "20"');
