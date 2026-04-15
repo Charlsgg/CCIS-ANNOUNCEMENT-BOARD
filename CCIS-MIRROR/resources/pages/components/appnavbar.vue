@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Terminal, Bell, Menu, Sun, Moon } from 'lucide-vue-next'
+import { Terminal, Bell, Menu, Sun, Moon, Search } from 'lucide-vue-next' // Added Search icon
 import { useTheme } from '../composable/usetheme.ts'
 
 // Emits
 const emit = defineEmits<{
     toggleSidebar: []
+    search: [query: string] // Added optional search emit
 }>()
 
 // Composables
@@ -15,6 +16,15 @@ const { theme, styles, surface, isDark, toggleMode } = useTheme()
 const userName = ref('')
 const userAvatar = ref('')
 const imageHasError = ref(false)
+const searchQuery = ref('') // Added search state
+
+// Triggered when user presses Enter in the search bar
+const handleSearch = () => {
+    if (searchQuery.value.trim()) {
+        emit('search', searchQuery.value)
+    }
+}
+
 const getFileUrl = (path?: string | null) => {
     if (!path) return ''
 
@@ -43,6 +53,7 @@ const getFileUrl = (path?: string | null) => {
     // 5. Fallback for relative paths
     return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
 }
+
 // --- Methods ---
 const fetchUserData = async () => {
     try {
@@ -58,13 +69,10 @@ const fetchUserData = async () => {
         if (response.ok) {
             const data = await response.json()
             
-            // 1. Let's see exactly what the backend sent in your console (F12)
             console.log("Navbar API Data:", data)
             
-            // 2. BULLETPROOF FIX: Check if it's wrapped in '.user' or if it's direct
             const userData = data.user ? data.user : data
             
-            // 3. Safely assign the values (the ? prevents crashes if a field is missing)
             userName.value = userData?.name || 'Unknown User'
             userAvatar.value = userData?.profile_picture || null
             
@@ -107,7 +115,32 @@ onMounted(() => {
             </button>
         </div>
 
-        <div class="flex items-center gap-2 md:gap-4">
+        <div class="flex-1 max-w-md mx-4 md:mx-8 hidden sm:block">
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none" 
+                     :style="{ color: surface.textSecondary }">
+                    <Search :size="18" />
+                </div>
+                <input
+                    v-model="searchQuery"
+                    @keyup.enter="handleSearch"
+                    type="text"
+                    class="block w-full py-2 pl-10 pr-4 text-sm rounded-lg transition-all outline-none focus:ring-2 focus:ring-opacity-50"
+                    :style="{
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                        color: surface.textPrimary,
+                        '--tw-ring-color': theme.accent
+                    }"
+                    placeholder="Search..."
+                />
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 md:gap-4 shrink-0">
+            <button class="sm:hidden p-2 rounded-lg transition-colors" :style="{ color: surface.textSecondary }">
+                <Search :size="20" />
+            </button>
+
             <button
                 @click="toggleMode"
                 class="p-2 rounded-lg transition-colors"
@@ -129,7 +162,7 @@ onMounted(() => {
             </button>
             
             <div
-                class="h-8 w-8 md:h-9 md:w-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden"
+                class="h-8 w-8 md:h-9 md:w-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden cursor-pointer"
                 :style="styles.avatar"
             >
                 <img 

@@ -276,7 +276,7 @@
               </div>
 
             </div>
-
+            
             <div
               class="px-8 py-5 border-t border-white/5 bg-black/40 flex justify-between items-center relative z-10 backdrop-blur-md">
               <button @click="handleLike(selectedAnnouncement)"
@@ -341,7 +341,6 @@
     </Teleport>
   </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
@@ -356,12 +355,13 @@ const currentMonthYear = ref('')
 const isModalOpen = ref(false)
 const selectedAnnouncement = ref(null)
 const activePreview = ref(null)
+
 // Weather State
 const weatherCity = ref('Butuan City')
 const weatherTemp = ref('--')
 const weatherDesc = ref('Loading...')
 
-const isFullScreen = ref(false) // Added fullscreen state
+const isFullScreen = ref(false) 
 
 // Computed
 const daysInMonth = computed(() => {
@@ -400,22 +400,27 @@ const goToEvents = () => {
 }
 
 const goBack = () => {
-  // No history checks, no double-click bugs. 
-  // It simply forces them to the announcements board.
   window.location.href = '/announcements-board'
 }
 
-// Fullscreen Toggle logic
-const toggleFullScreen = () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch((err) => {
-      console.error(`Error attempting to enable fullscreen: ${err.message}`)
-    })
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen()
+// Fixed Fullscreen Logic
+const toggleFullScreen = async () => {
+  try {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen()
+    } else {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen()
+      }
     }
+  } catch (err) {
+    console.error(`Error attempting to toggle fullscreen: ${err.message}`)
   }
+}
+
+// Extract the handler to a named function so it can be properly removed
+const handleFullscreenChange = () => {
+  isFullScreen.value = !!document.fullscreenElement
 }
 
 const handleLike = async (item) => {
@@ -471,6 +476,7 @@ const getWeatherDescription = (code) => {
   }
   return weatherCodes[code] || 'Unknown Conditions'
 }
+
 const fetchWeather = async () => {
   try {
     const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&current_weather=true&timezone=Asia%2FManila";
@@ -520,15 +526,14 @@ const updateClock = () => {
 }
 
 let clockTimer, fetchTimer, weatherTimer
+
 onMounted(() => {
   fetchAnnouncements()
   updateClock()
   fetchWeather()
   
-  // Listen for fullscreen changes (e.g. user hitting ESC key)
-  document.addEventListener('fullscreenchange', () => {
-    isFullScreen.value = !!document.fullscreenElement
-  })
+  // Use the named function
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
 
   clockTimer = setInterval(updateClock, 1000)
   fetchTimer = setInterval(fetchAnnouncements, 5000)
@@ -540,9 +545,7 @@ onUnmounted(() => {
   clearInterval(fetchTimer)
   clearInterval(weatherTimer)
   
-  // Good practice to remove event listeners
-  document.removeEventListener('fullscreenchange', () => {
-    isFullScreen.value = !!document.fullscreenElement
-  })
+  // Pass the exact same named function to properly remove the listener
+  document.removeEventListener('fullscreenchange', handleFullscreenChange)
 })
 </script>

@@ -180,8 +180,22 @@
         </div>
       </div>
     </main>
+    <button @click="toggleFullScreen"
+      class="fixed bottom-6 left-6 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-black/40 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500 transition-all duration-300 group shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md"
+      title="Toggle Fullscreen">
+      <span class="material-symbols-outlined text-white/70 group-hover:text-orange-500 transition-colors text-2xl">
+        {{ isFullScreen ? 'fullscreen_exit' : 'fullscreen' }}
+      </span>
+    </button>
 
     <Teleport to="body">
+      <button @click="toggleFullScreen"
+    class="fixed bottom-6 left-6 z-[9999] flex items-center justify-center w-12 h-12 rounded-full bg-black/60 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500 transition-all duration-300 group shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md"
+    title="Toggle Fullscreen">
+    <span class="material-symbols-outlined text-white/90 group-hover:text-orange-500 transition-colors text-2xl">
+      {{ isFullScreen ? 'fullscreen_exit' : 'fullscreen' }}
+    </span>
+  </button>
       <PublicEventDetailModal v-if="showEventDetailModal" :show="showEventDetailModal" :theme="theme" :surface="surface"
         :styles="styles" :events="selectedEvents" @close="showEventDetailModal = false" />
     </Teleport>
@@ -204,7 +218,9 @@ interface CalendarEvent {
   startTime?: string
   endTime?: string | null
 }
-
+document.addEventListener('fullscreenchange', () => {
+    isFullScreen.value = !!document.fullscreenElement
+  })
 interface CalendarDay {
   date: number
   fullDate?: string
@@ -234,7 +250,7 @@ const { theme, styles, surface, initTheme } = useTheme()
 
 const showEventDetailModal = ref(false)
 const selectedEvents = ref<Array<{ title: string, venue: string, description: string, start_time: string, end_time?: string | null }>>([])
-
+const isFullScreen = ref(false) // Added fullscreen state
 // ----- State: Weather -----
 const weatherCity = ref('Butuan City')
 const weatherTemp = ref<number | string>('--')
@@ -576,7 +592,17 @@ const processedDays = computed(() => {
 const goBack = () => {
   window.history.back()
 }
-
+const toggleFullScreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      console.error(`Error attempting to enable fullscreen: ${err.message}`)
+    })
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen()
+    }
+  }
+}
 const isToday = (dateString?: string) => {
   if (!dateString) return false
   const d = new Date()
@@ -619,6 +645,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(clockTimer)
-  clearInterval(weatherTimer) // <-- Cleanup the timer to prevent memory leaks
+  clearInterval(weatherTimer) // <-- Cleanup the timer to prevent memory lea
+  document.removeEventListener('fullscreenchange', () => {
+    isFullScreen.value = !!document.fullscreenElement
+  })
 })
+
 </script>
