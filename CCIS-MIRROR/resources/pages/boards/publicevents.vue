@@ -190,7 +190,7 @@
 
     <Teleport to="body">
       <button @click="toggleFullScreen"
-    class="fixed bottom-6 left-6 z-[9999] flex items-center justify-center w-12 h-12 rounded-full bg-black/60 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500 transition-all duration-300 group shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md"
+    class="fixed bottom-6 left-6 z-9999 flex items-center justify-center w-12 h-12 rounded-full bg-black/60 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500 transition-all duration-300 group shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md"
     title="Toggle Fullscreen">
     <span class="material-symbols-outlined text-white/90 group-hover:text-orange-500 transition-colors text-2xl">
       {{ isFullScreen ? 'fullscreen_exit' : 'fullscreen' }}

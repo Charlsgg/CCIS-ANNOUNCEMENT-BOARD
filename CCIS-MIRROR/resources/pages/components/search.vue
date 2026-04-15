@@ -73,7 +73,7 @@ onMounted(() => {
             </div>
             
             <div v-else-if="searchResults.length === 0" class="text-center py-12">
-                <p :style="styles.textSecondary" class="text-lg">No results found for "{{ currentQuery }}".</p>
+                <p :style="styles.textSecondary" class="text-lg">No results found.</p>
                 <p :style="styles.textMuted" class="mt-2">Try searching within {{ theme.abbr }} records.</p>
             </div>
             
