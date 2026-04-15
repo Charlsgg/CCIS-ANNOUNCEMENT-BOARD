@@ -68,7 +68,7 @@ const submitForm = async () => {
     
     <div class="absolute inset-0 bg-[#221610]/80 backdrop-blur-sm"></div>
 
-    <div class="relative z-10 w-full max-w-[95%] sm:max-w-md px-4 sm:px-6 py-4 sm:py-6 flex flex-col justify-center h-full max-h-[900px]">
+    <div class="relative z-10 w-full max-w-[95%] sm:max-w-md px-4 sm:px-6 py-4 sm:py-6 flex flex-col justify-center h-full max-h-225">
       
       <div class="flex flex-col items-center mb-6 sm:mb-6">
         <div class="w-20 h-20 sm:w-20 sm:h-20 mb-3 sm:mb-4 rounded-full bg-[#ec5b13]/10 flex items-center justify-center p-2 border border-[#ec5b13]/20">
