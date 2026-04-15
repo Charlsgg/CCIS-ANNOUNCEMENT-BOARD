@@ -3,90 +3,73 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str; // Required for Str::limit
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\User;
-use App\Models\Announcement; // Added Announcement model
-use App\Models\Event;        // Added Event model
+use App\Models\Event;
 
 class SearchController extends Controller
 {
     public function globalSearch(Request $request)
     {
         $query = $request->input('q');
+        if (!$query) return response()->json(['results' => []]);
 
-        // If no query is provided, return an empty array
-        if (!$query) {
-            return response()->json(['results' => []]);
-        }
-
-        // Create an empty collection to hold everything
-        $results = collect();
-
-        // ---------------------------------------------------------
+        $terms = array_filter(explode(' ', $query));
+        
         // 1. Search Users
-        // ---------------------------------------------------------
-        $users = User::where('name', 'LIKE', "%{$query}%")
-            ->orWhere('email', 'LIKE', "%{$query}%")
-            ->limit(5)
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'id' => 'user_' . $user->id,
-                    'type' => 'User',
-                    'title' => $user->name,
-                    'description' => $user->email,
-                    // If you have a specific user profile page, put it here:
-                    'url' => '#' 
-                ];
-            });
-        $results = $results->concat($users);
+        $users = User::query()
+            ->where(function ($q) use ($terms) {
+                foreach ($terms as $term) {
+                    $q->where('name', 'LIKE', "%{$term}%")->orWhere('email', 'LIKE', "%{$term}%");
+                }
+            })
+            ->limit(5)->get()->map(fn($u) => [
+                'id' => 'user_' . ($u->user_id ?? $u->id),
+                'type' => 'User',
+                'title' => $u->name,
+                'description' => $u->email,
+                'url' => '#' 
+            ]);
 
-        // ---------------------------------------------------------
-        // 2. Search Announcements
-        // ---------------------------------------------------------
-        if (class_exists(Announcement::class)) {
-            $announcements = Announcement::where('title', 'LIKE', "%{$query}%")
-                ->orWhere('content', 'LIKE', "%{$query}%")
-                ->limit(5)
-                ->get()
-                ->map(function ($announcement) {
-                    return [
-                        'id' => 'announcement_' . $announcement->id,
-                        'type' => 'Announcement',
-                        'title' => $announcement->title,
-                        // strip_tags removes HTML if your content is rich text
-                        'description' => Str::limit(strip_tags($announcement->content), 80),
-                        'url' => '/announcements-board' // From your web.php
-                    ];
-                });
-            $results = $results->concat($announcements);
-        }
+        // 2. Search Announcements (using your DB View)
+        $announcements = DB::table('user_announcements_attachments_view')
+            ->where(function ($q) use ($terms) {
+                foreach ($terms as $term) {
+                    $q->where('title', 'LIKE', "%{$term}%")->orWhere('content', 'LIKE', "%{$term}%");
+                }
+            })
+            ->limit(5)->get()->map(fn($a) => [
+                'id' => 'ann_' . ($a->announcement_id ?? 0),
+                'type' => 'Announcement',
+                'title' => $a->title,
+                'description' => Str::limit(strip_tags($a->content ?? ''), 80),
+                'url' => '/announcements-page'
+            ]);
 
-        // ---------------------------------------------------------
-        // 3. Search Events
-        // ---------------------------------------------------------
-        if (class_exists(Event::class)) {
-            $events = Event::where('title', 'LIKE', "%{$query}%")
-                // Change 'description' if your Event model uses a different column name
-                ->orWhere('description', 'LIKE', "%{$query}%") 
-                ->limit(5)
-                ->get()
-                ->map(function ($event) {
-                    return [
-                        'id' => 'event_' . $event->id,
-                        'type' => 'Event',
-                        'title' => $event->title,
-                        'description' => Str::limit(strip_tags($event->description), 80),
-                        'url' => '/events' // From your web.php
-                    ];
-                });
-            $results = $results->concat($events);
-        }
+        // 3. Search Events (using the Event model you shared)
+        // Note: No 'try' block here. If this fails, Laravel will show you exactly why.
+        $events = Event::query()
+            ->where(function ($q) use ($terms) {
+                foreach ($terms as $term) {
+                    $q->where('title', 'LIKE', "%{$term}%")
+                      ->orWhere('content', 'LIKE', "%{$term}%")
+                      ->orWhere('venue', 'LIKE', "%{$term}%");
+                }
+            })
+            ->limit(5)->get()->map(fn($e) => [
+                'id' => 'event_' . $e->event_id,
+                'type' => 'Event',
+                'title' => $e->title,
+                'description' => $e->venue ? "Venue: {$e->venue}" : Str::limit(strip_tags($e->content ?? ''), 80),
+                'url' => '/events'
+            ]);
 
-        // Return the combined, shuffled list of results
+        // Combine them all manually
+        $allResults = collect($users)->concat($announcements)->concat($events);
+
         return response()->json([
-            // ->values()->all() resets the array keys so it formats perfectly as JSON
-            'results' => $results->values()->all() 
+            'results' => $allResults->values()->all()
         ]);
     }
 }

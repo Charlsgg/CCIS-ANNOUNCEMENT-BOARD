@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Terminal, Bell, Menu, Sun, Moon, Search, Loader2 } from 'lucide-vue-next'
+import { Bell, Menu, Sun, Moon, Search, Loader2 } from 'lucide-vue-next'
 import { useTheme } from '../composable/usetheme.ts'
 
 const emit = defineEmits<{
@@ -23,12 +23,19 @@ let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
 // --- Methods ---
 
-// Triggers automatically as the user types
+// Dynamic Routing Helper based on Theme
+const getDynamicUrl = (type: string) => {
+    switch (type) {
+        case 'Event': return theme.value.eventsPath;
+        case 'Announcement': return theme.value.announcementPath;
+        case 'User': return theme.value.profilePath;
+        default: return '#';
+    }
+}
+
 const handleInput = () => {
-    // Clear previous timeout if user is still typing
     if (debounceTimeout) clearTimeout(debounceTimeout)
 
-    // If input is empty, close dropdown and clear results
     if (!searchQuery.value.trim()) {
         searchResults.value = []
         showDropdown.value = false
@@ -39,7 +46,6 @@ const handleInput = () => {
     showDropdown.value = true
     isSearching.value = true
 
-    // Wait 300ms after user stops typing before calling the API
     debounceTimeout = setTimeout(async () => {
         try {
             const response = await fetch(`/global-search?q=${encodeURIComponent(searchQuery.value)}`, {
@@ -61,14 +67,12 @@ const handleInput = () => {
     }, 300)
 }
 
-// Close dropdown when clicking outside of it
 const handleClickOutside = (event: MouseEvent) => {
     if (searchContainerRef.value && !searchContainerRef.value.contains(event.target as Node)) {
         showDropdown.value = false
     }
 }
 
-// File URL Helper
 const getFileUrl = (path?: string | null) => {
     if (!path) return ''
     let cleanPath = path
@@ -78,13 +82,10 @@ const getFileUrl = (path?: string | null) => {
     }
     cleanPath = cleanPath.replace(/^\/?storage\//, '')
     cleanPath = cleanPath.replace(/^https?:\/([^\/])/, 'https://$1')
-    if (cleanPath.startsWith('http')) {
-        return cleanPath
-    }
+    if (cleanPath.startsWith('http')) return cleanPath
     return `https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/avatars/${cleanPath}`
 }
 
-// User Data Fetcher
 const fetchUserData = async () => {
     try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
@@ -106,7 +107,6 @@ const fetchUserData = async () => {
     }
 }
 
-// Lifecycle Hooks
 onMounted(() => {
     fetchUserData()
     document.addEventListener('click', handleClickOutside)
@@ -118,7 +118,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header class="shrink-0 flex items-center justify-between px-4 md:px-8 py-3 md:py-4 z-30" :style="styles.headerBg">
+    <header class="shrink-0 flex items-center justify-between px-4 md:px-8 py-3 md:py-4 z-30 transition-colors duration-300" :style="styles.headerBg">
         <div class="flex items-center gap-3">
             <button
                 @click="emit('toggleSidebar')"
@@ -139,11 +139,13 @@ onUnmounted(() => {
                     @input="handleInput"
                     @focus="handleInput"
                     type="text"
-                    class="block w-full py-2.5 pl-10 pr-4 text-sm rounded-lg transition-all outline-none focus:ring-2 focus:ring-opacity-50 border border-transparent focus:border-gray-300 dark:focus:border-gray-600"
+                    class="block w-full py-2.5 pl-10 pr-4 text-sm rounded-lg transition-all border outline-none focus:ring-4"
                     :style="{
                         backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                         color: surface.textPrimary,
-                        '--tw-ring-color': theme.accent
+                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                        '--tw-ring-color': theme.accent + '20', // Subtle focus ring using accent color
+                        caretColor: theme.accent
                     }"
                     placeholder="Search users, announcements, events..."
                 />
@@ -151,33 +153,41 @@ onUnmounted(() => {
 
             <div 
                 v-if="showDropdown" 
-                class="absolute w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 flex flex-col"
+                class="absolute w-full mt-2 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col border transition-colors duration-300"
+                :style="styles.cardBg"
                 style="max-height: 400px;"
             >
-                <div v-if="isSearching" class="p-4 flex items-center justify-center text-gray-500">
-                    <Loader2 class="animate-spin mr-2" :size="18" />
-                    <span class="text-sm">Searching...</span>
+                <div v-if="isSearching" class="p-4 flex items-center justify-center">
+                    <Loader2 class="animate-spin mr-2" :size="18" :style="{ color: theme.accent }" />
+                    <span class="text-sm" :style="{ color: surface.textSecondary }">Searching Records...</span>
                 </div>
 
-                <div v-else-if="searchResults.length === 0 && searchQuery.trim()" class="p-4 text-center text-gray-500 text-sm">
-                    No results found for "{{ searchQuery }}"
+                <div v-else-if="searchResults.length === 0 && searchQuery.trim()" class="p-4 text-center text-sm" :style="{ color: surface.textMuted }">
+                    No results found in {{ theme.label }}
                 </div>
 
                 <div v-else class="overflow-y-auto overflow-x-hidden p-2 space-y-1">
                     <a 
                         v-for="result in searchResults" 
                         :key="result.id"
-                        :href="result.url"
-                        class="block px-3 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
+                        :href="getDynamicUrl(result.type)"
+                        class="block px-3 py-3 rounded-lg transition-all group"
+                        :style="{ '--hover-bg': theme.accent + '10' }"
+                        onmouseover="this.style.backgroundColor=this.style.getPropertyValue('--hover-bg')"
+                        onmouseout="this.style.backgroundColor='transparent'"
                     >
                         <div class="flex flex-col">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">
+                            <span class="text-[9px] font-black uppercase tracking-widest mb-1 px-1.5 py-0.5 rounded w-fit" 
+                                  :style="styles.badge">
                                 {{ result.type }}
                             </span>
-                            <span class="font-medium text-gray-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <span class="font-semibold text-sm transition-colors" 
+                                  :style="{ color: surface.textPrimary }"
+                                  :onmouseover="`this.style.color='${theme.accent}'`"
+                                  :onmouseout="`this.style.color='${surface.textPrimary}'`">
                                 {{ result.title }}
                             </span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                            <span class="text-xs truncate mt-0.5" :style="{ color: surface.textMuted }">
                                 {{ result.description }}
                             </span>
                         </div>
@@ -189,15 +199,17 @@ onUnmounted(() => {
         <div class="flex items-center gap-2 md:gap-4 shrink-0">
             <button
                 @click="toggleMode"
-                class="p-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="p-2 rounded-lg transition-colors"
                 :style="{ color: surface.textSecondary }"
-                :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                onmouseover="this.style.backgroundColor='rgba(155,155,155,0.1)'"
+                onmouseout="this.style.backgroundColor='transparent'"
             >
                 <Sun v-if="isDark" :size="20" />
                 <Moon v-else :size="20" />
             </button>
             
-            <div class="h-8 w-8 md:h-9 md:w-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden cursor-pointer" :style="styles.avatar">
+            <div class="h-8 w-8 md:h-9 md:w-9 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden cursor-pointer" 
+                 :style="styles.avatar">
                 <img 
                     v-if="userAvatar && !imageHasError" 
                     :src="getFileUrl(userAvatar)" 
@@ -212,3 +224,11 @@ onUnmounted(() => {
         </div>
     </header>
 </template>
+
+<style scoped>
+/* Added to handle the ring color variable properly with Tailwind focus utility */
+input:focus {
+    border-color: v-bind('theme.accent');
+    box-shadow: 0 0 0 4px v-bind('theme.accent + "20"');
+}
+</style>
