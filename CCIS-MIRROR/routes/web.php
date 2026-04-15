@@ -8,6 +8,7 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserAnnouncementController;
 use App\Http\Controllers\AnnouncementBoardController;
 use App\Http\Controllers\NavbarController;
+use App\Http\Controllers\SearchController; // <-- ADDED: Search Controller Import
 
 // ==========================================
 // 1. PAGE ROUTES (Returns Vue/HTML Views)
@@ -33,7 +34,7 @@ Route::get('/reset-password/{token}', function (string $token) {
 })->middleware('guest')->name('password.reset');
 
 Route::get('/announcements-board', function () {
-    return view('announcement-board');
+    return view('announcements-board');
 })->name('announcements.board');
 
 Route::get('/announcements-events', function () {
@@ -66,7 +67,18 @@ Route::prefix('api')->group(function () {
 // 3. PROTECTED ROUTES (Must be Logged In)
 // ==========================================
 Route::middleware('auth')->group(function () {
+    
+    // <-- ADDED: The page that loads your Search.vue component
+    Route::get('/search', function () {
+        return view('search'); 
+    })->name('search.page');
+
+    // <-- ADDED: The endpoint to fetch the JSON search results
+    // Placed outside 'api' prefix so the route is literally /global-search
+    Route::get('/global-search', [SearchController::class, 'globalSearch']);
+
     Route::get('/navbar/user', [UserProfileController::class, 'show']);
+    
     // IT Instructor Routes
     Route::middleware('check_type:it_instructor')->prefix('it')->name('it.')->group(function () {
          Route::get('/home-page', function() { return view('home-page'); })->name('home.page');
@@ -110,10 +122,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('announcements', AnnouncementController::class)->except(['index']);
         Route::resource('events', EventController::class);
     });
+    
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
     // PROTECTED API ROUTES
     Route::prefix('api')->group(function () {
-
         Route::post('/my-announcements/{id}', [UserAnnouncementController::class, 'update']);
         Route::delete('/my-announcements/{id}', [UserAnnouncementController::class, 'destroy']);
         Route::get('/my-announcements', [UserAnnouncementController::class, 'index']);
