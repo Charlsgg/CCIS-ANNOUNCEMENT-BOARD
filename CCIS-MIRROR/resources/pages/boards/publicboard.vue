@@ -536,7 +536,7 @@ onMounted(() => {
   document.addEventListener('fullscreenchange', handleFullscreenChange)
 
   clockTimer = setInterval(updateClock, 1000)
-  fetchTimer = setInterval(fetchAnnouncements, 5000)
+  fetchTimer = setInterval(fetchAnnouncements, 30000)
   weatherTimer = setInterval(fetchWeather, 1800000)
 })
 

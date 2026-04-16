@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
         $nowStamp = now()->timestamp;
 
         // 3. GENERATE 100 ANNOUNCEMENTS (Strictly this month, ONLY IN THE PAST)
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 15; $i++) {
             $id = 2000 + $i;
             
             // Pick a random timestamp between the start of the month and strictly right now
@@ -84,7 +84,7 @@ class DatabaseSeeder extends Seeder
         // Edge case: If the month just started (less than 4 hours ago), fallback to start of month
         $maxStartStamp = max($startOfMonthStamp, $maxStartStamp);
 
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $id = 3000 + $i;
 
             $randomTimestamp = rand($startOfMonthStamp, $maxStartStamp);
