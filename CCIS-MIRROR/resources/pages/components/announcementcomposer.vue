@@ -115,7 +115,7 @@ const postAnnouncement = async () => {
                         type="text" 
                         id="title" 
                         v-model="newTitle"
-                        placeholder="e.g., General Assembly 2024 Schedule" 
+                        placeholder="e.g., General Assembly 2026 Schedule" 
                         class="theme-input w-full px-4 py-2.5 rounded-xl transition-colors"
                     >
                 </div>
