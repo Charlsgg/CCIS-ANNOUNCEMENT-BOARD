@@ -8,11 +8,8 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserAnnouncementController;
 use App\Http\Controllers\AnnouncementBoardController;
 use App\Http\Controllers\NavbarController;
-use App\Http\Controllers\SearchController; // <-- ADDED: Search Controller Import
+use App\Http\Controllers\SearchController;
 
-// ==========================================
-// 1. PAGE ROUTES (Returns Vue/HTML Views)
-// ==========================================
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -46,9 +43,7 @@ Route::get('/events', function () {
 })->name('events.index');
 
 
-// ==========================================
-// 2. PUBLIC API ROUTES (No Login Required)
-// ==========================================
+
 Route::prefix('api')->group(function () {
     // Auth actions
     Route::post('/register', [AuthController::class, 'register']);
@@ -63,18 +58,12 @@ Route::prefix('api')->group(function () {
 });
 
 
-// ==========================================
-// 3. PROTECTED ROUTES (Must be Logged In)
-// ==========================================
 Route::middleware('auth')->group(function () {
     
-    // <-- ADDED: The page that loads your Search.vue component
     Route::get('/search', function () {
         return view('search'); 
     })->name('search.page');
 
-    // <-- ADDED: The endpoint to fetch the JSON search results
-    // Placed outside 'api' prefix so the route is literally /global-search
     Route::get('/global-search', [SearchController::class, 'globalSearch']);
 
     Route::get('/navbar/user', [UserProfileController::class, 'show']);
