@@ -82,9 +82,9 @@ const handleFilterChange = (role: string | null) => {
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="activePreview"
-                class="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+                class="fixed inset-0 z-200 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
                 <button @click="activePreview = null"
-                    class="absolute top-6 right-6 z-[210] w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all hover:rotate-90">
+                    class="absolute top-6 right-6 z-210 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all hover:rotate-90">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 

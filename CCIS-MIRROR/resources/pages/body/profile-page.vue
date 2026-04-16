@@ -249,7 +249,7 @@ onMounted(() => {
     </div>
 
     <Teleport to="body">
-        <div v-if="showPasswordModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm"
+        <div v-if="showPasswordModal" class="fixed inset-0 z-100 flex items-center justify-center p-4 backdrop-blur-sm"
             :style="{ backgroundColor: surface.overlayBg }">
             <div class="w-full max-w-md p-8 rounded-2xl shadow-xl transition-colors" :style="styles.cardBg">
                 <h3 class="text-xl font-bold mb-6" :style="styles.textPrimary">Change Password</h3>
