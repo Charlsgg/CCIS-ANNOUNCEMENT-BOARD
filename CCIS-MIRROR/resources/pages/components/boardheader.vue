@@ -138,7 +138,6 @@ const weatherCity = ref('Butuan City')
 const weatherTemp = ref('--')
 const weatherDesc = ref('Loading...')
 
-// Event Countdown State (Mock data - set to 4 days from now)
 const countdownDays = ref('04')
 const countdownHours = ref('12')
 

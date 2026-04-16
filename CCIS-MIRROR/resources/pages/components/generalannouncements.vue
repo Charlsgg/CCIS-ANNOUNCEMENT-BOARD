@@ -109,7 +109,7 @@ const getDefaultAvatar = (name: string) => {
                 :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
 
                 <div class="flex items-center gap-3">
-                    <div class="relative flex-shrink-0">
+                    <div class="relative shrink-0">
                         <img class="size-10 rounded-full object-cover border shadow-sm"
                             :style="{ borderColor: surface.borderSubtle }"
                             :src="post.author_avatar ? getFileUrl(post.author_avatar) : getDefaultAvatar(post.author_name)"
@@ -128,7 +128,7 @@ const getDefaultAvatar = (name: string) => {
                     </div>
                 </div>
 
-                <div class="text-sm leading-relaxed break-words whitespace-pre-wrap overflow-hidden"
+                <div class="text-sm leading-relaxed wrap-break-word whitespace-pre-wrap overflow-hidden"
                     :style="styles.textPrimary" v-html="post.content">
                 </div>
 
@@ -172,7 +172,7 @@ const getDefaultAvatar = (name: string) => {
                                         class="material-symbols-outlined text-[20px]">
                                         {{ isPdf(file.file_type) ? 'picture_as_pdf' : 'description' }}
                                     </span>
-                                    <span class="text-xs font-bold truncate max-w-[150px]" :style="styles.textPrimary">
+                                    <span class="text-xs font-bold truncate max-w-37.5" :style="styles.textPrimary">
                                         {{ getFileName(file.file_path) }}
                                     </span>
                                 </div>
@@ -196,11 +196,11 @@ const getDefaultAvatar = (name: string) => {
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="activePreview"
-                class="fixed inset-0 z-[150] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+                class="fixed inset-0 z-150 flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
                 @click.self="closePreview">
 
                 <button @click="closePreview"
-                    class="absolute top-6 right-6 z-[160] w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all shadow-xl">
+                    class="absolute top-6 right-6 z-160 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all shadow-xl">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
