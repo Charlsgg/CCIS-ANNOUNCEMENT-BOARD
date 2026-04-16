@@ -46,6 +46,7 @@
               <option value="it" class="bg-white text-gray-900">IT Department</option>
               <option value="is" class="bg-white text-gray-900">IS Department</option>
               <option value="cs" class="bg-white text-gray-900">CS Department</option>
+              <option value="lsg" class="bg-white text-gray-900">Local Student Government</option>
             </select>
             <span
               class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
@@ -338,8 +339,6 @@ const uniqueAuthors = computed(() => {
   const authors = announcements.value.map(a => a.author_name).filter(Boolean);
   return [...new Set(authors)].sort((a, b) => a.localeCompare(b));
 })
-
-// Filter Logic
 const filteredAnnouncements = computed(() => {
   const q = searchQuery.value.toLowerCase()
   const author = selectedAuthor.value
@@ -358,7 +357,8 @@ const filteredAnnouncements = computed(() => {
 
     let matchesDept = true;
     if (dept !== 'all') {
-      matchesDept = a.author_type && a.author_type.startsWith(dept + '_');
+      // FIX: Checks if it starts with the dept code + '_' OR if it exactly matches the dept code.
+      matchesDept = a.author_type && (a.author_type.startsWith(`${dept}_`) || a.author_type === dept);
     }
 
     return matchesSearch && matchesAuthor && matchesDept;
