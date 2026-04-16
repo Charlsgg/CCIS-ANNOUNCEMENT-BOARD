@@ -55,7 +55,7 @@ if (el) {
 
     // 3. Routing Logic
     // --- NO LAYOUT PAGES ---
-    if (page === 'announcement-board') {
+    if (page === 'announcements-board') {
         mountApp(PublicBoard);
     } else if (page === 'announcements-events') {
         mountApp(PublicEvents);
