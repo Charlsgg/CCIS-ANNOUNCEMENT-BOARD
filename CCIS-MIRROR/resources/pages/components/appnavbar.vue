@@ -182,7 +182,7 @@ onUnmounted(() => {
                             '--tw-ring-color': theme.accent + '50',
                             caretColor: theme.accent
                         }"
-                        placeholder="Search users, announcements, events..."
+                        placeholder="Search announcements, events..."
                     />
                 </div>
 

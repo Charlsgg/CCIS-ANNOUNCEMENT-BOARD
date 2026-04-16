@@ -146,7 +146,7 @@ const handleUpdate = async (payload: {
 </script>
 
 <template>
-    <div class="max-w-4xl mx-auto pb-12 w-full min-w-0">
+    <div class="max-w-4xl mx-auto pb-12 w-full min-w-0 px-4 sm:px-6">
 
         <div class="mb-6 md:mb-8 flex flex-col gap-2">
             <div class="flex items-center gap-3">
@@ -162,13 +162,13 @@ const handleUpdate = async (payload: {
 
         <AnnouncementComposer :csrf-token="csrfToken" @post-created="handleNewAnnouncement" />
 
-        <div class="mt-12 mb-4 flex items-center justify-between">
-            <h4 class="font-bold text-lg" :style="styles.textPrimary">
+        <div class="mt-12 mb-4 flex items-center justify-between gap-4">
+            <h4 class="font-bold text-lg truncate" :style="styles.textPrimary">
                 {{ showAll ? 'All My Announcements' : 'Recent Announcements' }}
             </h4>
 
             <button v-if="announcements.length > 3" @click="showAll = !showAll"
-                class="text-sm font-semibold hover:underline transition-all"
+                class="text-sm font-semibold hover:underline transition-all shrink-0"
                 :style="{ color: theme.accent }">
                 {{ showAll ? 'Show Less' : `View All (${announcements.length})` }}
             </button>
@@ -190,11 +190,11 @@ const handleUpdate = async (payload: {
     </div>
 
     <Teleport to="body">
-        <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div class="max-w-md w-full rounded-2xl p-6 shadow-xl" 
                 :style="{ backgroundColor: surface.cardBg, border: `1px solid ${surface.borderSubtle}` }">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
+                    <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-full shrink-0">
                         <Trash2 class="w-6 h-6 text-red-500" />
                     </div>
                     <h3 class="text-xl font-bold" :style="styles.textPrimary">Delete Post?</h3>
@@ -204,14 +204,14 @@ const handleUpdate = async (payload: {
                     Are you sure you want to delete this announcement? This action is permanent and cannot be undone.
                 </p>
                 
-                <div class="flex justify-end gap-3">
+                <div class="flex justify-end gap-3 flex-wrap">
                     <button @click="isDeleteDialogOpen = false" :disabled="isDeleting"
-                        class="px-5 py-2.5 rounded-xl font-medium transition-colors hover:opacity-80"
+                        class="px-5 py-2.5 rounded-xl font-medium transition-colors hover:opacity-80 flex-1 sm:flex-none text-center"
                         :style="{ backgroundColor: surface.inputBg, color: styles.textPrimary.color }">
                         Cancel
                     </button>
                     <button @click="deleteAnnouncement" :disabled="isDeleting"
-                        class="px-5 py-2.5 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 transition-colors flex items-center gap-2">
+                        class="px-5 py-2.5 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none">
                         <span v-if="isDeleting" class="size-4 border-2 border-white/30 border-t-white animate-spin rounded-full"></span>
                         {{ isDeleting ? 'Deleting...' : 'Delete Post' }}
                     </button>

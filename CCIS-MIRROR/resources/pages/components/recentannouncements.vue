@@ -192,24 +192,24 @@ const submitEdit = () => {
             class="rounded-xl p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow relative"
             :style="styles.cardBg">
 
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <img :alt="post.author_name || 'Author'" class="size-10 rounded-full object-cover border"
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img :alt="post.author_name || 'Author'" class="size-10 rounded-full object-cover border shrink-0"
                         :style="{ borderColor: surface.borderSubtle }"
                         :src="post.author_avatar ? getFileUrl(post.author_avatar) : getDefaultAvatar(post.author_name)"
                         @error="(e) => (e.target as HTMLImageElement).src = getDefaultAvatar(post.author_name)" />
-                    <div>
-                        <p class="text-sm font-bold uppercase tracking-wide" :style="styles.textPrimary">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold uppercase tracking-wide truncate" :style="styles.textPrimary">
                             {{ post.title }}
                         </p>
-                        <p class="text-xs" :style="styles.textSecondary">
+                        <p class="text-xs truncate" :style="styles.textSecondary">
                             <span v-if="post.author_name" class="font-medium">{{ post.author_name }} &bull; </span>
                             Posted {{ post.date }}
                         </p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 relative z-50">
+                <div class="flex items-center gap-2 relative z-50 shrink-0">
                     <button type="button" @click.prevent.stop="openEditModal(post)"
                         class="p-2 flex items-center justify-center rounded-lg transition-all cursor-pointer shadow-sm border hover:scale-105"
                         :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: theme.accent }"
