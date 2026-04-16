@@ -7,8 +7,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-    <main class="">
-        <div id="app" data-page="announcement-board"></div>
+<body> <main class="">
+        <div id="app" data-page="announcements-board"></div>
     </main>
 </body>
 </html>

@@ -15,7 +15,7 @@ window.axios.defaults.withCredentials = true;
 window.axios.defaults.baseURL = '/api';
 
 // 2. Imports
-import MainLayout from '../pages/layout/mainlayout.vue' // <-- IMPORT YOUR LAYOUT HERE
+import MainLayout from '../pages/layout/mainlayout.vue' 
 import Login from '../pages/authpages/login.vue'
 import Home from '../pages/body/home-page.vue'
 import Events from '../pages/body/events-page.vue'
@@ -76,6 +76,6 @@ if (el) {
     } else if (page === 'profile-page') {
         mountWithLayout(Profile, { user });
     } else {
-        mountApp(Login); // Fallback
+        mountApp(Login); 
     }
 }
