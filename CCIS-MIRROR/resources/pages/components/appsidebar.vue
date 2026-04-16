@@ -34,6 +34,18 @@ const navItems = computed(() => [
     { name: 'Announcements', icon: Megaphone, path: theme.value.announcementPath },
     { name: 'Profile', icon: User, path: theme.value.profilePath },
 ])
+
+// --- NEW: Logout Handler ---
+const handleLogout = (event: Event) => {
+    // 1. Wipe the cached user data so the next person doesn't see it
+    localStorage.removeItem('cached_user_id')
+    localStorage.removeItem('cached_user_name')
+    localStorage.removeItem('cached_profile_pic')
+
+    // 2. Programmatically submit the form to hit your backend route
+    const form = event.target as HTMLFormElement
+    form.submit()
+}
 </script>
 
 <template>
@@ -104,7 +116,7 @@ const navItems = computed(() => [
             </nav>
 
             <div class="mt-auto pt-6 shrink-0" :style="{ borderTop: `1px solid ${surface.borderSubtle}` }">
-                <form action="/logout" method="POST">
+                <form action="/logout" method="POST" @submit.prevent="handleLogout">
                     <input type="hidden" name="_token" :value="effectiveToken" />
                     
                     <button type="submit"
