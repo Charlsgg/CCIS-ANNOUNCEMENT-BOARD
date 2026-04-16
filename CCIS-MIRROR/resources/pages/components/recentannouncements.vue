@@ -48,23 +48,17 @@ const sortedAnnouncements = computed(() => {
  * Syncs with Laravel Storage::disk('s3')->url() output and manual relative paths.
  */
 const getFileUrl = (path?: string | null) => {
-    // 1. Failsafe for null/ghost values
     if (!path || path === 'undefined' || path === 'null') {
         return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
     }
 
-    // 2. CRITICAL FIX: Since your JSON already shows a full URL:
-    // "https://hahocarxbknajzqjacuk.supabase.co/storage/v1/object/public/..."
-    // Just return it exactly as it is. Do NOT add prefixes.
     if (path.startsWith('http')) {
         return path
     }
 
-    // 3. Fallback for old records that might still be relative paths
     const PROJECT_ID = 'hahocarxbknajzqjacuk'
     const BUCKET = 'announcements'
     
-    // Remove any leading slashes or redundant bucket names from the relative path
     let cleanPath = path.replace(/^announcements\//, '').replace(/^\/+/, '')
     
     return `https://${PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET}/${cleanPath}`
@@ -83,7 +77,7 @@ const isPdf = (type: string | null) => {
 const getFileName = (path?: string | null) => {
     if (!path) return 'Download File'
     const base = path.split('/').pop() || 'Download File'
-    return base.split('?')[0] // Strip query strings
+    return base.split('?')[0] 
 }
 
 const getDefaultAvatar = (name?: string) => {
@@ -187,29 +181,31 @@ const submitEdit = () => {
 </script>
 
 <template>
-    <div class="flex flex-col gap-6 relative">
+    <div class="flex flex-col gap-6 relative w-full">
         <div v-for="post in sortedAnnouncements" :key="post.id"
             class="rounded-xl p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow relative"
             :style="styles.cardBg">
 
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <img :alt="post.author_name || 'Author'" class="size-10 rounded-full object-cover border shrink-0"
+            <div class="flex items-start sm:items-center justify-between gap-3 w-full">
+                
+                <div class="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
+                    <img :alt="post.author_name || 'Author'" class="w-10 h-10 rounded-full object-cover border shrink-0"
                         :style="{ borderColor: surface.borderSubtle }"
                         :src="post.author_avatar ? getFileUrl(post.author_avatar) : getDefaultAvatar(post.author_name)"
                         @error="(e) => (e.target as HTMLImageElement).src = getDefaultAvatar(post.author_name)" />
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold uppercase tracking-wide truncate" :style="styles.textPrimary">
+                    
+                    <div class="flex flex-col min-w-0 flex-1 w-full overflow-hidden">
+                        <p class="text-sm font-bold uppercase tracking-wide truncate w-full" :style="styles.textPrimary">
                             {{ post.title }}
                         </p>
-                        <p class="text-xs truncate" :style="styles.textSecondary">
+                        <p class="text-xs truncate w-full" :style="styles.textSecondary">
                             <span v-if="post.author_name" class="font-medium">{{ post.author_name }} &bull; </span>
                             Posted {{ post.date }}
                         </p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 relative z-50 shrink-0">
+                <div class="flex items-center gap-2 shrink-0 ml-2">
                     <button type="button" @click.prevent.stop="openEditModal(post)"
                         class="p-2 flex items-center justify-center rounded-lg transition-all cursor-pointer shadow-sm border hover:scale-105"
                         :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: theme.accent }"
@@ -281,7 +277,7 @@ const submitEdit = () => {
         </div>
 
         <Teleport to="body">
-            <div v-if="isEditModalOpen" class="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div v-if="isEditModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                 <div class="w-full max-w-lg rounded-xl shadow-lg flex flex-col overflow-hidden border"
                     :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
 
@@ -362,10 +358,10 @@ const submitEdit = () => {
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="activePreview"
-                    class="fixed inset-0 z-110 flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+                    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
                     @click.self="closePreview">
                     <button @click="closePreview"
-                        class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
+                        class="absolute top-6 right-6 z-[10000] w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
                         <span class="material-symbols-outlined">close</span>
                     </button>
 
