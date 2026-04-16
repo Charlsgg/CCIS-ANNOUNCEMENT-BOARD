@@ -120,11 +120,6 @@ const eventDetails = computed(() => {
                     :style="[styles.cardBg, { borderColor: theme.accent + '20' }]">
                     <div class="relative h-40 md:h-48 w-full flex items-end overflow-hidden shrink-0 transition-colors duration-500"
                         :style="{ backgroundColor: isDark ? theme.accent + 'e6' : theme.accent }">
-                        <div
-                            class="absolute top-0 right-0 opacity-10 pointer-events-none translate-x-1/4 -translate-y-1/4">
-                            <span
-                                class="material-symbols-outlined text-[200px] md:text-[240px] text-white select-none">calendar_month</span>
-                        </div>
 
                         <button @click="$emit('close')"
                             class="absolute top-3 right-3 md:top-4 md:right-4 z-20 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors">
