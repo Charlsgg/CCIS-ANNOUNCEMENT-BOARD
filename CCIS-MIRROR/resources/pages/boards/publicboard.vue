@@ -11,8 +11,8 @@
 
     <AppHeader />
 
-    <main class="max-w-6xl mx-auto relative z-10">
-
+    <main class="mx-auto relative z-10">
+      <div class="max-w-6xl mx-auto relative z-10">
       <section class="flex flex-col lg:flex-row flex-wrap gap-4 mb-12 items-center w-full">
         <button @click="goBack"
           class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium text-gray-700 group shrink-0 w-full lg:w-auto justify-center shadow-sm">
@@ -59,7 +59,7 @@
           <span>Events</span>
         </button>
       </section>
-
+      </div>
       <TransitionGroup name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <article v-for="(item, index) in filteredAnnouncements" :key="item.id"
           class="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 flex flex-col h-full group relative overflow-hidden transition-all hover:shadow-md"
@@ -87,7 +87,7 @@
             </div>
           </div>
 
-          <div class="text-sm text-gray-600 leading-relaxed grow line-clamp-4 relative z-10" v-html="item.content"></div>
+          <div class="text-xl text-gray-600 leading-relaxed grow line-clamp-4 relative z-10" v-html="item.content"></div>
 
           <div class="mt-8 flex justify-between items-center relative z-10 border-t border-gray-100 pt-4">
             <button @click="handleLike(item)"
