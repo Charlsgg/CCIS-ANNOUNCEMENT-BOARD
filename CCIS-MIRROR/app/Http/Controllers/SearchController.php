@@ -17,21 +17,6 @@ class SearchController extends Controller
 
         $terms = array_filter(explode(' ', $query));
         
-        // 1. Search Users
-        $users = User::query()
-            ->where(function ($q) use ($terms) {
-                foreach ($terms as $term) {
-                    $q->where('name', 'LIKE', "%{$term}%")->orWhere('email', 'LIKE', "%{$term}%");
-                }
-            })
-            ->limit(5)->get()->map(fn($u) => [
-                'id' => 'user_' . ($u->user_id ?? $u->id),
-                'type' => 'User',
-                'title' => $u->name,
-                'description' => $u->email,
-                'url' => '#' 
-            ]);
-
         // 2. Search Announcements (using your DB View)
         $announcements = DB::table('user_announcements_attachments_view')
             ->where(function ($q) use ($terms) {
@@ -66,7 +51,7 @@ class SearchController extends Controller
             ]);
 
         // Combine them all manually
-        $allResults = collect($users)->concat($announcements)->concat($events);
+        $allResults = collect($announcements)->concat($events);
 
         return response()->json([
             'results' => $allResults->values()->all()
