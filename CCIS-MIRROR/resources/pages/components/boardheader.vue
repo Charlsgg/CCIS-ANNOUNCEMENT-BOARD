@@ -110,7 +110,7 @@
           <span class="mx-4 text-orange-500">•</span> Stay tuned for the latest news, events, and updates from the College of Computer and Information Sciences.
           <span class="mx-4 text-orange-500">•</span> Don't forget to check the Events tab for upcoming department activities.
           <span class="mx-4 text-orange-500">•</span> interact with the announcements to view details and attachments.
-          <span class="mx-4 text-orange-500">•</span> For any inquiries or support, contact the CCIS Network Administration Office.
+          <span class="mx-4 text-orange-500">•</span> For any inquiries or support, visit us at the CCIS Network Administration Office.
         </div>
       </div>
     </div>
