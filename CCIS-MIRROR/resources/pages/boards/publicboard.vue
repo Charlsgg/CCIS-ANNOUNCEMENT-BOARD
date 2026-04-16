@@ -286,10 +286,10 @@
 
       <Transition name="fade">
         <div v-if="activePreview"
-          class="fixed inset-0 z-[110] flex items-center justify-center bg-white/95 backdrop-blur-md p-4">
+          class="fixed inset-0 z-110 flex items-center justify-center bg-white/95 backdrop-blur-md p-4">
 
           <button @click="activePreview = null"
-            class="absolute top-6 right-6 z-[120] w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all hover:rotate-90 border border-gray-200 shadow-sm">
+            class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all hover:rotate-90 border border-gray-200 shadow-sm">
             <span class="material-symbols-outlined">close</span>
           </button>
 

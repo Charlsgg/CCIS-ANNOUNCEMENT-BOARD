@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div v-if="show" class="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
       
       <div 
         class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" 
