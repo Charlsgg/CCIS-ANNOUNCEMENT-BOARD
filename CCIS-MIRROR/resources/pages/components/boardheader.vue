@@ -87,7 +87,7 @@
           <div class="absolute top-0 right-0 w-16 h-16 bg-orange-500/10 rounded-bl-full transition-transform group-hover:scale-150"></div>
           <div class="flex items-center gap-2 mb-2">
             <span class="material-symbols-outlined text-orange-500 text-sm">lightbulb</span>
-            <span class="text-[9px] font-bold tracking-widest uppercase text-gray-400">Daily Spark</span>
+            <span class="text-[9px] font-bold tracking-widest uppercase text-gray-400">Daily Qoutes</span>
           </div>
           <p class="text-xs text-gray-200 leading-relaxed font-light italic">
             "{{ dailyFact }}"
