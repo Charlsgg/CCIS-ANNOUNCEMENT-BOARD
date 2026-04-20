@@ -40,8 +40,12 @@ class SearchController extends Controller
             ->select('av.*', 'up.profile_picture as real_avatar')
             ->where(function ($q) use ($terms) {
                 foreach ($terms as $term) {
-                    $q->where('av.title', 'LIKE', "%{$term}%")
-                      ->orWhere('av.content', 'LIKE', "%{$term}%");
+                    // Convert term to lowercase
+                    $termLower = strtolower($term);
+                    
+                    // Use DB::raw to convert the column to lowercase during search
+                    $q->where(DB::raw('LOWER(av.title)'), 'LIKE', "%{$termLower}%")
+                      ->orWhere(DB::raw('LOWER(av.content)'), 'LIKE', "%{$termLower}%");
                 }
             })
             ->get()
@@ -77,9 +81,13 @@ class SearchController extends Controller
         return Event::query()
             ->where(function ($q) use ($terms) {
                 foreach ($terms as $term) {
-                    $q->where('title', 'LIKE', "%{$term}%")
-                      ->orWhere('content', 'LIKE', "%{$term}%")
-                      ->orWhere('venue', 'LIKE', "%{$term}%");
+                    // Convert term to lowercase
+                    $termLower = strtolower($term);
+                    
+                    // Use DB::raw to convert the column to lowercase during search
+                    $q->where(DB::raw('LOWER(title)'), 'LIKE', "%{$termLower}%")
+                      ->orWhere(DB::raw('LOWER(content)'), 'LIKE', "%{$termLower}%")
+                      ->orWhere(DB::raw('LOWER(venue)'), 'LIKE', "%{$termLower}%");
                 }
             })
             ->limit(5)
