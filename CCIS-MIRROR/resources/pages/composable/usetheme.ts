@@ -70,7 +70,7 @@ const themeMap: Record<string, ThemeColors> = {
         eventsPath: '/lsg/events-page',
         announcementPath: '/lsg/announcement-page',
         profilePath: '/lsg/profile-page',
-        image: '/images/4.png', // Placeholder for LSG
+        image: '/images/4.jpg', // Placeholder for LSG
     },
 }
 
