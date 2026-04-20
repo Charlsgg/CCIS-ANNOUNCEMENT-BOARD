@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useTheme } from '../composable/usetheme.ts'
-
+const emit = defineEmits<{
+    preview: [file: any] 
+}>()
 interface Attachment {
     id: number | string
     file_path: string

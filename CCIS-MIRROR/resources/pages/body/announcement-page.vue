@@ -8,6 +8,7 @@ import AnnouncementFilters from '../components/announcementfilters.vue'
 
 const props = defineProps<{
     user?: { name: string; email: string; user_type: string }
+    csrfToken?: string;
 }>()
 
 const { isDark, setUserType, initTheme } = useTheme()

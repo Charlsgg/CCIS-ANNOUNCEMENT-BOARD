@@ -3,6 +3,13 @@ import { ref, computed, onMounted } from 'vue'
 import { Calendar, User, Home, Megaphone, LogOut, X } from 'lucide-vue-next'
 import { useTheme } from '../composable/usetheme'
 
+// Tell TypeScript that the global Window object might have a csrfToken string
+declare global {
+    interface Window {
+        csrfToken?: string;
+    }
+}
+
 const emit = defineEmits<{
     close: []
 }>()
@@ -47,7 +54,6 @@ const handleLogout = (event: Event) => {
     form.submit()
 }
 </script>
-
 <template>
     <div v-if="isOpen" @click="emit('close')"
         class="fixed inset-0 z-40 bg-black/50 md:hidden transition-opacity duration-300"></div>
