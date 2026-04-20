@@ -7,7 +7,9 @@ import SearchResultModal, { type SearchResult } from '../modals/searchresultmoda
 const emit = defineEmits<{
     toggleSidebar: []
 }>()
-
+const props = defineProps<{
+    userName?: string;
+}>()
 const { theme, styles, surface, isDark, toggleMode } = useTheme()
 
 // --- INSTANT LOAD: Grab from localStorage first to prevent flashing ---
