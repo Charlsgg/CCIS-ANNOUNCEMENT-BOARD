@@ -24,7 +24,7 @@
           </div>
         </div>
 
-        <div class="hidden md:block bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden group cursor-pointer hover:shadow-md transition-all hover:border-orange-300" @click="goToEvents">
+        <div v-if="nextEvent" class="hidden md:block bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden group cursor-pointer hover:shadow-md transition-all hover:border-orange-300" @click="goToEvents">
           <div class="absolute -right-4 -top-4 w-16 h-16 bg-orange-500/10 rounded-full transition-transform group-hover:scale-150 duration-500"></div>
           
           <div class="flex items-center justify-between mb-3">
@@ -34,8 +34,8 @@
             </div>
           </div>
           
-          <h3 class="text-sm font-bold text-gray-800 leading-tight mb-1 line-clamp-1">Midterm Examinations</h3>
-          <p class="text-[10px] text-gray-500 font-medium mb-3 uppercase tracking-wider">Campus-wide Event</p>
+          <h3 class="text-sm font-bold text-gray-800 leading-tight mb-1 line-clamp-1">{{ nextEvent.title }}</h3>
+          <p class="text-[10px] text-gray-500 font-medium mb-3 uppercase tracking-wider">{{ nextEvent.venue }}</p>
           
           <div class="flex gap-2">
             <div class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
@@ -120,6 +120,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import axios from 'axios'
 
 // Routing Mock
 const goToEvents = () => {
@@ -137,6 +138,10 @@ const currentHour = ref(new Date().getHours())
 const weatherCity = ref('Butuan City')
 const weatherTemp = ref('--')
 const weatherDesc = ref('Loading...')
+
+// Upcoming Events State
+const upcomingEvents = ref([])
+const nextEvent = ref(null)
 
 const countdownDays = ref('04')
 const countdownHours = ref('12')
@@ -213,6 +218,41 @@ const setDailyFact = () => {
   dailyFact.value = factsArray[randomIndex]
 }
 
+// Upcoming Events Logic
+const fetchUpcomingEvents = async () => {
+  try {
+    const response = await axios.get('/events/upcoming')
+    upcomingEvents.value = response.data.events || []
+    if (upcomingEvents.value.length > 0) {
+      nextEvent.value = upcomingEvents.value[0]
+      updateCountdown()
+    }
+  } catch (e) { console.error("Events Error", e) }
+}
+
+const updateCountdown = () => {
+  if (!nextEvent.value || !nextEvent.value.start_time) {
+    countdownDays.value = '--'
+    countdownHours.value = '--'
+    return
+  }
+  const eventDate = new Date(nextEvent.value.start_time)
+  const now = new Date()
+  const diff = eventDate - now
+  
+  if (diff <= 0) {
+    countdownDays.value = '00'
+    countdownHours.value = '00'
+    return
+  }
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  
+  countdownDays.value = String(days).padStart(2, '0')
+  countdownHours.value = String(hours).padStart(2, '0')
+}
+
 // Timers
 let clockTimer, weatherTimer
 
@@ -220,6 +260,7 @@ onMounted(() => {
   updateClock()
   fetchWeather()
   setDailyFact()
+  fetchUpcomingEvents()
   
   clockTimer = setInterval(updateClock, 1000)
   weatherTimer = setInterval(fetchWeather, 1800000) // Update weather every 30 mins
