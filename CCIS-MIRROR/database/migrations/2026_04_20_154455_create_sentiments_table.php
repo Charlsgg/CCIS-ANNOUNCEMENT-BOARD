@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('sentiments', function (Blueprint $table) {
             $table->id();
+            $table->string('sentiment');
+            $table->string('ip_address')->nullable();
             $table->timestamps();
         });
     }

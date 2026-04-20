@@ -1,10 +1,10 @@
 <template>
   <header class="mb-16 relative z-10 w-full">
-    
+
     <div class="flex flex-col md:flex-row justify-between items-start gap-8 w-full">
-      
+
       <div class="flex flex-col gap-6 animate-in fade-in slide-in-from-left duration-700 w-full md:w-64 relative z-10">
-        
+
         <div class="flex items-center gap-4 group cursor-default">
           <div class="text-orange-500 group-hover:scale-110 transition-transform duration-500">
             <span class="material-symbols-outlined text-5xl filter drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">
@@ -24,45 +24,54 @@
           </div>
         </div>
 
-        <div v-if="nextEvent" class="hidden md:block bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden group cursor-pointer hover:shadow-md transition-all hover:border-orange-300" @click="goToEvents">
-          <div class="absolute -right-4 -top-4 w-16 h-16 bg-orange-500/10 rounded-full transition-transform group-hover:scale-150 duration-500"></div>
-          
+        <div v-if="nextEvent"
+          class="hidden md:block bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden group cursor-pointer hover:shadow-md transition-all hover:border-orange-300"
+          @click="goToEvents">
+          <div
+            class="absolute -right-4 -top-4 w-16 h-16 bg-orange-500/10 rounded-full transition-transform group-hover:scale-150 duration-500">
+          </div>
+
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2 text-orange-500">
               <span class="material-symbols-outlined text-sm animate-pulse">event_upcoming</span>
               <span class="text-[9px] font-bold tracking-widest uppercase text-gray-500">Up Next</span>
             </div>
           </div>
-          
+
           <h3 class="text-sm font-bold text-gray-800 leading-tight mb-1 line-clamp-1">{{ nextEvent.title }}</h3>
           <p class="text-[10px] text-gray-500 font-medium mb-3 uppercase tracking-wider">{{ nextEvent.venue }}</p>
-          
+
           <div class="flex gap-2">
-            <div class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
+            <div
+              class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
               <span class="block text-xl font-black leading-none mb-0.5">{{ countdownDays }}</span>
               <span class="block text-[8px] uppercase tracking-widest font-bold opacity-80">Days</span>
             </div>
-            <div class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
+            <div
+              class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
               <span class="block text-xl font-black leading-none mb-0.5">{{ countdownHours }}</span>
               <span class="block text-[8px] uppercase tracking-widest font-bold opacity-80">Hours</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
+        <div
+          class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2 text-orange-500">
               <span class="material-symbols-outlined text-sm">newspaper</span>
               <span class="text-[9px] font-bold tracking-widest uppercase text-gray-500">PH Top News</span>
             </div>
           </div>
-          
+
           <div class="flex flex-col gap-3">
             <div v-if="newsHeadlines.length === 0" class="text-xs text-gray-400 italic">
               {{ newsStatusMessage }}
             </div>
-            <a v-for="(article, index) in newsHeadlines" :key="index" :href="article.url" target="_blank" class="group block border-b border-gray-100 last:border-0 pb-2 last:pb-0">
-              <h3 class="text-xs font-medium text-gray-800 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
+            <a v-for="(article, index) in newsHeadlines" :key="index" :href="article.url" target="_blank"
+              class="group block border-b border-gray-100 last:border-0 pb-2 last:pb-0">
+              <h3
+                class="text-xs font-medium text-gray-800 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
                 {{ article.title }}
               </h3>
             </a>
@@ -71,12 +80,15 @@
 
       </div>
 
-      <div class="text-center md:absolute md:left-1/2 md:-translate-x-1/2 animate-in fade-in zoom-in duration-1000 flex flex-col items-center">
-        <span class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 shadow-sm border border-orange-200">
+      <div
+        class="text-center md:absolute md:left-1/2 md:-translate-x-1/2 animate-in fade-in zoom-in duration-1000 flex flex-col items-center">
+        <span
+          class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 shadow-sm border border-orange-200">
           {{ dynamicGreeting }}
         </span>
-        
-        <h1 class="text-7xl md:text-8xl font-light tracking-tighter leading-none text-gray-900 font-mono drop-shadow-sm">
+
+        <h1
+          class="text-7xl md:text-8xl font-light tracking-tighter leading-none text-gray-900 font-mono drop-shadow-sm">
           {{ currentTime }}
         </h1>
         <div class="uppercase tracking-[0.3em] text-sm font-medium mt-2 text-orange-500">
@@ -85,13 +97,19 @@
       </div>
 
       <div class="hidden lg:flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-700 w-64 relative z-10">
-        
+
         <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md">
           <div class="flex justify-between items-center mb-4 text-orange-500">
             <h2 class="text-[10px] font-bold tracking-widest uppercase">{{ currentMonthYear }}</h2>
           </div>
           <div class="grid grid-cols-7 gap-1 text-center text-[9px] font-bold text-gray-400 mb-2">
-            <div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div>
+            <div>SU</div>
+            <div>MO</div>
+            <div>TU</div>
+            <div>WE</div>
+            <div>TH</div>
+            <div>FR</div>
+            <div>SA</div>
           </div>
           <div class="grid grid-cols-7 gap-1 text-center">
             <div v-for="empty in firstDayOfMonth" :key="'empty-' + empty" class="p-1"></div>
@@ -103,7 +121,8 @@
           </div>
         </div>
 
-        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
+        <div
+          class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2 text-orange-500">
               <span class="material-symbols-outlined text-sm">mood</span>
@@ -122,11 +141,13 @@
             </div>
           </div>
 
-          <div v-else class="flex flex-col items-center justify-center gap-2 py-1 animate-in fade-in zoom-in duration-500">
+          <div v-else
+            class="flex flex-col items-center justify-center gap-2 py-1 animate-in fade-in zoom-in duration-500">
             <span class="text-3xl">{{ selectedSentiment.icon }}</span>
             <p class="text-xs text-gray-600 text-center font-medium leading-relaxed">
-              Vibe recorded! <br/>
-              <span class="text-[10px] text-gray-400 font-normal">Most students are feeling <strong>"{{ mockAverageVibe }}"</strong> today.</span>
+              Vibe recorded! <br />
+              <span class="text-[10px] text-gray-400 font-normal">Most students are feeling <strong>"{{ mockAverageVibe
+                  }}"</strong> today.</span>
             </p>
           </div>
         </div>
@@ -134,7 +155,8 @@
       </div>
     </div>
 
-    <div class="mt-12 w-full flex items-center bg-white border border-gray-200 shadow-sm rounded-full overflow-hidden h-10 relative z-10">
+    <div
+      class="mt-12 w-full flex items-center bg-white border border-gray-200 shadow-sm rounded-full overflow-hidden h-10 relative z-10">
       <div class="bg-orange-500 text-white h-full px-6 flex items-center justify-center z-10 shrink-0 shadow-md">
         <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
           <span class="material-symbols-outlined text-sm animate-pulse">campaign</span>
@@ -143,11 +165,14 @@
       </div>
       <div class="grow overflow-hidden relative h-full flex items-center">
         <div class="whitespace-nowrap animate-marquee text-xs font-medium text-gray-600 tracking-wide">
-          <span class="mx-4 text-orange-500">•</span> Welcome to the centralized announcement board MIRACIS! 
-          <span class="mx-4 text-orange-500">•</span> Stay tuned for the latest news, events, and updates from the College of Computer and Information Sciences.
-          <span class="mx-4 text-orange-500">•</span> Don't forget to check the Events tab for upcoming department activities.
+          <span class="mx-4 text-orange-500">•</span> Welcome to the centralized announcement board MIRACIS!
+          <span class="mx-4 text-orange-500">•</span> Stay tuned for the latest news, events, and updates from the
+          College of Computer and Information Sciences.
+          <span class="mx-4 text-orange-500">•</span> Don't forget to check the Events tab for upcoming department
+          activities.
           <span class="mx-4 text-orange-500">•</span> interact with the announcements to view details and attachments.
-          <span class="mx-4 text-orange-500">•</span> For any inquiries or support, visit us at the CCIS Network Administration Office.
+          <span class="mx-4 text-orange-500">•</span> For any inquiries or support, visit us at the CCIS Network
+          Administration Office.
         </div>
       </div>
     </div>
@@ -204,17 +229,18 @@ const sentimentOptions = [
 const submitSentiment = async (emoji) => {
   try {
     // 1. Send the data to the Laravel backend
-    const response = await axios.post('/api/sentiment', { 
-        sentiment: emoji.label 
+    // Remove the '/api' prefix
+    const response = await axios.post('/sentiment', {
+      sentiment: emoji.label
     })
-    
+
     // 2. Update UI states
     selectedSentiment.value = emoji
     hasVoted.value = true
-    
+
     // 3. Replace the mock text with real database data!
     mockAverageVibe.value = response.data.most_common_vibe
-    
+
     // 4. Optional: Reset the UI after 10 seconds to match the backend cooldown
     setTimeout(() => {
       hasVoted.value = false
@@ -289,17 +315,17 @@ const fetchWeather = async () => {
 // GNEWS API Logic
 const fetchPHNews = async () => {
   try {
-    const API_KEY = 'a402c195e9fc98081c12f68c383c2354'; 
+    const API_KEY = 'a402c195e9fc98081c12f68c383c2354';
     const url = `https://gnews.io/api/v4/top-headlines?category=general&country=ph&apikey=${API_KEY}`;
-    
+
     const response = await fetch(url);
-    
+
     if (response.status === 401 || response.status === 403) {
       newsStatusMessage.value = "Missing or Invalid API Key.";
       throw new Error("Unauthorized: Check your GNews API key.");
     }
     if (!response.ok) throw new Error(`News API error: ${response.status}`);
-    
+
     const data = await response.json();
     if (data.articles && data.articles.length > 0) {
       newsHeadlines.value = data.articles.slice(0, 3).map(article => ({
@@ -311,8 +337,8 @@ const fetchPHNews = async () => {
     }
   } catch (e) {
     console.error("News Sync Error:", e.message);
-    if(newsHeadlines.value.length === 0) {
-       newsStatusMessage.value = "API Error. Check console.";
+    if (newsHeadlines.value.length === 0) {
+      newsStatusMessage.value = "API Error. Check console.";
     }
   }
 }
@@ -340,16 +366,16 @@ const updateCountdown = () => {
   const eventDate = new Date(nextEvent.value.start_time)
   const now = new Date()
   const diff = eventDate - now
-  
+
   if (diff <= 0) {
     countdownDays.value = '00'
     countdownHours.value = '00'
     return
   }
-  
+
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-  
+
   countdownDays.value = String(days).padStart(2, '0')
   countdownHours.value = String(hours).padStart(2, '0')
 }
@@ -362,7 +388,7 @@ onMounted(() => {
   fetchWeather()
   fetchPHNews()
   fetchUpcomingEvents()
-  
+
   clockTimer = setInterval(updateClock, 1000)
   weatherTimer = setInterval(fetchWeather, 1800000) // Update weather every 30 mins
   newsTimer = setInterval(fetchPHNews, 3600000) // Refresh news every hour
@@ -377,13 +403,20 @@ onUnmounted(() => {
 
 <style scoped>
 @keyframes marquee {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
 }
+
 .animate-marquee {
   display: inline-block;
   animation: marquee 25s linear infinite;
 }
+
 .animate-marquee:hover {
   animation-play-state: paused;
 }
