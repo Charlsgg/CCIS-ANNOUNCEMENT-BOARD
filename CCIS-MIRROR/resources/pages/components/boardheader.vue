@@ -221,7 +221,7 @@ const setDailyFact = () => {
 // Upcoming Events Logic
 const fetchUpcomingEvents = async () => {
   try {
-    const response = await axios.get('/events/upcoming')
+    const response = await axios.get('events/upcoming')
     upcomingEvents.value = response.data.events || []
     if (upcomingEvents.value.length > 0) {
       nextEvent.value = upcomingEvents.value[0]
