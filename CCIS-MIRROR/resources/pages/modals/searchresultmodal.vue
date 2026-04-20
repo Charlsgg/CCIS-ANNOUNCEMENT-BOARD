@@ -133,12 +133,12 @@ const metaDetails = computed(() => {
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="show && result"
-                class="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 transition-all duration-300 backdrop-blur-sm"
+                class="fixed inset-0 z-100 flex items-center justify-center p-2 sm:p-4 md:p-6 transition-all duration-300 backdrop-blur-sm"
                 :style="{ backgroundColor: surface.overlayBg }">
                 
                 <div class="absolute inset-0" @click="closeModal"></div>
 
-                <div class="relative w-full max-w-4xl h-[85vh] md:h-[40rem] rounded-xl shadow-2xl overflow-hidden flex flex-col border transition-all duration-300"
+                <div class="relative w-full max-w-4xl h-[85vh] md:h-160 rounded-xl shadow-2xl overflow-hidden flex flex-col border transition-all duration-300"
                     :style="[styles.cardBg, { borderColor: theme.accent + '20' }]">
                     
                     <div class="relative h-40 md:h-48 w-full flex items-end overflow-hidden shrink-0 transition-colors duration-500"
@@ -149,8 +149,8 @@ const metaDetails = computed(() => {
                             <span class="material-symbols-outlined text-lg md:text-xl">close</span>
                         </button>
 
-                        <div class="relative z-10 p-4 md:p-6 flex items-center gap-4 w-full bg-gradient-to-t from-black/60 to-transparent">
-                            <div class="flex flex-col items-center justify-center p-2 rounded-xl shadow-lg min-w-[4rem]"
+                        <div class="relative z-10 p-4 md:p-6 flex items-center gap-4 w-full bg-linear-to-t from-black/60 to-transparent">
+                            <div class="flex flex-col items-center justify-center p-2 rounded-xl shadow-lg min-w-16"
                                 :style="styles.cardBg">
                                 <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider"
                                     :style="{ color: theme.accent }">
@@ -206,7 +206,7 @@ const metaDetails = computed(() => {
                                     Content Details
                                 </h3>
                                 <div class="prose dark:prose-invert max-w-none space-y-4">
-                                    <div class="text-sm md:text-base leading-relaxed border-l-4 pl-4 whitespace-pre-wrap break-words"
+                                    <div class="text-sm md:text-base leading-relaxed border-l-4 pl-4 whitespace-pre-wrap wrap-break-word"
                                         :style="{ color: isDark ? '#cbd5e1' : '#334155', borderColor: theme.accent + '4d' }"
                                         v-html="result.content || result.description || 'No additional information provided.'">
                                     </div>
@@ -241,10 +241,10 @@ const metaDetails = computed(() => {
         </Transition>
 
         <Transition name="fade">
-            <div v-if="activePreview" class="fixed inset-0 z-[110] flex items-center justify-center p-4 transition-all duration-300 backdrop-blur-md"
+            <div v-if="activePreview" class="fixed inset-0 z-110 flex items-center justify-center p-4 transition-all duration-300 backdrop-blur-md"
                  :style="{ backgroundColor: surface.overlayBg }">
                 <button @click="activePreview = null"
-                    class="absolute top-6 right-6 z-[120] w-12 h-12 flex items-center justify-center rounded-full transition-all hover:rotate-90 border shadow-sm"
+                    class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full transition-all hover:rotate-90 border shadow-sm"
                     :style="{ backgroundColor: surface.cardBg, borderColor: theme.accent + '33', color: surface.textPrimary }">
                     <span class="material-symbols-outlined text-xl">close</span>
                 </button>
