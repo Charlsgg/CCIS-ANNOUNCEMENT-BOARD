@@ -49,6 +49,26 @@
           </div>
         </div>
 
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2 text-orange-500">
+              <span class="material-symbols-outlined text-sm">newspaper</span>
+              <span class="text-[9px] font-bold tracking-widest uppercase text-gray-500">PH Top News</span>
+            </div>
+          </div>
+          
+          <div class="flex flex-col gap-3">
+            <div v-if="newsHeadlines.length === 0" class="text-xs text-gray-400 italic">
+              {{ newsStatusMessage }}
+            </div>
+            <a v-for="(article, index) in newsHeadlines" :key="index" :href="article.url" target="_blank" class="group block border-b border-gray-100 last:border-0 pb-2 last:pb-0">
+              <h3 class="text-xs font-medium text-gray-800 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
+                {{ article.title }}
+              </h3>
+            </a>
+          </div>
+        </div>
+
       </div>
 
       <div class="text-center md:absolute md:left-1/2 md:-translate-x-1/2 animate-in fade-in zoom-in duration-1000 flex flex-col items-center">
@@ -83,15 +103,32 @@
           </div>
         </div>
 
-        <div class="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl p-4 shadow-md border border-gray-700 relative overflow-hidden group cursor-pointer">
-          <div class="absolute top-0 right-0 w-16 h-16 bg-orange-500/10 rounded-bl-full transition-transform group-hover:scale-150"></div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="material-symbols-outlined text-orange-500 text-sm">lightbulb</span>
-            <span class="text-[9px] font-bold tracking-widest uppercase text-gray-400">Daily Qoutes</span>
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2 text-orange-500">
+              <span class="material-symbols-outlined text-sm">mood</span>
+              <span class="text-[9px] font-bold tracking-widest uppercase text-gray-500">Campus Vibe Check</span>
+            </div>
           </div>
-          <p class="text-xs text-gray-200 leading-relaxed font-light italic">
-            "{{ dailyFact }}"
-          </p>
+
+          <div v-if="!hasVoted" class="flex flex-col gap-3 transition-all duration-500">
+            <p class="text-xs text-gray-600 font-medium text-center">How are you feeling today?</p>
+            <div class="flex justify-between items-center px-1">
+              <button v-for="emoji in sentimentOptions" :key="emoji.id" @click="submitSentiment(emoji)"
+                class="text-2xl hover:scale-125 hover:-translate-y-1 transition-all duration-300 grayscale hover:grayscale-0 focus:outline-none"
+                :title="emoji.label">
+                {{ emoji.icon }}
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="flex flex-col items-center justify-center gap-2 py-1 animate-in fade-in zoom-in duration-500">
+            <span class="text-3xl">{{ selectedSentiment.icon }}</span>
+            <p class="text-xs text-gray-600 text-center font-medium leading-relaxed">
+              Vibe recorded! <br/>
+              <span class="text-[10px] text-gray-400 font-normal">Most students are feeling <strong>"{{ mockAverageVibe }}"</strong> today.</span>
+            </p>
+          </div>
         </div>
 
       </div>
@@ -142,19 +179,56 @@ const weatherDesc = ref('Loading...')
 // Upcoming Events State
 const upcomingEvents = ref([])
 const nextEvent = ref(null)
-
 const countdownDays = ref('04')
 const countdownHours = ref('12')
 
-// Hook Data State
-const dailyFact = ref('')
-const factsArray = [
-  "The first computer bug was an actual moth found in a relay.",
-  "Over 3.4 billion fake emails are sent every single day.",
-  "The first 1GB hard drive weighed over 500 pounds.",
-  "Programming languages were originally written in 1s and 0s.",
-  "A single Google query uses 1,000 computers in 0.2 seconds to fetch an answer."
+
+
+// News State
+const newsHeadlines = ref([])
+const newsStatusMessage = ref('Fetching latest news...')
+
+// Sentiment Tracker State
+const hasVoted = ref(false)
+const selectedSentiment = ref(null)
+const mockAverageVibe = ref('Productive')
+
+const sentimentOptions = [
+  { id: 1, icon: '😫', label: 'Stressed' },
+  { id: 2, icon: '😴', label: 'Tired' },
+  { id: 3, icon: '🙂', label: 'Okay' },
+  { id: 4, icon: '😎', label: 'Productive' },
+  { id: 5, icon: '🤩', label: 'Great' }
 ]
+
+const submitSentiment = async (emoji) => {
+  try {
+    // 1. Send the data to the Laravel backend
+    const response = await axios.post('/api/sentiment', { 
+        sentiment: emoji.label 
+    })
+    
+    // 2. Update UI states
+    selectedSentiment.value = emoji
+    hasVoted.value = true
+    
+    // 3. Replace the mock text with real database data!
+    mockAverageVibe.value = response.data.most_common_vibe
+    
+    // 4. Optional: Reset the UI after 10 seconds to match the backend cooldown
+    setTimeout(() => {
+      hasVoted.value = false
+      selectedSentiment.value = null
+    }, 10000)
+
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      alert("Hold on! You're voting too fast. Wait 10 seconds.")
+    } else {
+      console.error("Failed to record vibe:", error)
+    }
+  }
+}
 
 // Computed properties
 const daysInMonth = computed(() => {
@@ -212,11 +286,38 @@ const fetchWeather = async () => {
   }
 }
 
-// Select a random fact for the day
-const setDailyFact = () => {
-  const randomIndex = Math.floor(Math.random() * factsArray.length)
-  dailyFact.value = factsArray[randomIndex]
+// GNEWS API Logic
+const fetchPHNews = async () => {
+  try {
+    const API_KEY = 'a402c195e9fc98081c12f68c383c2354'; 
+    const url = `https://gnews.io/api/v4/top-headlines?category=general&country=ph&apikey=${API_KEY}`;
+    
+    const response = await fetch(url);
+    
+    if (response.status === 401 || response.status === 403) {
+      newsStatusMessage.value = "Missing or Invalid API Key.";
+      throw new Error("Unauthorized: Check your GNews API key.");
+    }
+    if (!response.ok) throw new Error(`News API error: ${response.status}`);
+    
+    const data = await response.json();
+    if (data.articles && data.articles.length > 0) {
+      newsHeadlines.value = data.articles.slice(0, 3).map(article => ({
+        title: article.title,
+        url: article.url
+      }));
+    } else {
+      newsStatusMessage.value = "No news found right now.";
+    }
+  } catch (e) {
+    console.error("News Sync Error:", e.message);
+    if(newsHeadlines.value.length === 0) {
+       newsStatusMessage.value = "API Error. Check console.";
+    }
+  }
 }
+
+
 
 // Upcoming Events Logic
 const fetchUpcomingEvents = async () => {
@@ -254,21 +355,23 @@ const updateCountdown = () => {
 }
 
 // Timers
-let clockTimer, weatherTimer
+let clockTimer, weatherTimer, newsTimer
 
 onMounted(() => {
   updateClock()
   fetchWeather()
-  setDailyFact()
+  fetchPHNews()
   fetchUpcomingEvents()
   
   clockTimer = setInterval(updateClock, 1000)
   weatherTimer = setInterval(fetchWeather, 1800000) // Update weather every 30 mins
+  newsTimer = setInterval(fetchPHNews, 3600000) // Refresh news every hour
 })
 
 onUnmounted(() => {
   clearInterval(clockTimer)
   clearInterval(weatherTimer)
+  clearInterval(newsTimer)
 })
 </script>
 
