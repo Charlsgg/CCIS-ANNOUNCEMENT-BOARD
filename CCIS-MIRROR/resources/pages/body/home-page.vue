@@ -7,6 +7,7 @@ import RecentAnnouncements from '../components/recentannouncements.vue'
 import axios from 'axios'
 
 const props = defineProps<{
+    csrfToken?: string;
     user?: { name: string; email: string; user_type: string; profile?: { profile_picture: string } }
 }>()
 

@@ -11,21 +11,27 @@ interface CalendarEvent {
     description: string
     descriptionLong?: string
     start_time: string
-    end_time?: string | null // Explicitly handle null
+    end_time?: string | null 
     category?: string
     attendees?: number
 }
 
+// 1. ADDED THE MISSING PROPS HERE TO SILENCE THE WARNINGS
 const props = defineProps<{
     show: boolean
     events: CalendarEvent[]
+    // These silences the "Extraneous non-props attributes" warning
+    theme: any
+    surface: any
+    styles: any
 }>()
 
 const emit = defineEmits<{
     (e: 'close'): void
 }>()
 
-const { theme, surface, styles, isDark } = useTheme()
+// We can still use the composable, or use the props passed from parent
+const { isDark } = useTheme()
 const selectedIndex = ref(0)
 
 watch(() => props.show, (newVal) => {
@@ -63,7 +69,6 @@ const formatTime = (dateStr?: string | null) => {
     })
 }
 
-// Helper to determine what to show in the End Date card
 const getEndDateDisplay = (event: CalendarEvent | null) => {
     if (!event) return { date: 'TBA', sub: '--:--' }
     
@@ -71,29 +76,25 @@ const getEndDateDisplay = (event: CalendarEvent | null) => {
         const startDateString = new Date(event.start_time).toDateString()
         const endDateString = new Date(event.end_time).toDateString()
         
-        // If it starts and ends on the exact same day
         if (startDateString === endDateString) {
             return {
                 date: 'Same Day',
-                sub: formatTime(event.end_time) // Just show the time it ends
+                sub: formatTime(event.end_time)
             }
         }
         
-        // Multi-day event
         return {
             date: formatFullDate(event.end_time),
             sub: formatTime(event.end_time)
         }
     }
     
-    // No end_time provided (Null in DB)
     return {
         date: formatFullDate(event.start_time), 
         sub: 'TBA / Ongoing' 
     }
 }
 
-// Cleanly map the details for the template grid
 const eventDetails = computed(() => {
     const ev = activeEvent.value;
     if (!ev) return [];
@@ -114,10 +115,12 @@ const eventDetails = computed(() => {
             <div v-if="show"
                 class="fixed inset-0 z-100 flex items-center justify-center p-2 sm:p-4 md:p-6 transition-all duration-300 backdrop-blur-sm"
                 :style="{ backgroundColor: surface.overlayBg }">
+                
                 <div class="absolute inset-0" @click="$emit('close')"></div>
 
                 <div class="relative w-full max-w-4xl h-[85vh] md:h-162.5 rounded-xl shadow-2xl overflow-hidden flex flex-col border transition-all duration-300"
                     :style="[styles.cardBg, { borderColor: theme.accent + '20' }]">
+                    
                     <div class="relative h-40 md:h-48 w-full flex items-end overflow-hidden shrink-0 transition-colors duration-500"
                         :style="{ backgroundColor: isDark ? theme.accent + 'e6' : theme.accent }">
 
@@ -126,8 +129,7 @@ const eventDetails = computed(() => {
                             <span class="material-symbols-outlined text-lg md:text-xl">close</span>
                         </button>
 
-                        <div
-                            class="relative z-10 p-4 md:p-6 flex items-center gap-4 w-full bg-linear-to-t from-black/50 to-transparent">
+                        <div class="relative z-10 p-4 md:p-6 flex items-center gap-4 w-full bg-linear-to-t from-black/50 to-transparent">
                             <div class="flex flex-col items-center justify-center p-2 rounded-xl shadow-lg min-w-16"
                                 :style="styles.cardBg">
                                 <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider"
@@ -140,13 +142,11 @@ const eventDetails = computed(() => {
                             </div>
                             <div class="flex-1 min-w-0">
                                 <nav v-if="activeEvent?.category" class="flex gap-2 mb-1">
-                                    <span
-                                        class="px-2 py-0.5 rounded bg-white/20 text-white text-[9px] md:text-[10px] font-bold uppercase tracking-widest truncate">
+                                    <span class="px-2 py-0.5 rounded bg-white/20 text-white text-[9px] md:text-[10px] font-bold uppercase tracking-widest truncate">
                                         {{ activeEvent.category }}
                                     </span>
                                 </nav>
-                                <h1
-                                    class="text-white text-lg sm:text-xl md:text-2xl font-bold leading-tight drop-shadow-sm line-clamp-2">
+                                <h1 class="text-white text-lg sm:text-xl md:text-2xl font-bold leading-tight drop-shadow-sm line-clamp-2">
                                     {{ activeEvent?.title }}
                                 </h1>
                             </div>
@@ -154,16 +154,13 @@ const eventDetails = computed(() => {
                     </div>
 
                     <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
-
-                        <aside
-                            class="w-full md:w-64 border-b md:border-b-0 md:border-r flex flex-col shrink-0 transition-colors duration-300"
+                        <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r flex flex-col shrink-0 transition-colors duration-300"
                             :style="{ backgroundColor: surface.sidebarBg, borderColor: theme.accent + '15' }">
                             <div class="p-4 border-b hidden md:block" :style="{ borderColor: theme.accent + '10' }">
                                 <h3 class="font-bold text-sm" :style="styles.textPrimary">Upcoming Events</h3>
                             </div>
 
-                            <div
-                                class="flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto custom-scrollbar p-2 gap-2 md:gap-0 md:space-y-1 snap-x md:snap-none">
+                            <div class="flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto custom-scrollbar p-2 gap-2 md:gap-0 md:space-y-1 snap-x md:snap-none">
                                 <div v-for="(event, index) in events" :key="index" @click="selectedIndex = index"
                                     class="shrink-0 w-60 md:w-auto p-3 rounded-lg cursor-pointer transition-all border-b-4 md:border-b-0 md:border-l-4 snap-start group"
                                     :style="selectedIndex === index ? {
@@ -178,11 +175,6 @@ const eventDetails = computed(() => {
                                             :style="selectedIndex === index ? { color: theme.accent } : styles.textMuted">
                                             {{ formatTime(event.start_time) }}
                                         </span>
-                                        <span v-if="selectedIndex === index"
-                                            class="material-symbols-outlined text-xs hidden md:block"
-                                            :style="{ color: theme.accent }">
-                                            radio_button_checked
-                                        </span>
                                     </div>
                                     <p class="font-semibold text-sm transition-colors truncate md:whitespace-normal leading-snug"
                                         :style="selectedIndex === index
@@ -196,7 +188,6 @@ const eventDetails = computed(() => {
                         </aside>
 
                         <main class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 bg-transparent">
-
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                                 <div v-for="item in eventDetails" :key="item.label"
                                     class="p-3 md:p-4 rounded-xl border shadow-sm flex sm:block items-center sm:items-start gap-4 sm:gap-0 transition-shadow"
@@ -244,37 +235,3 @@ const eventDetails = computed(() => {
         </Transition>
     </Teleport>
 </template>
-
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: v-bind('theme.accent + "44"');
-    border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: v-bind('theme.accent');
-}
-
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-.prose p {
-    color: inherit;
-}
-</style>

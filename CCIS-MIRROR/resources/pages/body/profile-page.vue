@@ -4,6 +4,7 @@ import { useTheme } from '../composable/usetheme.ts'
 
 const props = defineProps<{
     user?: { name: string; email: string; user_type: string }
+    csrfToken?: string;
 }>()
 
 const { theme, styles, surface, isDark, setUserType, initTheme } = useTheme()
