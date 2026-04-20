@@ -16,11 +16,6 @@ class UserAnnouncementController extends Controller
     {
         $user = Auth::user();
         $userAvatar = $user->profile->profile_picture ?? null;
-        
-        // Build the base Supabase public URL dynamically from .env
-        $supabaseUrl = rtrim(env('SUPABASE_URL'), '/'); 
-        $bucket = env('AWS_BUCKET'); 
-        $baseStorageUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/";
 
         $rawData = DB::table('user_announcements_attachments_view')
             ->where('author_id', $user->user_id) 
@@ -29,25 +24,25 @@ class UserAnnouncementController extends Controller
 
         $groupedAnnouncements = $rawData->groupBy('announcement_id');
 
-        $formattedAnnouncements = $groupedAnnouncements->map(function ($group) use ($user, $userAvatar, $baseStorageUrl) {
+        $formattedAnnouncements = $groupedAnnouncements->map(function ($group) use ($user, $userAvatar) {
             $main = $group->first();
 
-            // Format Avatar URL
+            // Format Avatar URL using standard Laravel Storage
             $formattedAvatar = null;
             if ($userAvatar) {
                 $formattedAvatar = str_starts_with($userAvatar, 'http') 
                     ? $userAvatar 
-                    : $baseStorageUrl . ltrim($userAvatar, '/');
+                    : Storage::url($userAvatar);
             }
 
-            // Format Attachments URLs
+            // Format Attachments URLs using standard Laravel Storage
             $attachments = $group->filter(fn($item) => !is_null($item->attachment_id))
                 ->map(fn($item) => [
                     'attachment_id' => $item->attachment_id,
                     'file_type'     => $item->file_type,
                     'file_path'     => str_starts_with($item->file_path, 'http') 
                                         ? $item->file_path 
-                                        : $baseStorageUrl . ltrim($item->file_path, '/'),
+                                        : Storage::url($item->file_path),
                 ])->values()->toArray();
 
             return [
@@ -113,18 +108,12 @@ class UserAnnouncementController extends Controller
                         try {
                             $pathToDelete = $attachment->file_path;
                             
-                            // If it's a full URL, extract the relative path for deletion
-                            if (str_starts_with($pathToDelete, 'http')) {
-                                $urlPath = parse_url($pathToDelete, PHP_URL_PATH);
-                                $segments = explode('/public/' . env('AWS_BUCKET') . '/', $urlPath);
-                                if (isset($segments[1])) {
-                                    $pathToDelete = $segments[1];
-                                }
+                            // Let Laravel handle the deletion natively
+                            if (!str_starts_with($pathToDelete, 'http')) {
+                                Storage::delete($pathToDelete);
                             }
-                            
-                            Storage::disk('s3')->delete($pathToDelete);
                         } catch (\Exception $e) {
-                            Log::error("Failed to delete attachment from S3: " . $e->getMessage());
+                            Log::error("Failed to delete attachment: " . $e->getMessage());
                         }
                         
                         $attachment->forceDelete();
@@ -132,14 +121,14 @@ class UserAnnouncementController extends Controller
                 }
             }
 
-            // 2. Process New Attachments (Uploading to S3)
+            // 2. Process New Attachments using Default Storage
             if ($request->hasFile('newFiles')) {
                 foreach ($request->file('newFiles') as $file) {
-                    // Store file in the 'announcements' directory within the 's3' disk
-                    $path = $file->store('announcements', 's3');
+                    // Store file in the 'announcements' directory using the default disk
+                    $path = $file->store('announcements');
                     
                     $announcement->attachments()->create([
-                        'file_path' => $path, // Saving relative path, it will be formatted on read
+                        'file_path' => $path, // Saving relative path
                         'file_type' => $file->getClientMimeType(),
                     ]);
                 }
@@ -147,14 +136,11 @@ class UserAnnouncementController extends Controller
 
             DB::commit();
 
-            // Build URL helper for the response
-            $supabaseUrl = rtrim(env('SUPABASE_URL'), '/'); 
-            $bucket = env('AWS_BUCKET'); 
-            $baseStorageUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/";
-
             // Fetch the updated data from the view
             $userAvatar = $user->profile->profile_picture ?? null;
-            $formattedAvatar = $userAvatar ? (str_starts_with($userAvatar, 'http') ? $userAvatar : $baseStorageUrl . ltrim($userAvatar, '/')) : null;
+            $formattedAvatar = $userAvatar 
+                ? (str_starts_with($userAvatar, 'http') ? $userAvatar : Storage::url($userAvatar)) 
+                : null;
 
             $rawData = DB::table('user_announcements_attachments_view')
                 ->where('announcement_id', $announcement->id)
@@ -172,7 +158,7 @@ class UserAnnouncementController extends Controller
                     'file_type'     => $item->file_type,
                     'file_path'     => str_starts_with($item->file_path, 'http') 
                                         ? $item->file_path 
-                                        : $baseStorageUrl . ltrim($item->file_path, '/'),
+                                        : Storage::url($item->file_path),
                 ])->values()->toArray();
 
             $formattedAnnouncement = [
@@ -219,17 +205,12 @@ class UserAnnouncementController extends Controller
                 try {
                     $pathToDelete = $file->file_path;
                     
-                    if (str_starts_with($pathToDelete, 'http')) {
-                        $urlPath = parse_url($pathToDelete, PHP_URL_PATH);
-                        $segments = explode('/public/' . env('AWS_BUCKET') . '/', $urlPath);
-                        if (isset($segments[1])) {
-                            $pathToDelete = $segments[1];
-                        }
+                    // Let Laravel handle the deletion natively
+                    if (!str_starts_with($pathToDelete, 'http')) {
+                        Storage::delete($pathToDelete);
                     }
-                    
-                    Storage::disk('s3')->delete($pathToDelete);
                 } catch (\Exception $e) {
-                    Log::error("Failed to delete attachment from S3 on destroy: " . $e->getMessage());
+                    Log::error("Failed to delete attachment on destroy: " . $e->getMessage());
                 }
             }
             $announcement->attachments()->forceDelete();

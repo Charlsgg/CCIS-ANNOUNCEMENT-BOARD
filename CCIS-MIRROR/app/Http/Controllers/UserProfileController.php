@@ -20,12 +20,20 @@ class UserProfileController extends Controller
     {
         $user = $request->user()->load('profile');
 
+        // Safely generate the correct public URL for the avatar
+        $avatarUrl = null;
+        if ($user->profile && $user->profile->profile_picture) {
+            $avatarUrl = str_starts_with($user->profile->profile_picture, 'http')
+                ? $user->profile->profile_picture
+                : Storage::url($user->profile->profile_picture);
+        }
+
         return response()->json([
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
                 'user_type' => $user->user_type,
-                'profile_picture' => $user->profile ? $user->profile->profile_picture : null,
+                'profile_picture' => $avatarUrl,
             ]
         ]);
     }
@@ -56,7 +64,7 @@ class UserProfileController extends Controller
     }
 
     /**
-     * Update profile info and upload avatar to Supabase 'avatars' bucket.
+     * Update profile info and upload avatar using standard Laravel Storage.
      */
     public function update(Request $request): JsonResponse
     {
@@ -82,6 +90,7 @@ class UserProfileController extends Controller
             ]);
 
             $profileData = [];
+            $avatarUrl = null;
 
             if ($request->hasFile('profile_picture')) {
                 $file = $request->file('profile_picture');
@@ -90,12 +99,14 @@ class UserProfileController extends Controller
                     $this->deleteOldAvatar($user->profile->profile_picture);
                 }
 
-                // Store using the 'avatars' disk we defined in filesystems.php
-                $path = $file->store('user-avatars', 'avatars');
+                // Store using the default disk defined in .env
+                $path = $file->store('user-avatars');
 
-                /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-                $disk = Storage::disk('avatars');
-                $profileData['profile_picture'] = $disk->url($path);
+                // Save ONLY the relative path to the database
+                $profileData['profile_picture'] = $path;
+                
+                // Prepare the full URL to send back to the frontend
+                $avatarUrl = Storage::url($path);
             }
 
             $user->profile()->updateOrCreate(
@@ -105,9 +116,16 @@ class UserProfileController extends Controller
 
             DB::commit();
 
+            // If no new picture was uploaded, retain the existing URL format for the response
+            if (!$avatarUrl && $user->profile && $user->profile->profile_picture) {
+                $avatarUrl = str_starts_with($user->profile->profile_picture, 'http')
+                    ? $user->profile->profile_picture
+                    : Storage::url($user->profile->profile_picture);
+            }
+
             return response()->json([
                 'message' => 'Profile updated successfully.',
-                'profile_picture' => $profileData['profile_picture'] ?? ($user->profile ? $user->profile->profile_picture : null)
+                'profile_picture' => $avatarUrl
             ]);
 
         } catch (\Exception $e) {
@@ -123,15 +141,12 @@ class UserProfileController extends Controller
     /**
      * Helper to clean up storage when an avatar is replaced.
      */
-    protected function deleteOldAvatar(string $url): void
+    protected function deleteOldAvatar(string $path): void
     {
         try {
-            $path = parse_url($url, PHP_URL_PATH);
-            // Splitting by the bucket name to get the relative path
-            $segments = explode('/public/avatars/', $path);
-            
-            if (isset($segments[1])) {
-                Storage::disk('avatars')->delete($segments[1]);
+            // Only attempt to delete if it's a relative path (not an external HTTP link like Google Auth)
+            if (!str_starts_with($path, 'http')) {
+                Storage::delete($path);
             }
         } catch (\Exception $e) {
             Log::error("Failed to delete old avatar: " . $e->getMessage());

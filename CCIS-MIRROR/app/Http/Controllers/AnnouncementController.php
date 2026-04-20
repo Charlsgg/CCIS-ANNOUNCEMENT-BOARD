@@ -17,13 +17,22 @@ class AnnouncementController extends Controller
             ->latest()
             ->get();
 
+        // Dynamically append the correct full URL for attachments before returning
+        $announcements->each(function ($announcement) {
+            $announcement->attachments->transform(function ($attachment) {
+                // Keep the relative path but add a new 'file_url' for the frontend
+                $attachment->file_url = str_starts_with($attachment->file_path, 'http') 
+                    ? $attachment->file_path 
+                    : Storage::url($attachment->file_path);
+                return $attachment;
+            });
+        });
+
         return response()->json($announcements);
     }
 
     public function store(Request $request)
     {
-        // REMOVED: Artisan::call('config:clear') - Never run this in a controller!
-
         try {
             $validated = $request->validate([
                 'title'         => 'required|string|max:255',
@@ -46,26 +55,21 @@ class AnnouncementController extends Controller
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
                     try {
-                        // 1. Store the file in the 's3' disk (announcements bucket)
-                        // We store it in a subfolder called 'announcement-files'
-                        $path = $file->store('announcement-files', 's3');
+                        // 1. Store the file using Laravel's default configured disk 
+                        // (No hardcoded 's3', relies on your .env FILESYSTEM_DISK)
+                        $path = $file->store('announcement-files');
                         
-                        // 2. Get the FULL PUBLIC URL from Supabase
-                        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-                        $disk = Storage::disk('s3');
-                        $fullUrl = $disk->url($path);
-
-                        // 3. Save the FULL URL to the database
+                        // 2. Save ONLY the relative path to the database
                         $announcement->attachments()->create([
-                            'file_path' => $fullUrl, // Saving full URL here
+                            'file_path' => $path, 
                             'file_type' => $file->getClientMimeType(),
                         ]);
-                    } catch (\Exception $s3Error) {
+                    } catch (\Exception $storageError) {
                         DB::rollBack();
-                        Log::error("S3 Upload Failed: " . $s3Error->getMessage());
+                        Log::error("Storage Upload Failed: " . $storageError->getMessage());
                         return response()->json([
-                            'message' => 'Supabase Storage Upload Failed',
-                            'error_detail' => $s3Error->getMessage(),
+                            'message' => 'File Storage Upload Failed',
+                            'error_detail' => $storageError->getMessage(),
                         ], 500);
                     }
                 }
@@ -73,10 +77,17 @@ class AnnouncementController extends Controller
 
             DB::commit();
 
-            return response()->json(
-                $announcement->load(['author.profile', 'attachments']),
-                201
-            );
+            // Load relations and append the file_url just like the index method
+            $announcement->load(['author.profile', 'attachments']);
+            $announcement->attachments->transform(function ($attachment) {
+                $attachment->file_url = str_starts_with($attachment->file_path, 'http') 
+                    ? $attachment->file_path 
+                    : Storage::url($attachment->file_path);
+                return $attachment;
+            });
+
+            return response()->json($announcement, 201);
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("General Error: " . $e->getMessage());
@@ -94,7 +105,6 @@ class AnnouncementController extends Controller
         }
 
         try {
-            // 1. Validate incoming data (including new and deleted attachments)
             $validated = $request->validate([
                 'title'                 => 'required|string|max:255',
                 'content'               => 'required|string',
@@ -105,61 +115,50 @@ class AnnouncementController extends Controller
 
             DB::beginTransaction();
 
-            // 2. Update basic text fields
             $announcement->update([
                 'title'   => $validated['title'],
                 'content' => $validated['content'],
                 'topic'   => $validated['topic'] ?? 'General',
             ]);
 
-            // 3. Handle Deleted Attachments
+            // Handle Deleted Attachments
             if ($request->has('deleted_attachments')) {
-                // Find the attachments that belong to this announcement and match the deleted IDs
-                // Note: Change 'attachment_id' to 'id' if your database primary key for attachments is just 'id'
                 $filesToDelete = $announcement->attachments()
                     ->whereIn('attachment_id', $request->input('deleted_attachments'))
                     ->get();
 
                 foreach ($filesToDelete as $file) {
                     try {
-                        // Extract relative path to delete from S3
-                        $urlPath = parse_url($file->file_path, PHP_URL_PATH);
-                        $segments = explode('/public/' . env('AWS_BUCKET') . '/', $urlPath);
-
-                        if (isset($segments[1])) {
-                            Storage::disk('s3')->delete($segments[1]);
+                        // Standard Laravel deletion. It handles the relative path directly.
+                        if (!str_starts_with($file->file_path, 'http')) {
+                            Storage::delete($file->file_path);
                         }
                     } catch (\Exception $e) {
                         Log::error("Failed to delete announcement file on update: " . $e->getMessage());
                     }
 
-                    // Remove from database
                     $file->delete();
                 }
             }
 
-            // 4. Handle New Attachments
+            // Handle New Attachments
             if ($request->hasFile('new_attachments')) {
                 foreach ($request->file('new_attachments') as $file) {
                     try {
-                        // Store file and get URL
-                        $path = $file->store('announcement-files', 's3');
+                        // Store using default disk
+                        $path = $file->store('announcement-files');
 
-                        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-                        $disk = Storage::disk('s3');
-                        $fullUrl = $disk->url($path);
-
-                        // Save to database
+                        // Save relative path
                         $announcement->attachments()->create([
-                            'file_path' => $fullUrl,
+                            'file_path' => $path,
                             'file_type' => $file->getClientMimeType(),
                         ]);
-                    } catch (\Exception $s3Error) {
+                    } catch (\Exception $storageError) {
                         DB::rollBack();
-                        Log::error("S3 Upload Failed during Update: " . $s3Error->getMessage());
+                        Log::error("Storage Upload Failed during Update: " . $storageError->getMessage());
                         return response()->json([
-                            'message' => 'Supabase Storage Upload Failed',
-                            'error_detail' => $s3Error->getMessage(),
+                            'message' => 'File Storage Upload Failed',
+                            'error_detail' => $storageError->getMessage(),
                         ], 500);
                     }
                 }
@@ -167,7 +166,16 @@ class AnnouncementController extends Controller
 
             DB::commit();
 
-            return response()->json($announcement->load(['author.profile', 'attachments']));
+            $announcement->load(['author.profile', 'attachments']);
+            $announcement->attachments->transform(function ($attachment) {
+                $attachment->file_url = str_starts_with($attachment->file_path, 'http') 
+                    ? $attachment->file_path 
+                    : Storage::url($attachment->file_path);
+                return $attachment;
+            });
+
+            return response()->json($announcement);
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("General Error during Update: " . $e->getMessage());
@@ -186,12 +194,9 @@ class AnnouncementController extends Controller
 
         foreach ($announcement->attachments as $file) {
             try {
-                // Extract relative path from the stored full URL to delete it
-                $urlPath = parse_url($file->file_path, PHP_URL_PATH);
-                $segments = explode('/public/' . env('AWS_BUCKET') . '/', $urlPath);
-
-                if (isset($segments[1])) {
-                    Storage::disk('s3')->delete($segments[1]);
+                // Simplified deletion logic
+                if (!str_starts_with($file->file_path, 'http')) {
+                    Storage::delete($file->file_path);
                 }
             } catch (\Exception $e) {
                 Log::error("Failed to delete announcement file: " . $e->getMessage());

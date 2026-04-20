@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class AnnouncementBoardController extends Controller
@@ -14,24 +15,16 @@ class AnnouncementBoardController extends Controller
         $filter = $request->query('topic'); 
         $userId = Auth::id(); 
 
-        // Build the base Supabase public URL dynamically from your .env
-        $supabaseUrl = rtrim(env('SUPABASE_URL'), '/'); // e.g., https://xyz.supabase.co
-        $bucket = env('AWS_BUCKET'); // e.g., your bucket name, usually 'public'
-        
-        // This is the exact format Supabase uses for public bucket URLs
-        $baseStorageUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/";
-
         // 1. Fetch the Current Logged-in User's Avatar
         $currentUserAvatar = null;
         if ($userId) {
             $userProfile = DB::table('user_profiles')->where('user_id', $userId)->first();
             
             if ($userProfile && $userProfile->profile_picture) {
-                // If it already starts with 'http' (from your new logic), use it.
-                // Otherwise, attach the base storage URL.
+                // If it's an external URL (Google/Facebook auth), use it. Otherwise, use Laravel's Storage.
                 $currentUserAvatar = str_starts_with($userProfile->profile_picture, 'http') 
                     ? $userProfile->profile_picture 
-                    : $baseStorageUrl . ltrim($userProfile->profile_picture, '/');
+                    : Storage::url($userProfile->profile_picture);
             }
         }
 
@@ -50,7 +43,7 @@ class AnnouncementBoardController extends Controller
         $announcements = $query->orderBy('av.announcement_date', 'desc')
             ->get()
             ->groupBy('announcement_id')
-            ->map(function ($group) use ($baseStorageUrl) {
+            ->map(function ($group) {
                 $first = $group->first();
                 $rawDate = Carbon::parse($first->announcement_date);
 
@@ -62,9 +55,9 @@ class AnnouncementBoardController extends Controller
                     'author_name'   => $first->author_name,
                     'author_type'   => $first->author_type,
                     
-                    // Attach the full Supabase URL to the avatar
+                    // Generate correct public URL using Laravel's Storage facade
                     'author_avatar' => $first->real_avatar 
-                        ? (str_starts_with($first->real_avatar, 'http') ? $first->real_avatar : $baseStorageUrl . ltrim($first->real_avatar, '/')) 
+                        ? (str_starts_with($first->real_avatar, 'http') ? $first->real_avatar : Storage::url($first->real_avatar)) 
                         : null,
                     
                     'likes_count'   => (int) ($first->likes_count ?? 0),
@@ -74,10 +67,7 @@ class AnnouncementBoardController extends Controller
                     
                     'attachments'   => $group->whereNotNull('attachment_id')->map(fn($item) => [
                         'id'        => $item->attachment_id,
-                        
-                        // Attach the full Supabase URL to the uploaded file
-                        'file_path' => str_starts_with($item->file_path, 'http') ? $item->file_path : $baseStorageUrl . ltrim($item->file_path, '/'),
-                        
+                        'file_path' => str_starts_with($item->file_path, 'http') ? $item->file_path : Storage::url($item->file_path),
                         'file_type' => $item->file_type,
                     ])->values(),
                 ];
@@ -85,7 +75,7 @@ class AnnouncementBoardController extends Controller
 
         // Fetch Upcoming Events
         $upcomingEvents = DB::table('table_events')
-            ->where('start_time', '>=', now())
+            ->where('start_time', '>=', now()->toDateTimeString())
             ->orderBy('start_time', 'asc')
             ->take(3)
             ->get()
@@ -106,29 +96,27 @@ class AnnouncementBoardController extends Controller
 
         // Calculate Stats
         $statsRaw = DB::table('all_announcements_view')
-            ->select('author_type', DB::raw('count(DISTINCT announcement_id) as total'))
+            ->select('author_type', DB::raw('count(DISTINCT announcement_id)::int as total'))
             ->groupBy('author_type')
             ->pluck('total', 'author_type');
 
-        // 2. Add current_user_avatar to your JSON response
         return response()->json([
             'current_user_avatar' => $currentUserAvatar,
             'announcements'       => $announcements,
             'upcoming_events'     => $upcomingEvents,
             'active_filter'       => $filter,
             'stats' => [
-                'cs'  => (int) $statsRaw->get('cs_instructor', 0),
-                'it'  => (int) $statsRaw->get('it_instructor', 0),
-                'is'  => (int) $statsRaw->get('is_instructor', 0),
-                'lsg' => (int) $statsRaw->get('lsg_officer', 0),
-                'all' => (int) $statsRaw->sum(),
+                'cs'  => $statsRaw->get('cs_instructor', 0),
+                'it'  => $statsRaw->get('it_instructor', 0),
+                'is'  => $statsRaw->get('is_instructor', 0),
+                'lsg' => $statsRaw->get('lsg_officer', 0),
+                'all' => $statsRaw->sum(),
             ]
         ]);
     }
 
     public function like(Request $request, $id)
     {
-        // ... (unchanged)
         $announcement = DB::table('table_announcement')
             ->where('announcement_id', $id)
             ->first();
