@@ -64,8 +64,7 @@ class SearchController extends Controller
                         'id'        => $item->attachment_id,
                         'file_path' => $this->formatUrl($item->file_path),
                         'file_type' => $item->file_type,
-                    ])->values(),
-                    'url'           => '/announcements-page?id=' . $a->announcement_id
+                    ])->values()
                 ];
             });
     }
@@ -92,8 +91,7 @@ class SearchController extends Controller
                 'venue'       => $e->venue ?? 'TBA',
                 'description' => $e->content,
                 'start_time'  => $e->start_time,
-                'end_time'    => $e->end_time,
-                'url'         => '/events'
+                'end_time'    => $e->end_time
             ]);
     }
 
