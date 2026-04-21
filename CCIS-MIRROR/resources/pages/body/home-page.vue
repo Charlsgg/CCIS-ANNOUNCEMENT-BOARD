@@ -6,6 +6,28 @@ import AnnouncementComposer from '../components/announcementcomposer.vue'
 import RecentAnnouncements from '../components/recentannouncements.vue'
 import axios from 'axios'
 
+// --- Types ---
+interface Attachment {
+    id?: number | string
+    attachment_id: number | string // <-- Removed the ? to make it required
+    file_type: string
+    file_path: string
+    url?: string
+}
+
+interface Announcement {
+    id: number | string
+    title: string
+    content: string
+    topic: string
+    date: string
+    likes_count: number
+    attachments?: Attachment[]
+    author_name?: string
+    author_avatar?: string | null
+    icon?: any
+}
+
 const props = defineProps<{
     csrfToken?: string;
     user?: { name: string; email: string; user_type: string; profile?: { profile_picture: string } }
@@ -14,7 +36,7 @@ const props = defineProps<{
 const { theme, styles, surface, setUserType, initTheme } = useTheme()
 
 // --- State Variables ---
-const announcements = ref<any[]>([])
+const announcements = ref<Announcement[]>([])
 const csrfToken = ref('')
 const showAll = ref(false) 
 const isLoading = ref(false)
@@ -27,7 +49,7 @@ const isDeleting = ref(false)
 // --- Edit State ---
 const isUpdating = ref(false)
 
-// --- Logic for "Recent" vs "All" ---
+// --- Computed ---
 const displayedAnnouncements = computed(() => {
     return showAll.value ? announcements.value : announcements.value.slice(0, 3)
 })
@@ -66,12 +88,12 @@ const fetchAnnouncements = async () => {
     }
 }
 
-const handleNewAnnouncement = async (savedPost: any) => {
+const handleNewAnnouncement = async () => {
     await fetchAnnouncements();
     if (announcements.value.length > 0) {
         showAll.value = false; 
     }
-};
+}
 
 // --- Delete Handlers ---
 const confirmDelete = (id: number | string) => {
@@ -85,7 +107,6 @@ const deleteAnnouncement = async () => {
     isDeleting.value = true
     try {
         await axios.delete(`/my-announcements/${announcementToDelete.value}`)
-
         announcements.value = announcements.value.filter(a => a.id !== announcementToDelete.value)
         isDeleteDialogOpen.value = false
     } catch (error) {
@@ -166,6 +187,7 @@ const handleUpdate = async (payload: {
         <div class="mt-12 mb-4 flex items-center justify-between gap-4">
             <h4 class="font-bold text-lg truncate" :style="styles.textPrimary">
                 {{ showAll ? 'All My Announcements' : 'Recent Announcements' }}
+                <span v-if="isUpdating" class="ml-2 text-xs font-normal opacity-70 animate-pulse">Updating...</span>
             </h4>
 
             <button v-if="announcements.length > 3" @click="showAll = !showAll"
@@ -191,7 +213,7 @@ const handleUpdate = async (payload: {
     </div>
 
     <Teleport to="body">
-        <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div class="max-w-md w-full rounded-2xl p-6 shadow-xl" 
                 :style="{ backgroundColor: surface.cardBg, border: `1px solid ${surface.borderSubtle}` }">
                 <div class="flex items-center gap-3 mb-4">

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTheme } from '../composable/usetheme.ts'
+import AnnouncementCard from './announcementcard.vue'
+import FilePreviewModal from '../modals/filepreviewmodal.vue'
 
 interface Attachment {
-    attachment_id: number | string
+    id?: number | string            // <-- Add this just to be fully compatible
+    attachment_id?: number | string // <-- Add the ? here!
     file_type: string
     file_path: string
     url?: string
@@ -13,9 +16,10 @@ interface Announcement {
     id: number | string
     title: string
     content: string
-    topic: string
+    
+topic?: string
     date: string
-    likes_count: number
+    likes_count?: number
     attachments?: Attachment[]
     author_name?: string
     author_avatar?: string | null
@@ -44,66 +48,24 @@ const sortedAnnouncements = computed(() => {
 })
 
 /**
- * FIXED URL CLEANER
- * Syncs with Laravel Storage::disk('s3')->url() output and manual relative paths.
+ * Kept ONLY for the Edit Modal to display names of existing attachments.
+ * The card/preview helpers are now handled inside their respective components.
  */
-const getFileUrl = (path?: string | null) => {
-    if (!path || path === 'undefined' || path === 'null') {
-        return 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
-    }
-
-    if (path.startsWith('http')) {
-        return path
-    }
-
-    const PROJECT_ID = 'hahocarxbknajzqjacuk'
-    const BUCKET = 'announcements'
-    
-    let cleanPath = path.replace(/^announcements\//, '').replace(/^\/+/, '')
-    
-    return `https://${PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET}/${cleanPath}`
-}
-
-const isImage = (type: string | null) => {
-    if (!type) return false
-    return type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(type)
-}
-
-const isPdf = (type: string | null) => {
-    if (!type) return false
-    return type === 'application/pdf' || /\.(pdf)$/i.test(type)
-}
-
 const getFileName = (path?: string | null) => {
     if (!path) return 'Download File'
     const base = path.split('/').pop() || 'Download File'
     return base.split('?')[0] 
 }
 
-const getDefaultAvatar = (name?: string) => {
-    return `https://ui-avatars.com/api/?background=random&color=fff&name=${encodeURIComponent(name || 'User')}`
-}
-
 // --- View State Management ---
-const expandedPosts = ref<Set<number | string>>(new Set())
 const activePreview = ref<Attachment | null>(null)
-
-const toggleAttachments = (postId: number | string) => {
-    if (expandedPosts.value.has(postId)) {
-        expandedPosts.value.delete(postId)
-    } else {
-        expandedPosts.value.add(postId)
-    }
-}
 
 const openPreview = (file: Attachment) => {
     activePreview.value = file
-    document.body.style.overflow = 'hidden'
 }
 
 const closePreview = () => {
     activePreview.value = null
-    document.body.style.overflow = 'auto'
 }
 
 // --- Edit Modal State Management ---
@@ -149,7 +111,8 @@ const handleFileSelect = (event: Event) => {
     if (fileInputRef.value) fileInputRef.value.value = ''
 }
 
-const removeExistingAttachment = (id: number | string) => {
+const removeExistingAttachment = (id?: number | string) => {
+    if (!id) return; // <-- If it's undefined, just stop here!
     if (!deletedAttachmentIds.value.includes(id)) {
         deletedAttachmentIds.value.push(id)
     }
@@ -182,99 +145,16 @@ const submitEdit = () => {
 
 <template>
     <div class="flex flex-col gap-6 relative w-full">
-        <div v-for="post in sortedAnnouncements" :key="post.id"
-            class="rounded-xl p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow relative"
-            :style="styles.cardBg">
-
-            <div class="flex items-start sm:items-center justify-between gap-3 w-full">
-                
-                <div class="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
-                    <img :alt="post.author_name || 'Author'" class="w-10 h-10 rounded-full object-cover border shrink-0"
-                        :style="{ borderColor: surface.borderSubtle }"
-                        :src="post.author_avatar ? getFileUrl(post.author_avatar) : getDefaultAvatar(post.author_name)"
-                        @error="(e) => (e.target as HTMLImageElement).src = getDefaultAvatar(post.author_name)" />
-                    
-                    <div class="flex flex-col min-w-0 flex-1 w-full overflow-hidden">
-                        <p class="text-sm font-bold uppercase tracking-wide truncate w-full" :style="styles.textPrimary">
-                            {{ post.title }}
-                        </p>
-                        <p class="text-xs truncate w-full" :style="styles.textSecondary">
-                            <span v-if="post.author_name" class="font-medium">{{ post.author_name }} &bull; </span>
-                            Posted {{ post.date }}
-                        </p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0 ml-2">
-                    <button type="button" @click.prevent.stop="openEditModal(post)"
-                        class="p-2 flex items-center justify-center rounded-lg transition-all cursor-pointer shadow-sm border hover:scale-105"
-                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: theme.accent }"
-                        title="Edit">
-                        <span class="material-symbols-outlined text-lg">edit</span>
-                    </button>
-
-                    <button type="button" @click.prevent.stop="$emit('delete', post.id)"
-                        class="p-2 flex items-center justify-center rounded-lg transition-all cursor-pointer shadow-sm border hover:scale-105 text-red-500 hover:bg-red-50/10"
-                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }" title="Delete">
-                        <span class="material-symbols-outlined text-lg">delete</span>
-                    </button>
-                </div>
-            </div>
-
-            <p class="leading-relaxed break-all whitespace-pre-wrap text-sm md:text-base" :style="styles.textPrimary"
-                v-html="post.content"></p>
-
-            <div v-if="post.attachments && post.attachments.length > 0" class="mt-4 relative z-10">
-                <button @click="toggleAttachments(post.id)"
-                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors"
-                    :style="{
-                        backgroundColor: surface.inputBg,
-                        borderColor: surface.borderSubtle,
-                        color: surface.textPrimary
-                    }">
-                    <span :style="{ color: theme.accent }" class="material-symbols-outlined text-sm">attach_file</span>
-                    {{ expandedPosts.has(post.id) ? 'Hide Attachments' : `View Attachments (${post.attachments.length})` }}
-                </button>
-
-                <div v-show="expandedPosts.has(post.id)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                    <template v-for="attachment in post.attachments" :key="attachment.attachment_id">
-                        <div v-if="isImage(attachment.file_type)"
-                            class="h-44 w-full rounded-lg bg-cover bg-center border cursor-pointer hover:opacity-90 transition-opacity relative group"
-                            :style="{
-                                backgroundImage: `url('${getFileUrl(attachment.file_path)}')`,
-                                borderColor: surface.borderSubtle
-                            }" @click="openPreview(attachment)">
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
-                                <span class="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full material-symbols-outlined">visibility</span>
-                            </div>
-                        </div>
-
-                        <div v-else
-                            class="rounded-lg p-3 flex items-center justify-between border cursor-pointer hover:opacity-80 transition-opacity"
-                            :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }"
-                            @click="openPreview(attachment)" title="Preview File">
-                            <div class="flex items-center gap-2 overflow-hidden">
-                                <span :style="{ color: theme.accent }" class="material-symbols-outlined text-sm">
-                                    {{ isPdf(attachment.file_type) ? 'picture_as_pdf' : 'description' }}
-                                </span>
-                                <span class="text-xs font-medium truncate" :style="styles.textPrimary">
-                                    {{ getFileName(attachment.file_path) }}
-                                </span>
-                            </div>
-                            <span :style="{ color: theme.accent }" class="material-symbols-outlined text-sm">visibility</span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div class="pt-2 flex gap-4 relative z-10" :style="{ borderTop: `1px solid ${surface.borderSubtle}` }">
-                <button class="flex items-center gap-1.5 text-xs hover:text-red-500 transition-colors"
-                    :style="styles.textSecondary">
-                    <span class="material-symbols-outlined text-sm">favorite</span>
-                    {{ post.likes_count }}
-                </button>
-            </div>
-        </div>
+        
+        <AnnouncementCard 
+            v-for="post in sortedAnnouncements" 
+            :key="post.id"
+            :post="post"
+            :show-actions="true"
+            @preview="openPreview"
+            @edit="openEditModal"
+            @delete="$emit('delete', $event)"
+        />
 
         <Teleport to="body">
             <div v-if="isEditModalOpen" class="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -314,8 +194,8 @@ const submitEdit = () => {
                         <div class="space-y-3 pt-2 border-t" :style="{ borderColor: surface.borderSubtle }">
                             <label class="text-sm font-medium" :style="styles.textPrimary">Attachments</label>
 
-                            <div v-for="attachment in existingAttachments.filter(a => !deletedAttachmentIds.includes(a.attachment_id))"
-                                :key="attachment.attachment_id"
+                            <div v-for="attachment in existingAttachments.filter(a => !deletedAttachmentIds.includes(a.attachment_id!))"
+     :key="attachment.attachment_id!"
                                 class="flex items-center justify-between p-2 rounded border"
                                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }">
                                 <span class="text-sm truncate mr-2" :style="styles.textPrimary">{{ getFileName(attachment.file_path) }}</span>
@@ -355,43 +235,15 @@ const submitEdit = () => {
             </div>
         </Teleport>
 
-        <Teleport to="body">
-            <Transition name="fade">
-                <div v-if="activePreview"
-                    class="fixed inset-0 z-9999 flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
-                    @click.self="closePreview">
-                    <button @click="closePreview"
-                        class="absolute top-6 right-6 z-10000 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-
-                    <div class="w-full h-full flex items-center justify-center pointer-events-none">
-                        <img v-if="isImage(activePreview.file_type)" :src="getFileUrl(activePreview.file_path)"
-                            class="max-w-full max-h-full object-contain pointer-events-auto" />
-
-                        <iframe v-else-if="isPdf(activePreview.file_type)" :src="getFileUrl(activePreview.file_path)"
-                            class="w-full h-full md:w-[85%] md:h-[90%] rounded-lg border border-white/10 bg-white pointer-events-auto"
-                            frameborder="0"></iframe>
-
-                        <div v-else class="text-center pointer-events-auto">
-                            <span class="material-symbols-outlined text-6xl text-orange-500 mb-4">draft</span>
-                            <p class="text-white font-medium mb-6">Preview not available.</p>
-                            <a :href="getFileUrl(activePreview.file_path)" download target="_blank"
-                                class="inline-block bg-orange-500 hover:bg-orange-400 text-black px-6 py-2 rounded-full font-bold transition-colors">
-                                Download File
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+        <FilePreviewModal 
+            :file="activePreview" 
+            @close="closePreview" 
+        />
+        
     </div>
 </template>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

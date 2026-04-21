@@ -9,21 +9,21 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class AnnouncementBoardController extends Controller
-{   
+{
     public function index(Request $request)
     {
-        $filter = $request->query('topic'); 
-        $userId = Auth::id(); 
+        $filter = $request->query('topic');
+        $userId = Auth::id();
 
         // 1. Fetch the Current Logged-in User's Avatar
         $currentUserAvatar = null;
         if ($userId) {
             $userProfile = DB::table('user_profiles')->where('user_id', $userId)->first();
-            
+
             if ($userProfile && $userProfile->profile_picture) {
                 // If it's an external URL (Google/Facebook auth), use it. Otherwise, use Laravel's Storage.
-                $currentUserAvatar = str_starts_with($userProfile->profile_picture, 'http') 
-                    ? $userProfile->profile_picture 
+                $currentUserAvatar = str_starts_with($userProfile->profile_picture, 'http')
+                    ? $userProfile->profile_picture
                     : Storage::url($userProfile->profile_picture);
             }
         }
@@ -32,7 +32,7 @@ class AnnouncementBoardController extends Controller
         $query = DB::table('all_announcements_view as av')
             ->leftJoin('user_profiles as up', 'av.author_id', '=', 'up.user_id')
             ->select(
-                'av.*', 
+                'av.*',
                 'up.profile_picture as real_avatar'
             );
 
@@ -54,22 +54,22 @@ class AnnouncementBoardController extends Controller
                     'topic'         => $first->topic,
                     'author_name'   => $first->author_name,
                     'author_type'   => $first->author_type,
-                    
-                    // Generate correct public URL using Laravel's Storage facade
-                    'author_avatar' => $first->real_avatar 
-                        ? (str_starts_with($first->real_avatar, 'http') ? $first->real_avatar : Storage::url($first->real_avatar)) 
+                    'author_avatar' => $first->real_avatar
+                        ? (str_starts_with($first->real_avatar, 'http') ? $first->real_avatar : Storage::url($first->real_avatar))
                         : null,
-                    
+
                     'likes_count'   => (int) ($first->likes_count ?? 0),
                     'date'          => $rawDate->diffForHumans(),
                     'full_date'     => $rawDate->format('M d, Y h:i A'),
-                    'created_at'    => $first->announcement_date, 
-                    
-                    'attachments'   => $group->whereNotNull('attachment_id')->map(fn($item) => [
-                        'id'        => $item->attachment_id,
-                        'file_path' => str_starts_with($item->file_path, 'http') ? $item->file_path : Storage::url($item->file_path),
-                        'file_type' => $item->file_type,
-                    ])->values(),
+                    'created_at'    => $first->announcement_date,
+
+                    'attachments' => $group->whereNotNull('attachment_id')
+                        ->sortBy('attachment_id')
+                        ->map(fn($item) => [
+                            'id'        => $item->attachment_id,
+                            'file_path' => str_starts_with($item->file_path, 'http') ? $item->file_path : Storage::url($item->file_path),
+                            'file_type' => $item->file_type,
+                        ])->values(),
                 ];
             })->values();
 
@@ -87,7 +87,7 @@ class AnnouncementBoardController extends Controller
                     'content'    => $event->content,
                     'venue'      => $event->venue,
                     'start_time' => $event->start_time,
-                    'created_at' => $event->created_at ? Carbon::parse($event->created_at)->diffForHumans() : 'Just now', 
+                    'created_at' => $event->created_at ? Carbon::parse($event->created_at)->diffForHumans() : 'Just now',
                     'month'      => $dt->format('M'),
                     'day'        => $dt->format('d'),
                     'time'       => $dt->format('g:i A'),

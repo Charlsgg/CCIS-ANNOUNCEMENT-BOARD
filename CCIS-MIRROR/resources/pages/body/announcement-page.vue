@@ -19,9 +19,6 @@ const upcomingEvents = ref([])
 const stats = ref({ cs: 0, it: 0, is: 0, lsg: 0, all: 0 })
 const isLoading = ref(true)
 
-// --- ADDED FOR PREVIEW ---
-const activePreview = ref<any>(null) 
-
 onMounted(() => {
     initTheme()
     if (props.user?.user_type) {
@@ -63,7 +60,6 @@ const handleFilterChange = (role: string | null) => {
             <GeneralAnnouncements 
                 :announcements="announcements"
                 :is-loading="isLoading"
-                @preview="activePreview = $event"
             />
         </div>
 
@@ -79,37 +75,4 @@ const handleFilterChange = (role: string | null) => {
             />
         </aside>
     </div>
-
-    <Teleport to="body">
-        <Transition name="fade">
-            <div v-if="activePreview"
-                class="fixed inset-0 z-200 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-                <button @click="activePreview = null"
-                    class="absolute top-6 right-6 z-210 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all hover:rotate-90">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-
-                <div class="w-full h-full flex items-center justify-center">
-                    <img v-if="activePreview.file_type.includes('image')" 
-                        :src="activePreview.file_path"
-                        class="max-w-full max-h-full object-contain animate-in zoom-in duration-300" />
-
-                    <iframe v-else-if="activePreview.file_type.includes('pdf')" 
-                        :src="activePreview.file_path"
-                        class="w-full h-full md:w-[85%] md:h-[90%] rounded-2xl bg-white"
-                        frameborder="0"></iframe>
-
-                    <div v-else class="text-center">
-                        <p class="text-white/70 mb-4">Preview not available.</p>
-                        <a :href="activePreview.file_path" download class="bg-orange-500 text-black px-6 py-2 rounded-lg">Download</a>
-                    </div>
-                </div>
-            </div>
-        </Transition>
-    </Teleport>
 </template>
-
-<style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-</style>
