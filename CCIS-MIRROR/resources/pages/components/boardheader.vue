@@ -96,8 +96,8 @@
           {{ currentDate }}
         </div>
 
-        <div
-          class="mt-4 mb-4 w-full max-w-[360px] mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
+    <div
+  class="mt-4 mb-4 w-full max-w-[360px] mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
           <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-orange-400 to-orange-600"></div>
 
           <div v-if="quizState === 'start'"

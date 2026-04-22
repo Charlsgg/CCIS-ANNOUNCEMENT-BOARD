@@ -339,7 +339,7 @@ const metaDetails = computed(() => {
           <div v-else class="text-center border p-12 rounded-3xl shadow-xl mx-4"
             :style="{ backgroundColor: surface.cardBg, borderColor: theme.accent + '33' }">
             <span class="material-symbols-outlined text-6xl mb-4 block" :style="{ color: theme.accent }">draft</span>
-            <p class="mb-8 font-light tracking-wide break-words max-w-md" :style="styles.textPrimary">Preview not
+            <p class="mb-8 font-light tracking-wide wrap-break-word max-w-md" :style="styles.textPrimary">Preview not
               available for this file
               type.</p>
             <a :href="getFileUrl(activePreview.file_path)" download target="_blank"
