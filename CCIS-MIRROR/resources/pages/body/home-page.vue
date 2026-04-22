@@ -168,7 +168,7 @@ const handleUpdate = async (payload: {
 </script>
 
 <template>
-    <div class="max-w-4xl mx-2 sm:mx-4 md:mx-6 lg:mx-auto pb-12 w-full min-w-0 px-4 sm:px-6">
+    <div class="max-w-6xl mx-2 sm:mx-4 md:mx-6 lg:mx-auto pb-12 w-full min-w-0 px-4 sm:px-6">
 
         <div class="mb-6 md:mb-8 flex flex-col gap-2">
             <div class="flex items-center gap-3">

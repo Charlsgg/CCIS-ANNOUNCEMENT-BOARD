@@ -77,10 +77,10 @@ const remainingAttachments = computed(() => {
     :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
 
     <div v-if="coverImage"
-      class="w-full md:w-1/3 aspect-video md:aspect-auto overflow-hidden shrink-0 border-b md:border-b-0 md:border-r self-start md:h-full max-h-[300px] md:max-h-none"
+      class="w-full md:w-1/3 aspect-video md:aspect-auto overflow-hidden shrink-0 border-b md:border-b-0 md:border-r self-start md:h-full max-h-75 md:max-h-none"
       :style="{ borderColor: surface.borderSubtle }">
       <div
-        class="w-full h-full min-h-[200px] md:min-h-[300px] bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+        class="w-full h-full min-h-50 md:min-h-75 bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
         :style="{ backgroundImage: `url('${getFileUrl(coverImage.file_path)}')` }" @click="$emit('preview', coverImage)"
         title="Click to view image">
       </div>
@@ -124,7 +124,7 @@ const remainingAttachments = computed(() => {
           {{ post.title }}
         </h3>
 
-        <div class="text-sm md:text-base mb-4 leading-relaxed whitespace-pre-wrap break-words"
+        <div class="text-sm md:text-base mb-4 leading-relaxed whitespace-pre-wrap wrap-break-word"
           :class="{ 'line-clamp-2': !isExpanded }" :style="styles.textSecondary" v-html="post.content">
         </div>
 
@@ -155,7 +155,7 @@ const remainingAttachments = computed(() => {
                   <span :style="{ color: theme.accent }" class="material-symbols-outlined text-[20px]">
                     {{ isPdf(file.file_type) ? 'picture_as_pdf' : 'description' }}
                   </span>
-                  <span class="text-xs font-bold truncate max-w-[150px]" :style="styles.textPrimary">
+                  <span class="text-xs font-bold truncate max-w-37.5" :style="styles.textPrimary">
                     {{ getFileName(file.file_path) }}
                   </span>
                 </div>
@@ -174,7 +174,7 @@ const remainingAttachments = computed(() => {
             :src="post.author_avatar ? getFileUrl(post.author_avatar) : getDefaultAvatar(post.author_name)"
             @error="(e) => (e.target as HTMLImageElement).src = getDefaultAvatar(post.author_name)"
             alt="Author avatar" />
-          <p class="text-sm font-semibold truncate max-w-[120px] sm:max-w-[200px]" :style="styles.textPrimary">
+          <p class="text-sm font-semibold truncate max-w-30 sm:max-w-50" :style="styles.textPrimary">
             {{ post.author_name || 'System' }}
           </p>
 
@@ -206,7 +206,7 @@ const remainingAttachments = computed(() => {
 /* Tailwind Line Clamp Native Support */
 .line-clamp-2 {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

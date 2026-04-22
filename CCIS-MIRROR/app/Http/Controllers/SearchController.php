@@ -59,6 +59,7 @@ class SearchController extends Controller
                     'id'            => 'ann_' . $a->announcement_id,
                     'type'          => 'Announcement',
                     'title'         => $a->title,
+                    'topic'         => $a->topic,
                     'description'   => Str::limit(strip_tags($a->content), 80),
                     'content'       => $a->content,
                     'author_name'   => $a->author_name,

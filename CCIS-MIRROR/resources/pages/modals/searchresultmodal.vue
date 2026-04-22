@@ -13,7 +13,9 @@ export interface SearchResult {
     type: 'User' | 'Announcement' | 'Event';
     title: string;
     description: string;
+    topic?: string;
     content?: string;
+    subject?: string;
     author_name?: string;
     author_avatar?: string;
     date?: string;
@@ -123,7 +125,7 @@ const metaDetails = computed(() => {
         return [
             { label: 'Posted By', date: res.author_name || 'System', sub: 'Author', icon: 'person' },
             { label: 'Date', date: res.date || 'Recently', sub: 'Published', icon: 'calendar_month' },
-            { label: 'Record Type', date: 'Announcement', sub: 'Information', icon: 'campaign' }
+            { label: 'Subject Type', date: res.topic || 'Announcement', sub: 'Subject', icon: 'campaign' }
         ];
     }
 })
