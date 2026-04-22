@@ -82,7 +82,7 @@
               <div class="flex items-center gap-2 mb-3">
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
                   :class="[getTextColor(item.author_type), getPosBg(item.author_type).replace('bg-', 'bg-').concat('/10')]">
-                  {{ item.author_type === 'it_instructor' ? 'IT DEPARTMENT' : item.author_type === 'is_instructor' ? 'ISDEPARTMENT' : item.author_type === 'cs_instructor' ? 'CS DEPARTMENT' : item.author_type ==='lsg_officer' ? 'Local Student Government' : 'ANNOUNCEMENT' }}
+                  {{ item.author_type === 'it_instructor' ? 'IT DEPARTMENT' : item.author_type === 'is_instructor' ? 'IS DEPARTMENT' : item.author_type === 'cs_instructor' ? 'CS DEPARTMENT' : item.author_type ==='lsg_officer' ? 'Local Student Government' : 'ANNOUNCEMENT' }}
                 </span>
                 <span class="text-gray-400 text-xs font-medium uppercase tracking-widest">
                   • {{ item.date }}
@@ -106,7 +106,7 @@
                 <div v-else
                   class="size-8 rounded-full flex items-center justify-center font-bold text-xs uppercase text-white shadow-sm"
                   :class="getPosBg(item.author_type)">
-                  {{ item.author_name ? item.author_name.substring(0, 2) : 'A' }}
+                  {{ item.author_name ? item.author_name.substring(0, 1) : 'A' }}
                 </div>
                 <p class="text-gray-800 text-sm font-semibold truncate max-w-30">
                   {{ item.author_name }}
@@ -488,9 +488,12 @@ let fetchTimer
 onMounted(() => {
   fetchAnnouncements()
   fetchTimer = setInterval(fetchAnnouncements, 30000)
+  document.addEventListener('contextmenu', e.preventDefault())
+
 })
 
 onUnmounted(() => {
   if (fetchTimer) clearInterval(fetchTimer)
+ document.removeEventListener('contextmenu', e.preventDefault())
 })
 </script>
