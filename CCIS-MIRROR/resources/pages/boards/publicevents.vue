@@ -128,14 +128,6 @@
       </div>
     </main>
 
-    <button @click="toggleFullScreen"
-      class="fixed bottom-6 left-6 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white hover:bg-gray-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 group shadow-md"
-      title="Toggle Fullscreen">
-      <span class="material-symbols-outlined text-gray-600 group-hover:text-orange-500 transition-colors text-2xl">
-        {{ isFullScreen ? 'fullscreen_exit' : 'fullscreen' }}
-      </span>
-    </button>
-
     <Teleport to="body">
       <PublicEventDetailModal v-if="showEventDetailModal" :show="showEventDetailModal" :theme="theme" :surface="surface"
         :styles="styles" :events="selectedEvents" @close="showEventDetailModal = false" />
@@ -191,25 +183,6 @@ const { theme, styles, surface, initTheme } = useTheme()
 
 const showEventDetailModal = ref(false)
 const selectedEvents = ref<Array<{ title: string, venue: string, description: string, start_time: string, end_time?: string | null }>>([])
-
-// ----- Fullscreen Logic -----
-const isFullScreen = ref(false)
-
-const handleFullscreenChange = () => {
-  isFullScreen.value = !!document.fullscreenElement
-}
-
-const toggleFullScreen = () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch((err) => {
-      console.error(`Error attempting to enable fullscreen: ${err.message}`)
-    })
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen()
-    }
-  }
-}
 
 // ----- State: Calendar Controller -----
 const today = new Date()
@@ -511,13 +484,7 @@ const openEventDetail = (day: CalendarDay) => {
 onMounted(() => {
   if (initTheme) initTheme()
   fetchEvents()
-  // Uses named function reference properly for memory cleanup
-  document.addEventListener('fullscreenchange', handleFullscreenChange) 
 })
 
-onUnmounted(() => {
-  // Pass the exact same named function to properly remove the listener
-  document.removeEventListener('fullscreenchange', handleFullscreenChange)
-})
 
 </script>

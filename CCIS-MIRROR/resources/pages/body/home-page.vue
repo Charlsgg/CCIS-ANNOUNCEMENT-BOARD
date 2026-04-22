@@ -213,7 +213,7 @@ const handleUpdate = async (payload: {
     </div>
 
     <Teleport to="body">
-        <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div class="max-w-md w-full rounded-2xl p-6 shadow-xl" 
                 :style="{ backgroundColor: surface.cardBg, border: `1px solid ${surface.borderSubtle}` }">
                 <div class="flex items-center gap-3 mb-4">

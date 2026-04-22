@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8 font-sans selection:bg-orange-500/30 overflow-x-hidden relative">
-    
+
     <div
       class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-400/20 rounded-full blur-[120px] pointer-events-none">
     </div>
@@ -13,14 +13,16 @@
 
     <main class="mx-auto relative z-10">
       <div class="max-w-6xl mx-auto relative z-10">
-      <section class="flex flex-col lg:flex-row flex-wrap gap-4 mb-12 items-center w-full">
-        <button @click="goBack"
-          class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium text-gray-700 group shrink-0 w-full lg:w-auto justify-center shadow-sm">
-          <span
-            class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
-          <span>Back</span>
-        </button>
-        <div class="relative grow lg:grow-0 lg:min-w-37.5">
+
+        <section class="flex flex-col lg:flex-row flex-wrap gap-4 mb-12 items-center w-full">
+          <button @click="goBack"
+            class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium text-gray-700 group shrink-0 w-full lg:w-auto justify-center shadow-sm">
+            <span
+              class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+            <span>Back</span>
+          </button>
+
+          <div class="relative grow lg:grow-0 lg:min-w-37.5">
             <select v-model="selectedAuthor"
               class="w-full bg-white border border-gray-200 rounded-xl pl-4 pr-10 py-3.5 text-sm text-gray-800 hover:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 appearance-none cursor-pointer outline-none shadow-sm">
               <option value="all" class="bg-white text-gray-900">All Authors</option>
@@ -31,86 +33,129 @@
             <span
               class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
           </div>
-        <div class="relative grow w-full lg:w-auto min-w-50">
-          <input v-model="searchQuery"
-            class="w-full bg-white border border-gray-200 rounded-xl px-12 py-3 text-lg text-gray-800 hover:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 outline-none shadow-sm"
-            placeholder="Search Announcements..." type="text" />
-          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-        </div>
 
-        <div class="flex gap-2 w-full lg:w-auto">
-          <div class="relative grow lg:grow-0 lg:min-w-40">
-            <select v-model="selectedDepartment"
-              class="w-full bg-white border border-gray-200 rounded-xl pl-4 pr-10 py-3.5 text-sm text-gray-800 hover:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 appearance-none cursor-pointer outline-none shadow-sm">
-              <option value="all" class="bg-white text-gray-900">All Departments</option>
-              <option value="it" class="bg-white text-gray-900">IT Department</option>
-              <option value="is" class="bg-white text-gray-900">IS Department</option>
-              <option value="cs" class="bg-white text-gray-900">CS Department</option>
-              <option value="lsg" class="bg-white text-gray-900">Local Student Government</option>
-            </select>
-            <span
-              class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
+          <div class="relative grow w-full lg:w-auto min-w-50">
+            <input v-model="searchQuery"
+              class="w-full bg-white border border-gray-200 rounded-xl px-12 py-3 text-lg text-gray-800 hover:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 outline-none shadow-sm"
+              placeholder="Search Announcements..." type="text" />
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
           </div>
-        </div>
 
-        <button @click="goToEvents"
-          class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium text-gray-700 group shrink-0 w-full lg:w-auto justify-center shadow-sm">
-          <span class="material-symbols-outlined text-sm group-hover:scale-110 transition-transform text-orange-500">event</span>
-          <span>Events</span>
-        </button>
-      </section>
+          <div class="flex gap-2 w-full lg:w-auto">
+            <div class="relative grow lg:grow-0 lg:min-w-40">
+              <select v-model="selectedDepartment"
+                class="w-full bg-white border border-gray-200 rounded-xl pl-4 pr-10 py-3.5 text-sm text-gray-800 hover:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 appearance-none cursor-pointer outline-none shadow-sm">
+                <option value="all" class="bg-white text-gray-900">All Departments</option>
+                <option value="it" class="bg-white text-gray-900">IT Department</option>
+                <option value="is" class="bg-white text-gray-900">IS Department</option>
+                <option value="cs" class="bg-white text-gray-900">CS Department</option>
+                <option value="lsg" class="bg-white text-gray-900">Local Student Government</option>
+              </select>
+              <span
+                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
+            </div>
+          </div>
+
+          <button @click="goToEvents"
+            class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium text-gray-700 group shrink-0 w-full lg:w-auto justify-center shadow-sm">
+            <span
+              class="material-symbols-outlined text-sm group-hover:scale-110 transition-transform text-orange-500">event</span>
+            <span>Events</span>
+          </button>
+        </section>
       </div>
+
       <TransitionGroup name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <article v-for="(item, index) in filteredAnnouncements" :key="item.id"
-          class="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 flex flex-col h-full group relative overflow-hidden transition-all hover:shadow-md"
+          class="flex flex-col overflow-hidden rounded-xl bg-white border border-gray-200 hover:border-orange-300 hover:shadow-[0_8px_30px_-4px_rgba(249,115,22,0.15)] transition-all duration-300 group"
           :style="{ '--delay': `${index * 0.1}sec` }">
 
-          <div class="flex items-center gap-4 mb-6 relative z-10">
-            <div class="relative">
-              <img v-if="item.author_avatar" :src="item.author_avatar"
-                class="w-12 h-12 rounded-lg object-cover shadow-sm border border-gray-200 group-hover:border-orange-500/50 transition-all duration-500" />
-              <div v-else
-                :class="['w-12 h-12 rounded-lg flex items-center justify-center font-black text-xl italic text-white transition-all duration-500 group-hover:rotate-3 shadow-sm', getPosBg(item.author_type)]">
-                {{ item.author_name ? item.author_name.substring(0, 1).toUpperCase() : 'A' }}
-              </div>
-              <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white"
-                :class="getPosBg(item.author_type)"></div>
-            </div>
-
-            <div>
-              <h3
-                class="font-bold text-lg leading-tight group-hover:text-orange-500 transition-colors line-clamp-1 text-gray-900">
-                {{ item.title }}</h3>
-              <p :class="['text-[10px] font-semibold tracking-wider uppercase mt-1', getTextColor(item.author_type)]">
-                {{ item.author_name }} • {{ item.date }}
-              </p>
+          <div v-if="getCoverImage(item)" class="w-full aspect-video overflow-hidden border-b border-gray-100 shrink-0">
+            <div
+              class="w-full h-full bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500"
+              :data-alt="item.title" :style="{ backgroundImage: `url(${getCoverImage(item)})` }">
             </div>
           </div>
 
-          <div class="text-xl text-gray-600 leading-relaxed grow line-clamp-4 relative z-10" v-html="item.content"></div>
+          <div class="flex-1 p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                  :class="[getTextColor(item.author_type), getPosBg(item.author_type).replace('bg-', 'bg-').concat('/10')]">
+                  {{ item.author_type === 'it_instructor' ? 'IT DEPARTMENT' : item.author_type === 'is_instructor' ? 'ISDEPARTMENT' : item.author_type === 'cs_instructor' ? 'CS DEPARTMENT' : item.author_type ==='lsg_officer' ? 'Local Student Government' : 'ANNOUNCEMENT' }}
+                </span>
+                <span class="text-gray-400 text-xs font-medium uppercase tracking-widest">
+                  • {{ item.date }}
+                </span>
+              </div>
 
-          <div class="mt-8 flex justify-between items-center relative z-10 border-t border-gray-100 pt-4">
-            <button @click="handleLike(item)"
-              class="flex items-center gap-2 transition-all duration-300 group/like relative"
-              :disabled="item.isCooldown || item.isProcessing" :class="[
-                item.isAnimating ? 'text-orange-500' : 'text-gray-400 grayscale',
-                item.isCooldown && !item.isAnimating ? 'cursor-not-allowed opacity-70' : 'hover:text-orange-500'
-              ]">
-              <span class="material-symbols-outlined text-xl transition-all duration-300"
-                :class="{ 'fill-icon scale-125 animate-pop text-orange-500': item.isAnimating }">
-                favorite
-              </span>
-              <span class="text-xs font-bold text-gray-700 group-hover/like:text-orange-500">{{ item.likes_count }}</span>
-              <span v-if="item.isCooldown"
-                class="absolute -top-4 left-0 text-[8px] font-black text-orange-500 tracking-tighter animate-pulse">
-                {{ item.cooldownTimer }} secs
-              </span>
-            </button>
+              <h3
+                class="text-gray-900 font-bold mb-2 group-hover:text-orange-600 transition-colors text-[clamp(1.125rem,1.5vw+0.75rem,1.5rem)] leading-tight text-balance line-clamp-2">
+                {{ item.title }}
+              </h3>
 
-            <button @click="openModal(item)"
-              class="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500 hover:text-orange-600 transition-all flex items-center gap-2 group/btn relative z-10">
-              Read More <span class="group-hover/btn:translate-x-2 transition-transform duration-300">→</span>
-            </button>
+              <div class="text-gray-600 text-sm md:text-base mb-4 leading-relaxed wrap-break-word"
+                :class="getCoverImage(item) ? 'line-clamp-2' : 'line-clamp-4'" v-html="item.content">
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+              <div class="flex items-center gap-3">
+                <img v-if="item.author_avatar" :src="item.author_avatar"
+                  class="size-8 rounded-full object-cover shadow-sm border border-gray-200" />
+                <div v-else
+                  class="size-8 rounded-full flex items-center justify-center font-bold text-xs uppercase text-white shadow-sm"
+                  :class="getPosBg(item.author_type)">
+                  {{ item.author_name ? item.author_name.substring(0, 2) : 'A' }}
+                </div>
+                <p class="text-gray-800 text-sm font-semibold truncate max-w-30">
+                  {{ item.author_name }}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <button @click="handleLike(item)"
+                  class="relative flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 group/like"
+                  :disabled="item.isCooldown || item.isProcessing" :class="[
+                    item.isAnimating
+                      ? 'bg-orange-50 text-orange-500'
+                      : 'bg-white-50 text-white-400 hover:bg-orange-50 hover:text-orange-500',
+                    item.isCooldown && !item.isAnimating
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer'
+                  ]">
+
+                  <!-- Icon -->
+                  <span class="material-symbols-outlined text-[18px] transition-all duration-300" :class="{
+                    'fill-icon scale-125 animate-pop text-orange-500': item.isAnimating
+                  }">
+                    favorite
+                  </span>
+
+                  <!-- Count -->
+                  <span class="text-[11px] font-semibold transition-colors duration-200"
+                    :class="item.isAnimating ? 'text-orange-500' : 'text-white-600 group-hover/like:text-orange-500'">
+                    {{ item.likes_count }}
+                  </span>
+
+                  <!-- Cooldown Badge -->
+                  <span v-if="item.isCooldown"
+                    class="absolute -top-2 -right-2 bg-orange-500 text-white text-[8px] px-1.5 py-px rounded-full font-bold shadow-sm animate-pulse">
+                    {{ item.cooldownTimer }}s
+                  </span>
+
+                </button>
+
+                <button @click="openModal(item)"
+                  class="flex items-center gap-1 text-orange-500 text-sm font-bold hover:underline group/btn relative z-10">
+                  Read More
+                  <span
+                    class="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform duration-300">
+                    arrow_forward
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </article>
       </TransitionGroup>
@@ -120,14 +165,6 @@
         <p>No announcements match your search or filters.</p>
       </div>
     </main>
-
-    <button @click="toggleFullScreen"
-      class="fixed bottom-6 left-6 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white hover:bg-gray-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 group shadow-md"
-      title="Toggle Fullscreen">
-      <span class="material-symbols-outlined text-gray-600 group-hover:text-orange-500 transition-colors text-2xl">
-        {{ isFullScreen ? 'fullscreen_exit' : 'fullscreen' }}
-      </span>
-    </button>
 
     <Teleport to="body">
       <Transition name="modal-fade">
@@ -144,7 +181,8 @@
               class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-200/40 rounded-full blur-[100px] pointer-events-none">
             </div>
 
-            <div class="flex items-center justify-between px-8 py-6 border-b border-gray-100 relative z-10 bg-white/80 backdrop-blur-sm">
+            <div
+              class="flex items-center justify-between px-8 py-6 border-b border-gray-100 relative z-10 bg-white/80 backdrop-blur-sm">
               <div class="flex items-center gap-3">
                 <div class="w-2 h-8 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.3)]"></div>
                 <h3 class="text-3xl font-light tracking-tight text-gray-900">
@@ -158,13 +196,11 @@
             </div>
 
             <div class="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar relative z-10 space-y-10">
-
-              <h1 class="text-3xl md:text-5xl font-bold tracking-tighter leading-tight text-gray-900 wrap-break-word">
+              <h1 class="text-sm md:text-5xl font-bold tracking-tighter leading-tight text-gray-900 wrap-break-word">
                 {{ selectedAnnouncement.title }}
               </h1>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <div
                   class="flex items-center gap-4 bg-gray-50 hover:bg-gray-100 transition-colors px-5 py-4 rounded-2xl border border-gray-100 group/author relative overflow-hidden">
                   <div
@@ -195,7 +231,8 @@
                   <div class="flex flex-col z-10 w-full">
                     <div class="flex justify-between items-center w-full mb-1">
                       <span class="text-[10px] uppercase tracking-widest text-blue-600 font-bold">Subject</span>
-                      <span class="font-bold text-gray-800 text-[10px] px-2 py-0.5 rounded bg-white border border-gray-200">{{
+                      <span
+                        class="font-bold text-gray-800 text-[10px] px-2 py-0.5 rounded bg-white border border-gray-200">{{
                         selectedAnnouncement.topic }}</span>
                     </div>
                     <div class="w-full h-px bg-gray-200 my-1.5"></div>
@@ -205,7 +242,6 @@
                     </div>
                   </div>
                 </div>
-
               </div>
 
               <div class="bg-gray-50 p-6 md:p-8 rounded-2xl border border-gray-200">
@@ -230,10 +266,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div v-for="file in selectedAnnouncement.attachments" :key="file.id" @click="previewFile(file)"
                     class="group relative rounded-2xl overflow-hidden border border-gray-200 bg-white hover:border-orange-500 transition-all duration-300 cursor-pointer shadow-sm">
-
                     <img v-if="file.file_type.includes('image')" :src="file.file_path"
                       class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700" />
-
                     <div v-else class="p-6 flex items-center gap-4 h-48 justify-center flex-col bg-gray-50">
                       <span
                         class="material-symbols-outlined text-4xl text-orange-500 group-hover:scale-110 transition-transform duration-300">
@@ -242,7 +276,6 @@
                       <p class="text-[10px] font-mono text-gray-600 truncate w-full text-center px-4">{{
                         file.file_path.split('/').pop() }}</p>
                     </div>
-
                     <div
                       class="absolute inset-0 bg-white/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
                       <span
@@ -251,7 +284,6 @@
                   </div>
                 </div>
               </div>
-
             </div>
 
             <div
@@ -266,7 +298,8 @@
                   :class="{ 'fill-icon scale-125 animate-pop text-orange-500': selectedAnnouncement.isAnimating }">
                   favorite
                 </span>
-                <span class="text-sm font-bold text-gray-800 group-hover/modal-like:text-orange-500">{{ selectedAnnouncement.likes_count }}</span>
+                <span class="text-sm font-bold text-gray-800 group-hover/modal-like:text-orange-500">{{
+                  selectedAnnouncement.likes_count }}</span>
                 <span v-if="selectedAnnouncement.isCooldown"
                   class="absolute -top-5 left-0 text-[10px] font-black text-orange-500 tracking-tighter animate-pulse w-max">
                   {{ selectedAnnouncement.cooldownTimer }} secs
@@ -280,7 +313,6 @@
                   class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </button>
             </div>
-
           </div>
         </div>
       </Transition>
@@ -288,7 +320,6 @@
       <Transition name="fade">
         <div v-if="activePreview"
           class="fixed inset-0 z-110 flex items-center justify-center bg-white/95 backdrop-blur-md p-4">
-
           <button @click="activePreview = null"
             class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all hover:rotate-90 border border-gray-200 shadow-sm">
             <span class="material-symbols-outlined">close</span>
@@ -297,15 +328,12 @@
           <div class="w-full h-full flex items-center justify-center">
             <img v-if="activePreview.file_type.includes('image')" :src="activePreview.file_path"
               class="max-w-full max-h-full object-contain animate-in zoom-in duration-300 shadow-xl border border-gray-200 rounded-lg" />
-
             <iframe v-else-if="activePreview.file_type.includes('pdf')" :src="activePreview.file_path"
               class="w-full h-full md:w-[85%] md:h-[90%] rounded-2xl border border-gray-200 bg-white shadow-2xl"
               frameborder="0"></iframe>
-
             <div v-else class="text-center bg-white border border-gray-200 p-12 rounded-3xl backdrop-blur-xl shadow-xl">
               <span class="material-symbols-outlined text-6xl text-orange-500 mb-4 block">draft</span>
               <p class="text-gray-600 mb-8 font-light tracking-wide">Preview not available for this file type.</p>
-
               <a :href="activePreview.file_path" download target="_blank"
                 class="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] text-white px-8 py-3 rounded-xl font-bold transition-all duration-300">
                 <span class="material-symbols-outlined text-[20px]">download</span>
@@ -322,23 +350,23 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
-import AppHeader from '../components/boardheader.vue' 
+import AppHeader from '../components/boardheader.vue'
 
 // State
 const announcements = ref([])
 const searchQuery = ref('')
-const selectedAuthor = ref('all')       
-const selectedDepartment = ref('all')   
+const selectedAuthor = ref('all')
+const selectedDepartment = ref('all')
 const isModalOpen = ref(false)
 const selectedAnnouncement = ref(null)
 const activePreview = ref(null)
-const isFullScreen = ref(false)
 
 // Extract Unique Authors for the dropdown
 const uniqueAuthors = computed(() => {
   const authors = announcements.value.map(a => a.author_name).filter(Boolean);
   return [...new Set(authors)].sort((a, b) => a.localeCompare(b));
 })
+
 const filteredAnnouncements = computed(() => {
   const q = searchQuery.value.toLowerCase()
   const author = selectedAuthor.value
@@ -357,7 +385,6 @@ const filteredAnnouncements = computed(() => {
 
     let matchesDept = true;
     if (dept !== 'all') {
-      // FIX: Checks if it starts with the dept code + '_' OR if it exactly matches the dept code.
       matchesDept = a.author_type && (a.author_type.startsWith(`${dept}_`) || a.author_type === dept);
     }
 
@@ -365,7 +392,17 @@ const filteredAnnouncements = computed(() => {
   })
 })
 
-// Methods
+// Returns null instead of a fallback image so the text gracefully expands if no image exists
+const getCoverImage = (item) => {
+  if (item.attachments && item.attachments.length > 0) {
+    const firstImage = item.attachments.find(file => file.file_type && file.file_type.includes('image'))
+    if (firstImage) {
+      return firstImage.file_path
+    }
+  }
+  return item.image || null
+}
+
 const fetchAnnouncements = async () => {
   try {
     const response = await axios.get('board-data')
@@ -386,25 +423,6 @@ const goToEvents = () => {
 
 const goBack = () => {
   window.location.href = '/announcements-board'
-}
-
-// Fullscreen Logic
-const toggleFullScreen = async () => {
-  try {
-    if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen()
-    } else {
-      if (document.exitFullscreen) {
-        await document.exitFullscreen()
-      }
-    }
-  } catch (err) {
-    console.error(`Error attempting to toggle fullscreen: ${err.message}`)
-  }
-}
-
-const handleFullscreenChange = () => {
-  isFullScreen.value = !!document.fullscreenElement
 }
 
 const handleLike = async (item) => {
@@ -469,12 +487,10 @@ let fetchTimer
 
 onMounted(() => {
   fetchAnnouncements()
-  document.addEventListener('fullscreenchange', handleFullscreenChange)
   fetchTimer = setInterval(fetchAnnouncements, 30000)
 })
 
 onUnmounted(() => {
-  clearInterval(fetchTimer)
-  document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  if (fetchTimer) clearInterval(fetchTimer)
 })
 </script>

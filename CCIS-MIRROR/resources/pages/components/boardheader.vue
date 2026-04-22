@@ -1,9 +1,10 @@
 <template>
   <header class="mb-16 relative z-10 w-full">
 
-    <div class="flex flex-col md:flex-row justify-between items-start gap-8 w-full">
+    <div class="flex flex-col lg:flex-row justify-between items-start gap-8 w-full relative z-10">
 
-      <div class="flex flex-col gap-6 animate-in fade-in slide-in-from-left duration-700 w-full md:w-64 relative z-10">
+      <div
+        class="flex flex-col gap-6 animate-in fade-in slide-in-from-left duration-700 w-full lg:w-64 shrink-0 relative z-10">
 
         <div class="flex items-center gap-4 group cursor-default">
           <div class="text-orange-500 group-hover:scale-110 transition-transform duration-500">
@@ -81,7 +82,7 @@
       </div>
 
       <div
-        class="text-center md:absolute md:left-1/2 md:-translate-x-1/2 animate-in fade-in zoom-in duration-1000 flex flex-col items-center">
+        class="text-center w-full lg:flex-1 max-w-145 mx-auto animate-in fade-in zoom-in duration-1000 flex flex-col items-center z-20">
         <span
           class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 shadow-sm border border-orange-200">
           {{ dynamicGreeting }}
@@ -94,9 +95,76 @@
         <div class="uppercase tracking-[0.3em] text-sm font-medium mt-2 text-orange-500">
           {{ currentDate }}
         </div>
+
+        <div
+          class="mt-4 mb-4 w-full max-w-[360px] mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
+          <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-orange-400 to-orange-600"></div>
+
+          <div v-if="quizState === 'start'"
+            class="flex flex-col mt-auto mb-auto justify-center items-center h-full text-center px-2">
+            <div class="flex flex-col items-center gap-1 mb-3">
+              <span class="material-symbols-outlined text-orange-500 text-3xl">psychology</span>
+              <div>
+                <p class="text-[10px] font-bold tracking-widest uppercase text-gray-800 leading-none mb-1">Trivia Break
+                </p>
+                <p class="text-[9px] text-gray-500 leading-tight max-w-45">10 quick questions to test your focus.
+                </p>
+              </div>
+            </div>
+
+            <button @click="fetchQuiz" :disabled="quizLoading"
+              class="w-full max-w-[140px] bg-orange-500 hover:bg-orange-600 text-white py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1 disabled:opacity-70 shadow-sm">
+              <span v-if="quizLoading" class="material-symbols-outlined text-[14px] animate-spin">refresh</span>
+              <span v-else class="material-symbols-outlined text-[14px]">play_arrow</span>
+              Start
+            </button>
+          </div>
+
+          <div v-else-if="quizState === 'playing' || quizState === 'answered'" class="flex flex-col h-full">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Question {{
+                currentQuestionIndex + 1 }}/10</span>
+              <span
+                class="text-[9px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">Score:
+                {{ quizScore }}</span>
+            </div>
+
+            <p class="text-[11px] font-semibold text-gray-800 mb-3 leading-snug line-clamp-2 min-h-[32px]"
+              v-html="quizQuestions[currentQuestionIndex].question"></p>
+
+            <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-1">
+              <button v-for="(answer, idx) in shuffledAnswers" :key="idx" @click="selectAnswer(answer)"
+                :disabled="quizState === 'answered'"
+                class="px-2 py-1.5 text-[9px] font-bold rounded-lg border transition-all duration-200 shadow-sm flex items-center justify-center text-center min-h-[36px]"
+                :class="getAnswerClass(answer)" v-html="answer">
+              </button>
+            </div>
+
+            <div v-if="quizState === 'answered'" class="mt-auto pt-2">
+              <button @click="nextQuestion"
+                class="w-full bg-gray-900 text-white py-1.5 rounded-lg font-bold text-[9px] transition-all flex items-center justify-center gap-1 uppercase tracking-widest">
+                {{ currentQuestionIndex === 9 ? 'See Results' : 'Next' }}
+                <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+
+          <div v-else-if="quizState === 'completed'" class="flex flex-col justify-center h-full text-center">
+            <span class="material-symbols-outlined text-orange-500 text-4xl mb-1">emoji_events</span>
+            <p class="text-xs font-bold text-gray-900">Quiz Complete!</p>
+            <p class="text-[10px] text-gray-500 mb-3">You scored {{ quizScore }} / 10</p>
+            <button @click="fetchQuiz"
+              class="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-xl font-bold text-[9px] uppercase tracking-wider transition-all self-center flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">replay</span>
+              Try Again
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      <div class="hidden lg:flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-700 w-64 relative z-10">
+      <div
+        class="hidden lg:flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-700 w-64 shrink-0 relative z-10">
 
         <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md">
           <div class="flex justify-between items-center mb-4 text-orange-500">
@@ -143,12 +211,16 @@
 
           <div v-else
             class="flex flex-col items-center justify-center gap-2 py-1 animate-in fade-in zoom-in duration-500">
-            <span class="text-3xl">{{ selectedSentiment.icon }}</span>
-            <p class="text-xs text-gray-600 text-center font-medium leading-relaxed">
-              Vibe recorded! <br />
-              <span class="text-[10px] text-gray-400 font-normal">Most students are feeling <strong>"{{ mockAverageVibe
-                  }}"</strong> today.</span>
+            <span class="text-4xl filter drop-shadow-sm">{{ selectedSentiment.icon }}</span>
+            <p class="text-xs text-gray-800 font-bold">{{ selectedSentiment.label }}</p>
+            <p
+              class="text-[10px] text-gray-500 text-center font-medium leading-relaxed px-2 border-t border-gray-100 pt-2">
+              {{ selectedSentiment.message }}
             </p>
+            <div
+              class="mt-2 bg-orange-50 px-3 py-1 rounded text-[9px] text-orange-600 font-medium border border-orange-100">
+              Campus Avg: <strong>{{ mockAverageVibe }}</strong>
+            </div>
           </div>
         </div>
 
@@ -156,7 +228,7 @@
     </div>
 
     <div
-      class="mt-12 w-full flex items-center bg-white border border-gray-200 shadow-sm rounded-full overflow-hidden h-10 relative z-10">
+      class="mt-16 w-full flex items-center bg-white border border-gray-200 shadow-sm rounded-full overflow-hidden h-10 relative z-10">
       <div class="bg-orange-500 text-white h-full px-6 flex items-center justify-center z-10 shrink-0 shadow-md">
         <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
           <span class="material-symbols-outlined text-sm animate-pulse">campaign</span>
@@ -207,45 +279,112 @@ const nextEvent = ref(null)
 const countdownDays = ref('04')
 const countdownHours = ref('12')
 
-
-
 // News State
 const newsHeadlines = ref([])
 const newsStatusMessage = ref('Fetching latest news...')
+
+// --- QUIZ WIDGET STATE ---
+const quizQuestions = ref([])
+const currentQuestionIndex = ref(0)
+const quizScore = ref(0)
+const quizState = ref('start') // start, playing, answered, completed
+const selectedAnswer = ref(null)
+const shuffledAnswers = ref([])
+const quizLoading = ref(false)
+const quizError = ref('')
+
+const fetchQuiz = async () => {
+  quizLoading.value = true
+  quizError.value = ''
+  try {
+    const response = await fetch('https://opentdb.com/api.php?amount=10&category=18&difficulty=easy&type=multiple')
+    const data = await response.json()
+
+    if (data.response_code === 0) {
+      quizQuestions.value = data.results
+      quizState.value = 'playing'
+      currentQuestionIndex.value = 0
+      quizScore.value = 0
+      setupQuestion()
+    } else {
+      quizError.value = "Failed to load quiz. Try again!"
+    }
+  } catch (error) {
+    console.error("Quiz Fetch Error:", error)
+    quizError.value = "Network error. Check connection."
+  } finally {
+    quizLoading.value = false
+  }
+}
+
+const setupQuestion = () => {
+  const currentQ = quizQuestions.value[currentQuestionIndex.value]
+  const answers = [...currentQ.incorrect_answers, currentQ.correct_answer]
+  // Randomize answers
+  shuffledAnswers.value = answers.sort(() => Math.random() - 0.5)
+  selectedAnswer.value = null
+  quizState.value = 'playing'
+}
+
+const selectAnswer = (answer) => {
+  selectedAnswer.value = answer
+  quizState.value = 'answered'
+  if (answer === quizQuestions.value[currentQuestionIndex.value].correct_answer) {
+    quizScore.value++
+  }
+}
+
+const nextQuestion = () => {
+  if (currentQuestionIndex.value < quizQuestions.value.length - 1) {
+    currentQuestionIndex.value++
+    setupQuestion()
+  } else {
+    quizState.value = 'completed'
+  }
+}
+
+const getAnswerClass = (answer) => {
+  if (quizState.value !== 'answered') {
+    return 'hover:border-orange-500 hover:bg-orange-50 text-gray-700 bg-white border-gray-200'
+  }
+  const isCorrect = answer === quizQuestions.value[currentQuestionIndex.value].correct_answer
+  if (isCorrect) {
+    return 'bg-green-50 border-green-500 text-green-700 font-bold'
+  }
+  if (answer === selectedAnswer.value) {
+    return 'bg-red-50 border-red-500 text-red-700'
+  }
+  return 'opacity-50 bg-gray-50 border-gray-200 text-gray-500'
+}
 
 // Sentiment Tracker State
 const hasVoted = ref(false)
 const selectedSentiment = ref(null)
 const mockAverageVibe = ref('Productive')
 
+// message property to respond based on how the student is feeling
 const sentimentOptions = [
-  { id: 1, icon: '😫', label: 'Stressed' },
-  { id: 2, icon: '😴', label: 'Tired' },
-  { id: 3, icon: '🙂', label: 'Okay' },
-  { id: 4, icon: '😎', label: 'Productive' },
-  { id: 5, icon: '🤩', label: 'Great' }
+  { id: 1, icon: '😫', label: 'Stressed', message: 'Take a deep breath! Pause and hydrate. You\'ve got this.' },
+  { id: 2, icon: '😴', label: 'Tired', message: 'Make sure to get some rest soon. A quick power nap helps!' },
+  { id: 3, icon: '🙂', label: 'Okay', message: 'Steady and solid! Keep up the good pace.' },
+  { id: 4, icon: '😎', label: 'Productive', message: 'Awesome! Ride that wave of momentum and crush it!' },
+  { id: 5, icon: '🤩', label: 'Great', message: 'Love the energy! Spread those good vibes around campus!' }
 ]
 
 const submitSentiment = async (emoji) => {
   try {
-    // 1. Send the data to the Laravel backend
-    // Remove the '/api' prefix
     const response = await axios.post('/sentiment', {
       sentiment: emoji.label
     })
 
-    // 2. Update UI states
     selectedSentiment.value = emoji
     hasVoted.value = true
-
-    // 3. Replace the mock text with real database data!
     mockAverageVibe.value = response.data.most_common_vibe
 
-    // 4. Optional: Reset the UI after 10 seconds to match the backend cooldown
     setTimeout(() => {
       hasVoted.value = false
       selectedSentiment.value = null
-    }, 10000)
+    }, 15000)
 
   } catch (error) {
     if (error.response && error.response.status === 429) {
@@ -342,8 +481,6 @@ const fetchPHNews = async () => {
     }
   }
 }
-
-
 
 // Upcoming Events Logic
 const fetchUpcomingEvents = async () => {

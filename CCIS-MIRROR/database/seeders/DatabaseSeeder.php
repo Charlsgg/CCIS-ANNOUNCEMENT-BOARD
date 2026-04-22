@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Create Users
         $users = [
-            ['user_id' => 101, 'name' => 'Juan Dela Cruz', 'email' => 'admin1@gmail.com', 'user_type' => 'it_instructor', 'password' => bcrypt('password')],
+            ['user_id' => 101, 'name' => 'Charls Mcklein P. Gulle', 'email' => 'admin1@gmail.com', 'user_type' => 'it_instructor', 'password' => bcrypt('password')],
             ['user_id' => 102, 'name' => 'Maria Clara', 'email' => 'admin2@gmail.com', 'user_type' => 'is_instructor', 'password' => bcrypt('password')],
             ['user_id' => 103, 'name' => 'Jose Rizal', 'email' => 'admin3@gmail.com', 'user_type' => 'cs_instructor', 'password' => bcrypt('password')],
             ['user_id' => 104, 'name' => 'Andres Bonifacio', 'email' => 'admin4@gmail.com', 'user_type' => 'lsg_officer', 'password' => bcrypt('password')],
@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
             ['title' => 'LSG Election: Filing of Candidacy', 'content' => 'The Local Student Government Commission on Elections is officially opening the filing of Certificates of Candidacy for the upcoming academic year. Please refer to the attached guidelines for qualifications.'],
             ['title' => 'Library System Maintenance Downtime', 'content' => 'The digital library access and online academic journals will be temporarily unavailable this weekend for scheduled system upgrades. Please plan your research activities accordingly.'],
             ['title' => 'New Elective Course Offerings', 'content' => 'We are pleased to announce the addition of two new elective courses: Cloud Computing Architecture and Advanced AI Ethics. Enrollment for these subjects will open next week.'],
-            ['title' => 'Code of Conduct Reminder', 'content' => 'A gentle reminder to all students to strictly observe the proper university dress code and display your IDs at all times while inside the campus premises.'],
+            ['title' => 'Code of Conduct Reminder', 'content' => 'Aligning with the rapid evolution of the digital landscape, the Caraga State University (CSU) College of Education Graduate Studies successfully conducted a two-part international forum titled “Bridging Global Standards and Asian Perspectives: International Colloquium on University-Based Graduate Research” on April 11 and 18, 2026, at the Activity Center, HERO Learning Commons. The forum highlighted the rapid advancement of innovation and artificial intelligence (AI) and its transformative impact on educational research, teaching practices, learning analytics, and educational management. It emphasized the need for research-driven, ethical, and context-responsive integration of AI into education to meet the demands of the Fourth and Fifth Industrial Revolutions. Featured on the forum were a roster of academicians, local and international, who offered diverse regional insights on integrating technology into the classroom. Among the speakers included CSU’s very own Professor Miraluna L. Herrera; Adjunct Professor Leong Yew Hoong from Nanyang Technological University, Singapore; Adjunct Professor Eunwha Lee from Silla University, Busan, South Korea; and Professor I Gede Adhitya Wisnu Wardhana from the University of Mataram, Indonesia. Anchored in CSU’s LIKHA Agenda, the activity firmly reinforced the university’s mission to serve as a premier hub for academic excellence and innovation. Moreover, the forum directly supports Sustainable Development Goals (SDG) 4 – Quality Education and SDG 17 – Partnerships for the Goals. The successful activity was spearheaded by the Committee Chair and Program Chairperson of the Mathematics Education Graduate Studies of the College of Education, Dr. Maris T. Lasco, together with the committee members: Dr. Emybel Alegre, Dr. Evelyn Ballenas, Dr. Julie S. Berame, Dr. Gladys L. Lagura, Dr. Sonia R. Low, Dr. Minie Bulay, and led by the Graduate Studies Dean, Dr. Junrie T. Matias, and the Vice President for Academic Affairs Dr. Vicente Pitogo. '],
         ];
 
         $topics = ['Academic', 'Extracurricular', 'Administrative', 'Events', 'General'];
@@ -53,23 +53,21 @@ class DatabaseSeeder extends Seeder
         $startOfMonthStamp = now()->startOfMonth()->timestamp;
         $nowStamp = now()->timestamp;
 
-        // 3. GENERATE 100 ANNOUNCEMENTS (Strictly this month, ONLY IN THE PAST)
         for ($i = 1; $i <= 15; $i++) {
             $id = 2000 + $i;
-            
-            // Pick a random timestamp between the start of the month and strictly right now
+
             $randomTimestamp = rand($startOfMonthStamp, $nowStamp);
             $createdAt = Carbon::createFromTimestamp($randomTimestamp);
-            
+
             // Select random official data
             $sample = $officialAnnouncements[array_rand($officialAnnouncements)];
             $refNumber = str_pad($i, 3, '0', STR_PAD_LEFT);
-            
+
             Announcement::create([
                 'announcement_id' => $id,
                 'board_id' => rand(1, 5),
                 'author_id' => rand(101, 105),
-                'title' => "[REF-CCIS-$refNumber] " . $sample['title'],
+                'title' => $sample['title'],
                 'content' => $sample['content'],
                 'topic' => $topics[array_rand($topics)],
                 'created_at' => $createdAt,
@@ -80,7 +78,7 @@ class DatabaseSeeder extends Seeder
         // 4. GENERATE 100 EVENTS (Strictly this month, ONLY IN THE PAST)
         // Offset the max start time by 4 hours to ensure end_time also stays in the past
         $maxStartStamp = now()->subHours(4)->timestamp;
-        
+
         // Edge case: If the month just started (less than 4 hours ago), fallback to start of month
         $maxStartStamp = max($startOfMonthStamp, $maxStartStamp);
 
@@ -89,11 +87,8 @@ class DatabaseSeeder extends Seeder
 
             $randomTimestamp = rand($startOfMonthStamp, $maxStartStamp);
             $startTime = Carbon::createFromTimestamp($randomTimestamp);
-            
-            // Set end time 2 to 4 hours later
             $endTime = (clone $startTime)->addHours(rand(2, 4));
 
-            // Final safety check to cap it at now() just in case of edge bounds
             if ($endTime->isFuture()) {
                 $endTime = now();
             }
@@ -104,7 +99,7 @@ class DatabaseSeeder extends Seeder
                 'board_id' => rand(1, 5),
                 'title' => "Official Department Event $i",
                 'content' => "This is a scheduled event for faculty and students. Attendance may be required depending on the respective program head.",
-                'venue' => "Room ".rand(101, 404),
+                'venue' => "Room " . rand(101, 404),
                 'start_time' => $startTime,
                 'end_time' => $endTime,
                 'created_at' => $startTime,
