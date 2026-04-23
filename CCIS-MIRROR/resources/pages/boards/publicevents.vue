@@ -11,7 +11,7 @@
 
     <AppHeader />
 
-    <main class="max-w-6xl mx-auto relative z-10 flex flex-col h-full">
+    <main class="max-w-6xl mx-auto relative flex flex-col h-full">
       <section class="flex flex-col md:flex-row gap-4 mb-8 items-center relative">
         <button @click="goBack"
           class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium whitespace-nowrap group shadow-sm text-gray-700">
@@ -20,7 +20,7 @@
           <span>Back</span>
         </button>
 
-        <div class="relative w-full z-100">
+        <div class="relative w-full ">
           <div class="relative flex items-center">
             <span class="material-symbols-outlined absolute left-4 text-gray-400 pointer-events-none">search</span>
             <input
@@ -259,7 +259,7 @@ const getEventClasses = (event: CalendarEvent, day: CalendarDay): string[] => {
 
   const isStart = isEventStart(event, day)
   const isEnd = !event.endTime || isSameDay(event.endTime, day.fullDate)
-  const classes = ['relative', 'z-10']
+  const classes = ['relative',]
 
   if (isStart) {
     classes.push('rounded-l', 'border-l-2')
