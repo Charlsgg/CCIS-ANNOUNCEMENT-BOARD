@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="isOpen" class="fixed inset-0 z-[999] flex items-center justify-center px-4 perspective-1000">
+    <div v-if="isOpen" class="fixed inset-0 z-999 flex items-center justify-center px-4 perspective-1000">
       
       <div 
         class="absolute inset-0 bg-gray-900/40 backdrop-blur-md"

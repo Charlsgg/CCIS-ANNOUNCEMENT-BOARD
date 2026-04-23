@@ -151,7 +151,7 @@
     
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+        <div v-if="isModalOpen" class="fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6">
           <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" @click="closeModal"></div>
 
           <div v-if="selectedAnnouncement"
@@ -187,7 +187,7 @@
                 <div
                   class="flex items-center gap-4 bg-gray-50 hover:bg-gray-100 transition-colors px-5 py-4 rounded-2xl border border-gray-100 group/author relative overflow-hidden">
                   <div
-                    class="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover/author:opacity-100 transition-opacity">
+                    class="absolute inset-0 bg-linear-to-r from-orange-500/5 to-transparent opacity-0 group-hover/author:opacity-100 transition-opacity">
                   </div>
                   <div
                     :class="['w-12 h-12 rounded-xl flex items-center justify-center font-bold shadow-sm text-white z-10 shrink-0 group-hover/author:scale-110 transition-transform', getPosBg(selectedAnnouncement.author_type)]">
@@ -205,7 +205,7 @@
                 <div
                   class="flex items-center gap-4 bg-gray-50 hover:bg-gray-100 transition-colors px-5 py-4 rounded-2xl border border-gray-100 group/details relative overflow-hidden">
                   <div
-                    class="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover/details:opacity-100 transition-opacity">
+                    class="absolute inset-0 bg-linear-to-r from-blue-500/5 to-transparent opacity-0 group-hover/details:opacity-100 transition-opacity">
                   </div>
                   <div
                     class="bg-blue-100 p-3 rounded-xl shrink-0 group-hover/details:scale-110 transition-transform ">
@@ -239,7 +239,7 @@
 
               <div v-if="selectedAnnouncement.attachments?.length" class="space-y-4">
                 <div class="flex items-center justify-center mb-6 mt-8">
-                  <div class="h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent w-full"></div>
+                  <div class="h-px bg-linear-to-r from-transparent via-orange-500/30 to-transparent w-full"></div>
                 </div>
                 <h5 class="text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-4 flex items-center gap-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
@@ -301,10 +301,10 @@
 
       <Transition name="fade">
         <div v-if="activePreview"
-          class="fixed inset-0 z-[110] flex items-center justify-center bg-white/95 backdrop-blur-md p-4">
+          class="fixed inset-0 z-110 flex items-center justify-center bg-white/95 backdrop-blur-md p-4">
           
           <button @click="activePreview = null"
-            class="absolute top-6 right-6 z-[120] w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all hover:rotate-90 border border-gray-200 shadow-sm">
+            class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all hover:rotate-90 border border-gray-200 shadow-sm">
             <span class="material-symbols-outlined">close</span>
           </button>
 

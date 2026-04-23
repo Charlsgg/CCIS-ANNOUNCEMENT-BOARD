@@ -82,8 +82,8 @@
           {{ currentDate }}
         </div>
 
-        <div class="mt-4 mb-4 w-full max-w-[360px] mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
-          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-orange-600"></div>
+        <div class="mt-4 mb-4 w-full max-w-90 mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
+          <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-orange-400 to-orange-600"></div>
 
           <div v-if="quizState === 'start'" class="flex flex-col mt-auto mb-auto justify-center items-center h-full text-center px-2">
             <div class="flex flex-col items-center gap-1 mb-3">
@@ -94,7 +94,7 @@
               </div>
             </div>
 
-            <button @click="fetchQuiz" :disabled="quizLoading" class="w-full max-w-[140px] bg-orange-500 hover:bg-orange-600 text-white py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1 disabled:opacity-70 shadow-sm">
+            <button @click="fetchQuiz" :disabled="quizLoading" class="w-full max-w-35 bg-orange-500 hover:bg-orange-600 text-white py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1 disabled:opacity-70 shadow-sm">
               <span v-if="quizLoading" class="material-symbols-outlined text-[14px] animate-spin">refresh</span>
               <span v-else class="material-symbols-outlined text-[14px]">play_arrow</span>
               Start
@@ -107,10 +107,10 @@
               <span class="text-[9px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">Score: {{ quizScore }}</span>
             </div>
 
-            <p class="text-[11px] font-semibold text-gray-800 mb-3 leading-snug line-clamp-2 min-h-[32px]" v-html="quizQuestions[currentQuestionIndex].question"></p>
+            <p class="text-[11px] font-semibold text-gray-800 mb-3 leading-snug line-clamp-2 min-h-8" v-html="quizQuestions[currentQuestionIndex].question"></p>
 
             <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-1">
-              <button v-for="(answer, idx) in shuffledAnswers" :key="idx" @click="selectAnswer(answer)" :disabled="quizState === 'answered'" class="px-2 py-1.5 text-[9px] font-bold rounded-lg border transition-all duration-200 shadow-sm flex items-center justify-center text-center min-h-[36px]" :class="getAnswerClass(answer)" v-html="answer">
+              <button v-for="(answer, idx) in shuffledAnswers" :key="idx" @click="selectAnswer(answer)" :disabled="quizState === 'answered'" class="px-2 py-1.5 text-[9px] font-bold rounded-lg border transition-all duration-200 shadow-sm flex items-center justify-center text-center min-h-9" :class="getAnswerClass(answer)" v-html="answer">
               </button>
             </div>
 
