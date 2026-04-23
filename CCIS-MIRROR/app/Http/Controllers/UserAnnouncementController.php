@@ -37,6 +37,7 @@ class UserAnnouncementController extends Controller
 
             // Format Attachments URLs using standard Laravel Storage
             $attachments = $group->filter(fn($item) => !is_null($item->attachment_id))
+                ->sortBy('attachment_id')
                 ->map(fn($item) => [
                     'attachment_id' => $item->attachment_id,
                     'file_type'     => $item->file_type,

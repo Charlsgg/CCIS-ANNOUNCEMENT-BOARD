@@ -71,9 +71,6 @@
       </div>
 
       <div class="text-center w-full lg:flex-1 max-w-145 mx-auto animate-in fade-in zoom-in duration-1000 flex flex-col items-center z-20">
-        <span class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 shadow-sm border border-orange-200">
-          {{ dynamicGreeting }}
-        </span>
 
         <h1 class="text-7xl md:text-8xl font-light tracking-tighter leading-none text-gray-900 font-mono drop-shadow-sm">
           {{ currentTime }}
@@ -365,11 +362,6 @@ const firstDayOfMonth = computed(() => {
   const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), 1).getDay()
 })
 
-const dynamicGreeting = computed(() => {
-  if (currentHour.value < 12) return "Good Morning, Campus!"
-  if (currentHour.value < 18) return "Good Afternoon, Students!"
-  return "Good Evening, Students!"
-})
 
 // Clock Logic
 const updateClock = () => {
