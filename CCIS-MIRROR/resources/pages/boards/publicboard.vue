@@ -1,24 +1,20 @@
 <template>
-  <div
-    class="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8 font-sans selection:bg-orange-500/30 overflow-x-hidden relative">
+  <div class="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8 font-sans selection:bg-orange-500/30 overflow-x-hidden relative">
 
-    <div
-      class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-400/20 rounded-full blur-[120px] pointer-events-none">
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-400/20 rounded-full blur-[120px] pointer-events-none">
     </div>
-    <div
-      class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-[120px] pointer-events-none">
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-[120px] pointer-events-none">
     </div>
 
     <AppHeader />
 
-    <main class="mx-auto relative z-10">
-      <div class="max-w-6xl mx-auto relative z-10">
+    <main class="mx-auto relative ">
+      <div class="max-w-6xl mx-auto relative">
 
         <section class="flex flex-col lg:flex-row flex-wrap gap-4 mb-12 items-center w-full">
           <button @click="goBack"
             class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium text-gray-700 group shrink-0 w-full lg:w-auto justify-center shadow-sm">
-            <span
-              class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+            <span class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
             <span>Back</span>
           </button>
 
@@ -30,8 +26,7 @@
                 {{ author }}
               </option>
             </select>
-            <span
-              class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
           </div>
 
           <div class="relative grow w-full lg:w-auto min-w-50">
@@ -51,15 +46,13 @@
                 <option value="cs" class="bg-white text-gray-900">CS Department</option>
                 <option value="lsg" class="bg-white text-gray-900">Local Student Government</option>
               </select>
-              <span
-                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
+              <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">expand_more</span>
             </div>
           </div>
 
           <button @click="goToEvents"
             class="flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-500 transition-all duration-300 text-sm font-medium text-gray-700 group shrink-0 w-full lg:w-auto justify-center shadow-sm">
-            <span
-              class="material-symbols-outlined text-sm group-hover:scale-110 transition-transform text-orange-500">event</span>
+            <span class="material-symbols-outlined text-sm group-hover:scale-110 transition-transform text-orange-500">event</span>
             <span>Events</span>
           </button>
         </section>
@@ -71,8 +64,7 @@
           :style="{ '--delay': `${index * 0.1}sec` }">
 
           <div v-if="getCoverImage(item)" class="w-full aspect-video overflow-hidden border-b border-gray-100 shrink-0">
-            <div
-              class="w-full h-full bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500"
+            <div class="w-full h-full bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500"
               :data-alt="item.title" :style="{ backgroundImage: `url(${getCoverImage(item)})` }">
             </div>
           </div>
@@ -89,8 +81,7 @@
                 </span>
               </div>
 
-              <h3
-                class="text-gray-900 font-bold mb-2 group-hover:text-orange-600 transition-colors text-[clamp(1.125rem,1.5vw+0.75rem,1.5rem)] leading-tight text-balance line-clamp-2">
+              <h3 class="text-gray-900 font-bold mb-2 group-hover:text-orange-600 transition-colors text-[clamp(1.125rem,1.5vw+0.75rem,1.5rem)] leading-tight text-balance line-clamp-2">
                 {{ item.title }}
               </h3>
 
@@ -124,33 +115,25 @@
                       ? 'cursor-not-allowed opacity-60'
                       : 'cursor-pointer'
                   ]">
-
-                  <!-- Icon -->
                   <span class="material-symbols-outlined text-[18px] transition-all duration-300" :class="{
                     'fill-icon scale-125 animate-pop text-orange-500': item.isAnimating
                   }">
                     favorite
                   </span>
-
-                  <!-- Count -->
                   <span class="text-[11px] font-semibold transition-colors duration-200"
                     :class="item.isAnimating ? 'text-orange-500' : 'text-white-600 group-hover/like:text-orange-500'">
                     {{ item.likes_count }}
                   </span>
-
-                  <!-- Cooldown Badge -->
                   <span v-if="item.isCooldown"
                     class="absolute -top-2 -right-2 bg-orange-500 text-white text-[8px] px-1.5 py-px rounded-full font-bold shadow-sm animate-pulse">
                     {{ item.cooldownTimer }}s
                   </span>
-
                 </button>
 
                 <button @click="openModal(item)"
-                  class="flex items-center gap-1 text-orange-500 text-sm font-bold hover:underline group/btn relative z-10">
+                  class="flex items-center gap-1 text-orange-500 text-sm font-bold hover:underline group/btn relative ">
                   Read More
-                  <span
-                    class="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform duration-300">
+                  <span class="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform duration-300">
                     arrow_forward
                   </span>
                 </button>
@@ -165,10 +148,10 @@
         <p>No announcements match your search or filters.</p>
       </div>
     </main>
-
+    
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="isModalOpen" class="fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6">
+        <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
           <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" @click="closeModal"></div>
 
           <div v-if="selectedAnnouncement"
@@ -204,7 +187,7 @@
                 <div
                   class="flex items-center gap-4 bg-gray-50 hover:bg-gray-100 transition-colors px-5 py-4 rounded-2xl border border-gray-100 group/author relative overflow-hidden">
                   <div
-                    class="absolute inset-0 bg-linear-to-r from-orange-500/5 to-transparent opacity-0 group-hover/author:opacity-100 transition-opacity">
+                    class="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover/author:opacity-100 transition-opacity">
                   </div>
                   <div
                     :class="['w-12 h-12 rounded-xl flex items-center justify-center font-bold shadow-sm text-white z-10 shrink-0 group-hover/author:scale-110 transition-transform', getPosBg(selectedAnnouncement.author_type)]">
@@ -222,13 +205,13 @@
                 <div
                   class="flex items-center gap-4 bg-gray-50 hover:bg-gray-100 transition-colors px-5 py-4 rounded-2xl border border-gray-100 group/details relative overflow-hidden">
                   <div
-                    class="absolute inset-0 bg-linear-to-r from-blue-500/5 to-transparent opacity-0 group-hover/details:opacity-100 transition-opacity">
+                    class="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover/details:opacity-100 transition-opacity">
                   </div>
                   <div
-                    class="bg-blue-100 p-3 rounded-xl shrink-0 group-hover/details:scale-110 transition-transform z-10">
+                    class="bg-blue-100 p-3 rounded-xl shrink-0 group-hover/details:scale-110 transition-transform ">
                     <span class="material-symbols-outlined text-[24px] text-blue-600 block">info</span>
                   </div>
-                  <div class="flex flex-col z-10 w-full">
+                  <div class="flex flex-col  w-full">
                     <div class="flex justify-between items-center w-full mb-1">
                       <span class="text-[10px] uppercase tracking-widest text-blue-600 font-bold">Subject</span>
                       <span
@@ -256,7 +239,7 @@
 
               <div v-if="selectedAnnouncement.attachments?.length" class="space-y-4">
                 <div class="flex items-center justify-center mb-6 mt-8">
-                  <div class="h-px bg-linear-to-r from-transparent via-orange-500/30 to-transparent w-full"></div>
+                  <div class="h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent w-full"></div>
                 </div>
                 <h5 class="text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-4 flex items-center gap-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
@@ -287,7 +270,7 @@
             </div>
 
             <div
-              class="px-8 py-5 border-t border-gray-200 bg-gray-50 flex justify-between items-center relative z-10 backdrop-blur-md">
+              class="px-8 py-5 border-t border-gray-200 bg-gray-50 flex justify-between items-center relative backdrop-blur-md">
               <button @click="handleLike(selectedAnnouncement)"
                 class="flex items-center gap-2 transition-all duration-300 group/modal-like relative"
                 :disabled="selectedAnnouncement.isCooldown || selectedAnnouncement.isProcessing" :class="[
@@ -309,8 +292,7 @@
               <button @click="closeModal"
                 class="px-8 py-3 rounded-xl bg-white border border-gray-200 hover:bg-orange-500 hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:text-white transition-all duration-300 text-sm font-bold tracking-wide group flex items-center gap-2 text-gray-700">
                 <span>Close</span>
-                <span
-                  class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </button>
             </div>
           </div>
@@ -319,9 +301,10 @@
 
       <Transition name="fade">
         <div v-if="activePreview"
-          class="fixed inset-0 z-110 flex items-center justify-center bg-white/95 backdrop-blur-md p-4">
+          class="fixed inset-0 z-[110] flex items-center justify-center bg-white/95 backdrop-blur-md p-4">
+          
           <button @click="activePreview = null"
-            class="absolute top-6 right-6 z-120 w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all hover:rotate-90 border border-gray-200 shadow-sm">
+            class="absolute top-6 right-6 z-[120] w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all hover:rotate-90 border border-gray-200 shadow-sm">
             <span class="material-symbols-outlined">close</span>
           </button>
 
@@ -346,7 +329,6 @@
     </Teleport>
   </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'

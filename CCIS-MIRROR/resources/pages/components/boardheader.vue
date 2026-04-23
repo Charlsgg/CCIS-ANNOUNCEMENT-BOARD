@@ -3,9 +3,7 @@
 
     <div class="flex flex-col lg:flex-row justify-between items-start gap-8 w-full relative z-10">
 
-      <div
-        class="flex flex-col gap-6 animate-in fade-in slide-in-from-left duration-700 w-full lg:w-64 shrink-0 relative z-10">
-
+      <div class="flex flex-col gap-6 animate-in fade-in slide-in-from-left duration-700 w-full lg:w-64 shrink-0 relative z-10">
         <div class="flex items-center gap-4 group cursor-default">
           <div class="text-orange-500 group-hover:scale-110 transition-transform duration-500">
             <span class="material-symbols-outlined text-5xl filter drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">
@@ -25,11 +23,8 @@
           </div>
         </div>
 
-        <div v-if="nextEvent"
-          class="hidden md:block bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden group cursor-pointer hover:shadow-md transition-all hover:border-orange-300"
-          @click="goToEvents">
-          <div
-            class="absolute -right-4 -top-4 w-16 h-16 bg-orange-500/10 rounded-full transition-transform group-hover:scale-150 duration-500">
+        <div v-if="nextEvent" class="hidden md:block bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden group cursor-pointer hover:shadow-md transition-all hover:border-orange-300" @click="goToEvents">
+          <div class="absolute -right-4 -top-4 w-16 h-16 bg-orange-500/10 rounded-full transition-transform group-hover:scale-150 duration-500">
           </div>
 
           <div class="flex items-center justify-between mb-3">
@@ -43,21 +38,18 @@
           <p class="text-[10px] text-gray-500 font-medium mb-3 uppercase tracking-wider">{{ nextEvent.venue }}</p>
 
           <div class="flex gap-2">
-            <div
-              class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
+            <div class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
               <span class="block text-xl font-black leading-none mb-0.5">{{ countdownDays }}</span>
               <span class="block text-[8px] uppercase tracking-widest font-bold opacity-80">Days</span>
             </div>
-            <div
-              class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
+            <div class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
               <span class="block text-xl font-black leading-none mb-0.5">{{ countdownHours }}</span>
               <span class="block text-[8px] uppercase tracking-widest font-bold opacity-80">Hours</span>
             </div>
           </div>
         </div>
 
-        <div
-          class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2 text-orange-500">
               <span class="material-symbols-outlined text-sm">newspaper</span>
@@ -69,51 +61,40 @@
             <div v-if="newsHeadlines.length === 0" class="text-xs text-gray-400 italic">
               {{ newsStatusMessage }}
             </div>
-            <a v-for="(article, index) in newsHeadlines" :key="index" :href="article.url" target="_blank"
-              class="group block border-b border-gray-100 last:border-0 pb-2 last:pb-0">
-              <h3
-                class="text-xs font-medium text-gray-800 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
+            <a v-for="(article, index) in newsHeadlines" :key="index" :href="article.url" target="_blank" class="group block border-b border-gray-100 last:border-0 pb-2 last:pb-0">
+              <h3 class="text-xs font-medium text-gray-800 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
                 {{ article.title }}
               </h3>
             </a>
           </div>
         </div>
-
       </div>
 
-      <div
-        class="text-center w-full lg:flex-1 max-w-145 mx-auto animate-in fade-in zoom-in duration-1000 flex flex-col items-center z-20">
-        <span
-          class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 shadow-sm border border-orange-200">
+      <div class="text-center w-full lg:flex-1 max-w-145 mx-auto animate-in fade-in zoom-in duration-1000 flex flex-col items-center z-20">
+        <span class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 shadow-sm border border-orange-200">
           {{ dynamicGreeting }}
         </span>
 
-        <h1
-          class="text-7xl md:text-8xl font-light tracking-tighter leading-none text-gray-900 font-mono drop-shadow-sm">
+        <h1 class="text-7xl md:text-8xl font-light tracking-tighter leading-none text-gray-900 font-mono drop-shadow-sm">
           {{ currentTime }}
         </h1>
         <div class="uppercase tracking-[0.3em] text-sm font-medium mt-2 text-orange-500">
           {{ currentDate }}
         </div>
 
-    <div
-  class="mt-4 mb-4 w-full max-w-[360px] mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
-          <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-orange-400 to-orange-600"></div>
+        <div class="mt-4 mb-4 w-full max-w-[360px] mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-orange-600"></div>
 
-          <div v-if="quizState === 'start'"
-            class="flex flex-col mt-auto mb-auto justify-center items-center h-full text-center px-2">
+          <div v-if="quizState === 'start'" class="flex flex-col mt-auto mb-auto justify-center items-center h-full text-center px-2">
             <div class="flex flex-col items-center gap-1 mb-3">
               <span class="material-symbols-outlined text-orange-500 text-3xl">psychology</span>
               <div>
-                <p class="text-[10px] font-bold tracking-widest uppercase text-gray-800 leading-none mb-1">Trivia Break
-                </p>
-                <p class="text-[9px] text-gray-500 leading-tight max-w-45">10 quick questions to test your focus.
-                </p>
+                <p class="text-[10px] font-bold tracking-widest uppercase text-gray-800 leading-none mb-1">Trivia Break</p>
+                <p class="text-[9px] text-gray-500 leading-tight max-w-45">10 quick questions to test your focus.</p>
               </div>
             </div>
 
-            <button @click="fetchQuiz" :disabled="quizLoading"
-              class="w-full max-w-[140px] bg-orange-500 hover:bg-orange-600 text-white py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1 disabled:opacity-70 shadow-sm">
+            <button @click="fetchQuiz" :disabled="quizLoading" class="w-full max-w-[140px] bg-orange-500 hover:bg-orange-600 text-white py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1 disabled:opacity-70 shadow-sm">
               <span v-if="quizLoading" class="material-symbols-outlined text-[14px] animate-spin">refresh</span>
               <span v-else class="material-symbols-outlined text-[14px]">play_arrow</span>
               Start
@@ -122,27 +103,19 @@
 
           <div v-else-if="quizState === 'playing' || quizState === 'answered'" class="flex flex-col h-full">
             <div class="flex justify-between items-center mb-2">
-              <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Question {{
-                currentQuestionIndex + 1 }}/10</span>
-              <span
-                class="text-[9px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">Score:
-                {{ quizScore }}</span>
+              <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Question {{ currentQuestionIndex + 1 }}/10</span>
+              <span class="text-[9px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">Score: {{ quizScore }}</span>
             </div>
 
-            <p class="text-[11px] font-semibold text-gray-800 mb-3 leading-snug line-clamp-2 min-h-[32px]"
-              v-html="quizQuestions[currentQuestionIndex].question"></p>
+            <p class="text-[11px] font-semibold text-gray-800 mb-3 leading-snug line-clamp-2 min-h-[32px]" v-html="quizQuestions[currentQuestionIndex].question"></p>
 
             <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-1">
-              <button v-for="(answer, idx) in shuffledAnswers" :key="idx" @click="selectAnswer(answer)"
-                :disabled="quizState === 'answered'"
-                class="px-2 py-1.5 text-[9px] font-bold rounded-lg border transition-all duration-200 shadow-sm flex items-center justify-center text-center min-h-[36px]"
-                :class="getAnswerClass(answer)" v-html="answer">
+              <button v-for="(answer, idx) in shuffledAnswers" :key="idx" @click="selectAnswer(answer)" :disabled="quizState === 'answered'" class="px-2 py-1.5 text-[9px] font-bold rounded-lg border transition-all duration-200 shadow-sm flex items-center justify-center text-center min-h-[36px]" :class="getAnswerClass(answer)" v-html="answer">
               </button>
             </div>
 
             <div v-if="quizState === 'answered'" class="mt-auto pt-2">
-              <button @click="nextQuestion"
-                class="w-full bg-gray-900 text-white py-1.5 rounded-lg font-bold text-[9px] transition-all flex items-center justify-center gap-1 uppercase tracking-widest">
+              <button @click="nextQuestion" class="w-full bg-gray-900 text-white py-1.5 rounded-lg font-bold text-[9px] transition-all flex items-center justify-center gap-1 uppercase tracking-widest">
                 {{ currentQuestionIndex === 9 ? 'See Results' : 'Next' }}
                 <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
               </button>
@@ -153,44 +126,32 @@
             <span class="material-symbols-outlined text-orange-500 text-4xl mb-1">emoji_events</span>
             <p class="text-xs font-bold text-gray-900">Quiz Complete!</p>
             <p class="text-[10px] text-gray-500 mb-3">You scored {{ quizScore }} / 10</p>
-            <button @click="fetchQuiz"
-              class="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-xl font-bold text-[9px] uppercase tracking-wider transition-all self-center flex items-center gap-1">
+            <button @click="fetchQuiz" class="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-xl font-bold text-[9px] uppercase tracking-wider transition-all self-center flex items-center gap-1">
               <span class="material-symbols-outlined text-[14px]">replay</span>
               Try Again
             </button>
           </div>
         </div>
-
       </div>
 
-      <div
-        class="hidden lg:flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-700 w-64 shrink-0 relative z-10">
+      <div class="hidden lg:flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-700 w-64 shrink-0 relative z-10">
 
         <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md">
           <div class="flex justify-between items-center mb-4 text-orange-500">
             <h2 class="text-[10px] font-bold tracking-widest uppercase">{{ currentMonthYear }}</h2>
           </div>
           <div class="grid grid-cols-7 gap-1 text-center text-[9px] font-bold text-gray-400 mb-2">
-            <div>SU</div>
-            <div>MO</div>
-            <div>TU</div>
-            <div>WE</div>
-            <div>TH</div>
-            <div>FR</div>
-            <div>SA</div>
+            <div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div>
           </div>
           <div class="grid grid-cols-7 gap-1 text-center">
             <div v-for="empty in firstDayOfMonth" :key="'empty-' + empty" class="p-1"></div>
-            <div v-for="d in daysInMonth" :key="d"
-              :class="['p-1 text-[10px] transition-all duration-300',
-                d === currentDay ? 'bg-orange-500 text-white rounded-full font-bold shadow-[0_0_10px_rgba(249,115,22,0.4)] scale-110' : 'text-gray-600']">
+            <div v-for="d in daysInMonth" :key="d" :class="['p-1 text-[10px] transition-all duration-300', d === currentDay ? 'bg-orange-500 text-white rounded-full font-bold shadow-[0_0_10px_rgba(249,115,22,0.4)] scale-110' : 'text-gray-600']">
               {{ d }}
             </div>
           </div>
         </div>
 
-        <div
-          class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2 text-orange-500">
               <span class="material-symbols-outlined text-sm">mood</span>
@@ -198,28 +159,20 @@
             </div>
           </div>
 
-          <div v-if="!hasVoted" class="flex flex-col gap-3 transition-all duration-500">
-            <p class="text-xs text-gray-600 font-medium text-center">How are you feeling today?</p>
-            <div class="flex justify-between items-center px-1">
-              <button v-for="emoji in sentimentOptions" :key="emoji.id" @click="submitSentiment(emoji)"
+          <div class="flex flex-col gap-3 transition-all duration-500">
+            <p class="text-xs text-gray-600 font-medium text-center">
+              {{ hasVoted ? 'Thanks for sharing!' : 'How are you feeling today?' }}
+            </p>
+            <div class="flex justify-between items-center px-1" :class="{'opacity-50 pointer-events-none': hasVoted}">
+              <button 
+                v-for="emoji in sentimentOptions" 
+                :key="emoji.id" 
+                @click="submitSentiment(emoji)"
                 class="text-2xl hover:scale-125 hover:-translate-y-1 transition-all duration-300 grayscale hover:grayscale-0 focus:outline-none"
-                :title="emoji.label">
+                :title="emoji.label"
+              >
                 {{ emoji.icon }}
               </button>
-            </div>
-          </div>
-
-          <div v-else
-            class="flex flex-col items-center justify-center gap-2 py-1 animate-in fade-in zoom-in duration-500">
-            <span class="text-4xl filter drop-shadow-sm">{{ selectedSentiment.icon }}</span>
-            <p class="text-xs text-gray-800 font-bold">{{ selectedSentiment.label }}</p>
-            <p
-              class="text-[10px] text-gray-500 text-center font-medium leading-relaxed px-2 border-t border-gray-100 pt-2">
-              {{ selectedSentiment.message }}
-            </p>
-            <div
-              class="mt-2 bg-orange-50 px-3 py-1 rounded text-[9px] text-orange-600 font-medium border border-orange-100">
-              Campus Avg: <strong>{{ mockAverageVibe }}</strong>
             </div>
           </div>
         </div>
@@ -227,8 +180,7 @@
       </div>
     </div>
 
-    <div
-      class="mt-16 w-full flex items-center bg-white border border-gray-200 shadow-sm rounded-full overflow-hidden h-10 relative z-10">
+    <div class="mt-16 w-full flex items-center bg-white border border-gray-200 shadow-sm rounded-full overflow-hidden h-10 relative z-10">
       <div class="bg-orange-500 text-white h-full px-6 flex items-center justify-center z-10 shrink-0 shadow-md">
         <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
           <span class="material-symbols-outlined text-sm animate-pulse">campaign</span>
@@ -238,16 +190,20 @@
       <div class="grow overflow-hidden relative h-full flex items-center">
         <div class="whitespace-nowrap animate-marquee text-xs font-medium text-gray-600 tracking-wide">
           <span class="mx-4 text-orange-500">•</span> Welcome to the centralized announcement board MIRACIS!
-          <span class="mx-4 text-orange-500">•</span> Stay tuned for the latest news, events, and updates from the
-          College of Computer and Information Sciences.
-          <span class="mx-4 text-orange-500">•</span> Don't forget to check the Events tab for upcoming department
-          activities.
+          <span class="mx-4 text-orange-500">•</span> Stay tuned for the latest news, events, and updates from the College of Computer and Information Sciences.
+          <span class="mx-4 text-orange-500">•</span> Don't forget to check the Events tab for upcoming department activities.
           <span class="mx-4 text-orange-500">•</span> interact with the announcements to view details and attachments.
-          <span class="mx-4 text-orange-500">•</span> For any inquiries or support, visit us at the CCIS Network
-          Administration Office.
+          <span class="mx-4 text-orange-500">•</span> For any inquiries or support, visit us at the CCIS Network Administration Office.
         </div>
       </div>
     </div>
+
+    <SentimentModal 
+      :is-open="isModalOpen" 
+      :sentiment="selectedSentiment" 
+      :average-vibe="mockAverageVibe"
+      @close="isModalOpen = false"
+    />
 
   </header>
 </template>
@@ -255,6 +211,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
+
+// 1. IMPORT YOUR NEW MODAL COMPONENT (Adjust path if needed)
+import SentimentModal from '../modals/sentimentmodal.vue'
 
 // Routing Mock
 const goToEvents = () => {
@@ -287,7 +246,7 @@ const newsStatusMessage = ref('Fetching latest news...')
 const quizQuestions = ref([])
 const currentQuestionIndex = ref(0)
 const quizScore = ref(0)
-const quizState = ref('start') // start, playing, answered, completed
+const quizState = ref('start')
 const selectedAnswer = ref(null)
 const shuffledAnswers = ref([])
 const quizLoading = ref(false)
@@ -320,7 +279,6 @@ const fetchQuiz = async () => {
 const setupQuestion = () => {
   const currentQ = quizQuestions.value[currentQuestionIndex.value]
   const answers = [...currentQ.incorrect_answers, currentQ.correct_answer]
-  // Randomize answers
   shuffledAnswers.value = answers.sort(() => Math.random() - 0.5)
   selectedAnswer.value = null
   quizState.value = 'playing'
@@ -357,12 +315,12 @@ const getAnswerClass = (answer) => {
   return 'opacity-50 bg-gray-50 border-gray-200 text-gray-500'
 }
 
-// Sentiment Tracker State
+// --- SENTIMENT TRACKER STATE ---
 const hasVoted = ref(false)
 const selectedSentiment = ref(null)
 const mockAverageVibe = ref('Productive')
+const isModalOpen = ref(false) // NEW STATE FOR MODAL
 
-// message property to respond based on how the student is feeling
 const sentimentOptions = [
   { id: 1, icon: '😫', label: 'Stressed', message: 'Take a deep breath! Pause and hydrate. You\'ve got this.' },
   { id: 2, icon: '😴', label: 'Tired', message: 'Make sure to get some rest soon. A quick power nap helps!' },
@@ -373,13 +331,17 @@ const sentimentOptions = [
 
 const submitSentiment = async (emoji) => {
   try {
-    const response = await axios.post('/sentiment', {
-      sentiment: emoji.label
-    })
-
+    // Simulated API Call
+    // const response = await axios.post('/sentiment', { sentiment: emoji.label })
+    
     selectedSentiment.value = emoji
     hasVoted.value = true
-    mockAverageVibe.value = response.data.most_common_vibe
+    
+    // Uncomment this when your real API is running
+    // mockAverageVibe.value = response.data.most_common_vibe
+    
+    // TRIGGER MODAL HERE instead of changing widget inline
+    isModalOpen.value = true
 
     setTimeout(() => {
       hasVoted.value = false
@@ -527,8 +489,8 @@ onMounted(() => {
   fetchUpcomingEvents()
 
   clockTimer = setInterval(updateClock, 1000)
-  weatherTimer = setInterval(fetchWeather, 1800000) // Update weather every 30 mins
-  newsTimer = setInterval(fetchPHNews, 3600000) // Refresh news every hour
+  weatherTimer = setInterval(fetchWeather, 1800000) 
+  newsTimer = setInterval(fetchPHNews, 3600000) 
 })
 
 onUnmounted(() => {
@@ -539,6 +501,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Gradient for modal is styled with Tailwind directly, but Marquee styles stay here */
 @keyframes marquee {
   0% {
     transform: translateX(100%);
