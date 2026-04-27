@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -9,5 +10,5 @@
 @source '../**/*.vue';
 
 @theme {
-    --font-sans: 'Roboto', sans-serif;
+    --font-sans: 'Open Sans', sans-serif;
 }

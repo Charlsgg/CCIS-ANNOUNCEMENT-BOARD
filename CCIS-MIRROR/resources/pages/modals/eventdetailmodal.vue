@@ -129,7 +129,7 @@ const eventDetails = computed(() => {
                             <span class="material-symbols-outlined text-lg md:text-xl">close</span>
                         </button>
 
-                        <div class="relative z-10 p-4 md:p-6 flex items-center gap-4 w-full bg-linear-to-t from-black/50 to-transparent">
+                        <div class="relative z-10 p-4 md:p-6 flex items-center gap-4 w-full bg-linear-to-t from-black/50 to-transparent truncate">
                             <div class="flex flex-col items-center justify-center p-2 rounded-xl shadow-lg min-w-16"
                                 :style="styles.cardBg">
                                 <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider"
@@ -146,7 +146,7 @@ const eventDetails = computed(() => {
                                         {{ activeEvent.category }}
                                     </span>
                                 </nav>
-                                <h1 class="text-white text-lg sm:text-xl md:text-2xl font-bold leading-tight drop-shadow-sm line-clamp-2">
+                                <h1 class="text-white text-lg sm:text-xl md:text-2xl font-bold leading-tight drop-shadow-sm line-clamp-2 truncate">
                                     {{ activeEvent?.title }}
                                 </h1>
                             </div>

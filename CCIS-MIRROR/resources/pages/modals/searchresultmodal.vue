@@ -169,7 +169,7 @@ const metaDetails = computed(() => {
                                         {{ result.type }}
                                     </span>
                                 </nav>
-                                <h1 class="text-white text-lg sm:text-xl md:text-2xl font-bold leading-tight drop-shadow-sm line-clamp-2">
+                                <h1 class="text-white text-lg sm:text-xl md:text-2xl font-bold truncate leading-tight drop-shadow-sm line-clamp-2">
                                     {{ result.title }}
                                 </h1>
                             </div>
