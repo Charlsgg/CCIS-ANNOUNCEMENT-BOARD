@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps<{
     theme: Record<string, any>
@@ -9,16 +9,21 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'edit', event: any): void
+    (e: 'deleted'): void
 }>()
 
 const myEvents = ref<any[]>([])
 const isLoading = ref(true)
+const searchQuery = ref('') // <-- NEW: Search state
+
+// --- Modal State ---
+const isDeleteDialogOpen = ref(false)
+const isDeleting = ref(false)
+const eventToDelete = ref<any>(null)
 
 const fetchMyEvents = async () => {
     isLoading.value = true
     try {
-        // Change this endpoint if your Laravel route for getting user's events is different.
-        // e.g., /api/user/events or /api/events?my_events=true
         const response = await fetch('/api/user/events', {
             headers: {
                 'Accept': 'application/json',
@@ -37,6 +42,62 @@ const fetchMyEvents = async () => {
     }
 }
 
+// --- NEW: Computed Filter ---
+const filteredEvents = computed(() => {
+    if (!searchQuery.value.trim()) {
+        return myEvents.value
+    }
+    const query = searchQuery.value.toLowerCase()
+    return myEvents.value.filter(event => {
+        const titleMatch = event.title?.toLowerCase().includes(query)
+        const contentMatch = (event.content || event.description)?.toLowerCase().includes(query)
+        const venueMatch = (event.venue || event.Venue)?.toLowerCase().includes(query)
+        return titleMatch || contentMatch || venueMatch
+    })
+})
+
+// Opens the modal and sets the active event
+const confirmDelete = (event: any) => {
+    eventToDelete.value = event
+    isDeleteDialogOpen.value = true
+}
+
+// Executes the API call when "Delete Event" is clicked inside the modal
+const executeDelete = async () => {
+    if (!eventToDelete.value) return
+
+    const eventId = eventToDelete.value.id || eventToDelete.value.event_id
+    isDeleting.value = true
+
+    try {
+        const tokenTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
+        const csrfToken = tokenTag ? tokenTag.content : ''
+
+        const response = await fetch(`/api/events/${eventId}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+
+        if (response.ok) {
+            await fetchMyEvents()
+            emit('deleted')
+            isDeleteDialogOpen.value = false // Close modal on success
+        } else {
+            const data = await response.json()
+            alert(data.message || 'Failed to delete event.')
+        }
+    } catch (error) {
+        console.error("Error deleting event:", error)
+        alert("An error occurred while trying to delete the event.")
+    } finally {
+        isDeleting.value = false
+    }
+}
+
 const formatDate = (dateStr: string) => {
     if (!dateStr) return 'TBA'
     const d = new Date(dateStr)
@@ -47,52 +108,168 @@ onMounted(() => {
     fetchMyEvents()
 })
 
-// Expose refresh method to parent so it can be called when a new event is created/updated
 defineExpose({ refresh: fetchMyEvents })
 </script>
 
 <template>
-    <div class="w-full mt-12 pt-8 border-t" :style="{ borderColor: surface.borderSubtle }">
-        <h3 class="text-2xl font-bold tracking-tight mb-6" :style="styles.textPrimary">
-            My Posted Events
-        </h3>
+    <div class="w-full mt-12 pt-10 border-t" :style="{ borderColor: surface.borderSubtle }">
+        
+        <div class="flex flex-col gap-4 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-2xl md:text-3xl font-bold tracking-tight mb-2" :style="styles.textPrimary">
+                        My Posted Events
+                    </h3>
+                    <p :style="styles.textSecondary" class="text-sm md:text-base max-w-2xl">
+                        Manage the events you've posted to the academic calendar. Click on an event to edit its details, or delete it if it's no longer relevant.
+                    </p>
+                </div>
 
-        <div v-if="isLoading" class="flex justify-center p-8">
-            <span class="material-symbols-outlined animate-spin text-3xl" :style="{ color: theme.accent }">progress_activity</span>
-        </div>
-
-        <div v-else-if="myEvents.length === 0" class="text-center p-8 rounded-xl border border-dashed" :style="{ borderColor: surface.borderSubtle, color: styles.textSecondary.color }">
-            You haven't posted any events yet.
-        </div>
-
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="event in myEvents" :key="event.id || event.event_id" 
-                 class="p-5 rounded-xl border flex flex-col gap-3 transition-shadow hover:shadow-md"
-                 :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
-                
-                <div class="flex justify-between items-start">
-                    <h4 class="font-bold text-lg truncate" :style="styles.textPrimary">{{ event.title }}</h4>
-                    <button @click="$emit('edit', event)" class="p-1.5 rounded-md transition-colors text-sm flex items-center gap-1"
-                            :style="{ backgroundColor: `${theme.accent}15`, color: theme.accent }">
-                        <span class="material-symbols-outlined text-[16px]">edit</span> Edit
+                <div class="relative w-full sm:w-72 shrink-0">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">
+                        search
+                    </span>
+                    <input 
+                        v-model="searchQuery" 
+                        type="text" 
+                        placeholder="Search your events..."
+                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border outline-none transition-colors text-sm"
+                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: styles.textPrimary.color }"
+                        @focus="(e: Event) => (e.target as HTMLElement).style.borderColor = theme.accent"
+                        @blur="(e: Event) => (e.target as HTMLElement).style.borderColor = surface.borderSubtle"
+                    >
+                    <button v-if="searchQuery" @click="searchQuery = ''"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <span class="material-symbols-outlined text-[16px]" :style="styles.textSecondary">close</span>
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <div v-if="isLoading" class="flex flex-col items-center justify-center p-16">
+            <span class="material-symbols-outlined animate-spin text-4xl mb-4" :style="{ color: theme.accent }">progress_activity</span>
+            <p class="font-medium" :style="styles.textSecondary">Loading your events...</p>
+        </div>
+
+        <div v-else-if="myEvents.length === 0" 
+             class="flex flex-col items-center justify-center p-16 rounded-2xl border-2 border-dashed transition-colors" 
+             :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.cardBg }">
+            <div class="p-5 rounded-full mb-5" :style="{ backgroundColor: `${theme.accent}10`, color: theme.accent }">
+                <span class="material-symbols-outlined text-5xl">event_busy</span>
+            </div>
+            <h4 class="text-xl font-bold mb-2" :style="styles.textPrimary">No events yet</h4>
+            <p class="text-base text-center max-w-md" :style="styles.textSecondary">
+                You haven't posted any events to the calendar. When you create one, it will appear here for you to manage.
+            </p>
+        </div>
+
+        <div v-else-if="filteredEvents.length === 0" 
+             class="flex flex-col items-center justify-center p-16 rounded-2xl border transition-colors" 
+             :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.cardBg }">
+            <div class="p-4 rounded-full mb-4" :style="{ backgroundColor: surface.hoverBg, color: styles.textSecondary.color }">
+                <span class="material-symbols-outlined text-4xl">search_off</span>
+            </div>
+            <h4 class="text-lg font-bold mb-1" :style="styles.textPrimary">No matches found</h4>
+            <p class="text-sm text-center" :style="styles.textSecondary">
+                We couldn't find any events matching "{{ searchQuery }}".
+            </p>
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="event in filteredEvents" :key="event.id || event.event_id" 
+                 class="group relative p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col h-full overflow-hidden"
+                 :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
                 
-                <div class="text-sm space-y-1" :style="styles.textSecondary">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">calendar_today</span>
-                        {{ formatDate(event.start_time) }}
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">location_on</span>
-                        {{ event.venue || event.Venue || 'TBA' }}
+                <div class="absolute top-0 left-0 w-full h-1.5 opacity-80 transition-opacity group-hover:opacity-100" :style="{ backgroundColor: theme.accent }"></div>
+                
+                <div class="flex justify-between items-start mb-5 pt-2">
+                    <h4 class="font-bold text-xl leading-tight line-clamp-2 pr-4" :style="styles.textPrimary">
+                        {{ event.title }}
+                    </h4>
+                    
+                    <div class="flex items-center gap-2 shrink-0 ml-4">
+                        <button @click.prevent.stop="$emit('edit', event)"
+                            class="p-1.5 flex items-center justify-center rounded-lg border transition-transform hover:scale-105"
+                            :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: theme.accent }"
+                            title="Edit">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
+                        
+                        <button @click.prevent.stop="confirmDelete(event)"
+                            class="p-1.5 flex items-center justify-center rounded-lg border transition-colors hover:bg-red-500/10 text-red-500"
+                            :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }" 
+                            title="Delete">
+                            <span class="material-symbols-outlined text-[16px]">delete</span>
+                        </button>
                     </div>
                 </div>
                 
-                <p class="text-sm mt-2 line-clamp-2" :style="styles.textPrimary">
-                    {{ event.content || event.description }}
-                </p>
+                <div class="flex flex-col gap-3 mb-6 mt-auto">
+                    <div class="flex items-center gap-3 text-sm font-medium" :style="styles.textSecondary">
+                        <div class="flex items-center justify-center size-8 rounded-full" :style="{ backgroundColor: surface.hoverBg, color: theme.accent }">
+                            <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+                        </div>
+                        {{ formatDate(event.start_time) }}
+                    </div>
+                    <div class="flex items-center gap-3 text-sm font-medium" :style="styles.textSecondary">
+                        <div class="flex items-center justify-center size-8 rounded-full" :style="{ backgroundColor: surface.hoverBg, color: theme.accent }">
+                            <span class="material-symbols-outlined text-[16px]">location_on</span>
+                        </div>
+                        <span class="truncate">{{ event.venue || event.Venue || 'TBA' }}</span>
+                    </div>
+                </div>
+                
+                <div class="pt-5 border-t" :style="{ borderColor: surface.borderSubtle }">
+                    <p class="text-sm leading-relaxed line-clamp-2" :style="{ color: styles.textSecondary.color }">
+                        {{ event.content || event.description || 'No description provided.' }}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
+
+    <Teleport to="body">
+        <Transition name="fade">
+            <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div class="max-w-md w-full rounded-2xl p-6 shadow-xl" 
+                    :style="{ backgroundColor: surface.cardBg, border: `1px solid ${surface.borderSubtle}` }">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-full shrink-0 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-red-500 text-[24px]">delete</span>
+                        </div>
+                        <h3 class="text-xl font-bold" :style="styles.textPrimary">Delete Event?</h3>
+                    </div>
+                    
+                    <p class="mb-8" :style="styles.textSecondary">
+                        Are you sure you want to delete <span class="font-bold">"{{ eventToDelete?.title }}"</span>? This action is permanent and cannot be undone.
+                    </p>
+                    
+                    <div class="flex justify-end gap-3 flex-wrap">
+                        <button @click="isDeleteDialogOpen = false" :disabled="isDeleting"
+                            class="px-5 py-2.5 rounded-xl font-medium transition-colors hover:opacity-80 flex-1 sm:flex-none text-center"
+                            :style="{ backgroundColor: surface.inputBg, color: styles.textPrimary.color }">
+                            Cancel
+                        </button>
+                        <button @click="executeDelete" :disabled="isDeleting"
+                            class="px-5 py-2.5 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none">
+                            <span v-if="isDeleting" class="size-4 border-2 border-white/30 border-t-white animate-spin rounded-full"></span>
+                            {{ isDeleting ? 'Deleting...' : 'Delete Event' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

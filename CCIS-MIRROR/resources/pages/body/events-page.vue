@@ -322,6 +322,7 @@ onMounted(() => {
             :surface="surface"
             :styles="styles"
             @edit="openEditModal"
+            @deleted="handleEventsUpdated" 
         />
 
     </div>
