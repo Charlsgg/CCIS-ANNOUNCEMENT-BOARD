@@ -1,215 +1,322 @@
 <template>
-  <header class="mb-16 relative z-10 w-full">
+  <main
+    class="w-full h-screen bg-slate-50/50 p-4 md:p-6 lg:p-8 max-w-400 mx-auto font-sans text-slate-900 overflow-hidden flex flex-col gap-6 box-border relative">
 
-    <div class="flex flex-col lg:flex-row justify-between items-start gap-8 w-full relative z-10">
+    <div class="grid grid-cols-12 gap-6 h-[55%] min-h-0">
 
-      <div class="flex flex-col gap-6 animate-in fade-in slide-in-from-left duration-700 w-full lg:w-64 shrink-0 relative z-10">
-        <div class="flex items-center gap-4 group cursor-default">
-          <div class="text-orange-500 group-hover:scale-110 transition-transform duration-500">
-            <span class="material-symbols-outlined text-5xl filter drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">
-              partly_cloudy_day
+      <section
+        class="col-span-12 lg:col-span-8 relative overflow-hidden rounded-xl bg-slate-900 shadow-2xl h-full group">
+
+        <img alt="Announcements Background"
+          class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-10000 ease-out"
+          :src="activeAnnouncement ? getAnnouncementImage(activeAnnouncement) : fallbackImage" />
+
+        <div class="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-900/60 to-transparent"></div>
+
+        <div class="relative h-full flex flex-col justify-between p-6 md:p-8">
+
+          <div class="flex justify-between items-center shrink-0 w-full relative z-10">
+            <span
+              class="bg-orange-500 text-white px-4 py-2 text-[12px] font-bold tracking-[0.08em] uppercase rounded-sm flex items-center gap-2 shadow-lg shadow-orange-500/20">
+              <span class="w-2 h-2 bg-white rounded-full pulse-dot"></span>
+              Announcements
             </span>
-          </div>
-          <div>
-            <div class="mb-1 text-[10px] font-bold tracking-[0.2em] uppercase text-orange-500">
-              {{ weatherCity }}
-            </div>
-            <div class="flex items-baseline gap-2">
-              <span class="text-4xl font-light tracking-tighter text-gray-800">{{ weatherTemp }}°C</span>
-              <span class="text-xs font-semibold tracking-widest uppercase opacity-80 text-orange-500">
-                {{ weatherDesc }}
-              </span>
-            </div>
-          </div>
-        </div>
 
-        <div v-if="nextEvent" class="hidden md:block bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden group cursor-pointer hover:shadow-md transition-all hover:border-orange-300" @click="goToEvents">
-          <div class="absolute -right-4 -top-4 w-16 h-16 bg-orange-500/10 rounded-full transition-transform group-hover:scale-150 duration-500">
-          </div>
-
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2 text-orange-500">
-              <span class="material-symbols-outlined text-sm animate-pulse">event_upcoming</span>
-              <span class="text-[9px] font-bold tracking-widest uppercase text-gray-500">Up Next</span>
+            <div v-if="announcements.length > 0"
+              class="flex gap-1.5 bg-slate-900/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/10 shrink-0 shadow-lg">
+              <button v-for="(announcement, index) in announcements" :key="announcement.id"
+                @click="setAnnouncementIndex(index)" class="h-1.5 rounded-full transition-all duration-500 shrink-0"
+                :class="currentAnnouncementIndex === index ? 'w-6 bg-orange-500' : 'w-1.5 bg-white/30 hover:bg-white/60'"></button>
             </div>
           </div>
 
-          <h3 class="text-sm font-bold text-gray-800 leading-tight mb-1 line-clamp-1">{{ nextEvent.title }}</h3>
-          <p class="text-[10px] text-gray-500 font-medium mb-3 uppercase tracking-wider">{{ nextEvent.venue }}</p>
-
-          <div class="flex gap-2">
-            <div class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
-              <span class="block text-xl font-black leading-none mb-0.5">{{ countdownDays }}</span>
-              <span class="block text-[8px] uppercase tracking-widest font-bold opacity-80">Days</span>
+          <div class="flex flex-col justify-end mt-auto w-full relative z-10">
+            <div v-if="activeAnnouncement" class="w-full">
+              <transition name="slide-up" mode="out-in">
+                <div :key="currentAnnouncementIndex" class="flex flex-col justify-end">
+                  <h1
+                    class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 max-w-4xl leading-[1.2] tracking-tight line-clamp-3 drop-shadow-md">
+                    {{ activeAnnouncement.title }}
+                  </h1>
+                  <p class="text-sm md:text-base lg:text-lg text-slate-300 max-w-3xl line-clamp-2 leading-relaxed">
+                    {{ activeAnnouncement.content }}
+                  </p>
+                  <div class="mt-3 flex items-center gap-3">
+                    <img v-if="activeAnnouncement.author_avatar" :src="activeAnnouncement.author_avatar"
+                      class="w-6 h-6 rounded-full border border-white/20" alt="Author Avatar" />
+                    <span class="text-xs font-medium text-slate-400">Posted by {{ activeAnnouncement.author_name }} • {{
+                      activeAnnouncement.date }}</span>
+                  </div>
+                </div>
+              </transition>
             </div>
-            <div class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl text-center grow border border-orange-100 shadow-inner">
-              <span class="block text-xl font-black leading-none mb-0.5">{{ countdownHours }}</span>
-              <span class="block text-[8px] uppercase tracking-widest font-bold opacity-80">Hours</span>
+            <div v-else class="w-full text-center text-slate-400 py-10">
+              <p>No current announcements.</p>
             </div>
           </div>
         </div>
+      </section>
 
-        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2 text-orange-500">
-              <span class="material-symbols-outlined text-sm">newspaper</span>
-              <span class="text-[9px] font-bold tracking-widest uppercase text-gray-500">PH Top News</span>
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-6 h-full min-h-0">
+
+        <div
+          class="glass-panel p-6 md:p-8 rounded-xl flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden grow border border-white/40">
+          <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-orange-400 to-orange-600"></div>
+          <span class="text-[12px] font-bold tracking-[0.2em] text-slate-500 mb-2 uppercase">CURRENT TIME</span>
+          <div
+            class="text-6xl md:text-[64px] font-bold leading-none text-slate-900 tracking-tighter mb-2 font-mono flex items-baseline gap-2">
+            {{ currentTime || '--:--' }}
+            <span class="text-2xl text-orange-500 font-black">{{ amPm }}</span>
+          </div>
+          <div class="font-mono text-[14px] font-medium text-orange-600 uppercase tracking-wide">
+            {{ currentDate }}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 h-[40%] min-h-35 shrink-0">
+          <div
+            class="glass-panel p-5 rounded-xl flex flex-col justify-between shadow-lg border border-white/40 overflow-hidden">
+            <div class="flex justify-between items-start mb-4">
+              <span class="material-symbols-outlined text-orange-500 text-3xl">partly_cloudy_day</span>
+              <span
+                class="text-[10px] font-bold tracking-[0.08em] uppercase text-slate-400 text-right max-w-20 leading-tight">{{
+                weatherCity }}</span>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-slate-900 tracking-tight">{{ weatherTemp }}°C</div>
+              <div class="text-[13px] text-slate-500 leading-tight mt-1 truncate">{{ weatherDesc }}</div>
             </div>
           </div>
 
-          <div class="flex flex-col gap-3">
-            <div v-if="newsHeadlines.length === 0" class="text-xs text-gray-400 italic">
-              {{ newsStatusMessage }}
+          <div
+            class="glass-panel p-5 rounded-xl flex flex-col justify-between shadow-lg border border-white/40 relative">
+            <div class="flex justify-between items-start mb-4 relative z-10">
+              <span class="material-symbols-outlined text-blue-500 text-3xl">bolt</span>
+              <span class="text-[10px] font-bold tracking-[0.08em] uppercase text-slate-400 text-right">VIBE
+                CHECK</span>
             </div>
-            <a v-for="(article, index) in newsHeadlines" :key="index" :href="article.url" target="_blank" class="group block border-b border-gray-100 last:border-0 pb-2 last:pb-0">
-              <h3 class="text-xs font-medium text-gray-800 leading-tight line-clamp-2 group-hover:text-orange-500 transition-colors">
-                {{ article.title }}
-              </h3>
-            </a>
+            <div class="relative z-10">
+              <div class="text-[11px] font-semibold text-slate-600 mb-2 leading-tight"
+                :class="{ 'text-orange-500': hasVoted }">
+                {{ hasVoted ? 'Thanks!' : 'How are you?' }}
+              </div>
+              <div class="flex justify-between items-center"
+                :class="{ 'opacity-50 pointer-events-none blur-[1px] transition-all': hasVoted }">
+                <button v-for="emoji in sentimentOptions.slice(0, 5)" :key="emoji.id" @click="submitSentiment(emoji)"
+                  class="text-xl hover:scale-125 hover:-translate-y-1 transition-all duration-300 grayscale hover:grayscale-0 focus:outline-none origin-bottom"
+                  :title="emoji.label">
+                  {{ emoji.icon }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="text-center w-full lg:flex-1 max-w-145 mx-auto animate-in fade-in zoom-in duration-1000 flex flex-col items-center z-20">
+    <div class="grid grid-cols-12 gap-6 h-[45%] min-h-0">
 
-        <h1 class="text-7xl md:text-8xl font-light tracking-tighter leading-none text-gray-900 font-mono drop-shadow-sm">
-          {{ currentTime }}
-        </h1>
-        <div class="uppercase tracking-[0.3em] text-sm font-medium mt-2 text-orange-500">
-          {{ currentDate }}
+      <div
+        class="col-span-12 md:col-span-8 lg:col-span-9 glass-panel p-6 rounded-xl shadow-lg border border-white/40 flex flex-col min-h-0">
+        <div class="flex items-center justify-between mb-5 shrink-0">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-orange-500 bg-orange-100 p-1.5 rounded-lg">event_upcoming</span>
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">UP NEXT ON CAMPUS</h2>
+          </div>
+          <button @click="goToEvents"
+            class="text-[11px] font-bold tracking-widest uppercase text-slate-500 bg-white hover:text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-full border border-slate-200 transition-all shadow-sm">
+            Full Calendar
+          </button>
         </div>
 
-        <div class="mt-4 mb-4 w-full max-w-110 mx-auto bg-white/90 backdrop-blur-lg shadow-md border border-gray-200 rounded-xl p-3 relative overflow-hidden transition-all duration-300 flex flex-col">
-          <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-orange-400 to-orange-600"></div>
+        <div class="flex gap-6 flex-1 min-h-0">
 
-          <div v-if="quizState === 'start'" class="flex flex-col mt-auto mb-auto justify-center items-center h-full text-center px-2">
-            <div class="flex flex-col items-center gap-1 mb-3">
-              <span class="material-symbols-outlined text-orange-500 text-3xl">psychology</span>
-              <div>
-                <p class="text-[10px] font-bold tracking-widest uppercase text-gray-800 leading-none mb-1">Trivia Break</p>
-                <p class="text-[9px] text-gray-500 leading-tight max-w-45">10 quick questions to test your focus.</p>
+          <div v-if="nextEvent"
+            class="w-[55%] relative rounded-xl overflow-hidden shadow-xl border border-slate-800 bg-slate-900 flex flex-col group shrink-0">
+            <div
+              class="absolute inset-0 bg-linear-to-br from-orange-600/20 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+            </div>
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-orange-500 blur-3xl opacity-20 rounded-full"></div>
+
+            <div class="relative z-10 p-6 flex flex-col h-full">
+              <div class="shrink-0 mb-4">
+                <span
+                  class="inline-block bg-orange-500 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-md">Featured</span>
+              </div>
+
+              <div class="flex-1 flex flex-col justify-center min-h-0">
+                <h3 class="text-2xl lg:text-3xl font-bold text-white leading-tight mb-2 truncate">
+                  {{ nextEvent.title }}
+                </h3>
+                <div class="flex items-center gap-2 text-slate-400">
+                  <span class="material-symbols-outlined text-[16px]">location_on</span>
+                  <p class="text-[12px] uppercase tracking-wider font-semibold truncate">{{ nextEvent.venue }}</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 items-center mt-4 border-t border-white/10 pt-4 shrink-0">
+                <div class="text-center">
+                  <div class="text-2xl font-black font-mono text-orange-400 leading-none">{{ countdownDays }}</div>
+                  <div class="text-[9px] uppercase font-bold tracking-widest text-slate-500 mt-1">Days</div>
+                </div>
+                <div class="w-px h-8 bg-white/10"></div>
+                <div class="text-center">
+                  <div class="text-2xl font-black font-mono text-white leading-none">{{ countdownHours }}</div>
+                  <div class="text-[9px] uppercase font-bold tracking-widest text-slate-500 mt-1">Hours</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else
+            class="w-[55%] flex flex-col items-center justify-center p-6 bg-slate-100/50 rounded-xl border border-slate-200 border-dashed text-slate-400 shrink-0">
+            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">event_busy</span>
+            <p class="text-sm font-medium">No upcoming events scheduled.</p>
+          </div>
+
+          <div class="w-[45%] flex flex-col gap-4 overflow-y-auto no-scrollbar py-1">
+            <div v-for="event in upcomingEvents.slice(1, 4)" :key="event.event_id"
+              class="shrink-0 group flex items-center gap-4 p-4 bg-white/60 hover:bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden">
+              <div
+                class="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300">
+              </div>
+
+              <div
+                class="bg-slate-50 text-slate-400 group-hover:text-orange-500 group-hover:bg-orange-50 transition-colors p-3 rounded-lg shrink-0 border border-slate-100 text-center">
+                <div class="text-[10px] font-bold uppercase tracking-widest leading-none">{{ event.month }}</div>
+                <div class="text-xl font-black text-slate-800 leading-none mt-1">{{ event.day }}</div>
+              </div>
+              <div class="min-w-0">
+                <h3
+                  class="font-bold text-slate-800 text-sm lg:text-base leading-tight mb-1 line-clamp-2 group-hover:text-orange-600 transition-colors">
+                  {{ event.title }}</h3>
+                <div class="flex items-center gap-1.5 text-slate-500">
+                  <span class="material-symbols-outlined text-[14px]">map</span>
+                  <p class="text-[10px] lg:text-[11px] uppercase tracking-widest font-semibold truncate">{{ event.venue
+                    }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div
+        class="col-span-12 md:col-span-4 lg:col-span-3 glass-panel p-6 rounded-xl shadow-lg border border-white/40 bg-linear-to-br from-white/80 to-orange-50/50 flex flex-col justify-center items-center text-center group transition-all">
+        <div
+          class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
+          <span class="material-symbols-outlined text-orange-500 text-4xl">psychology</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">DAILY TRIVIA</h2>
+        <p class="text-xs text-slate-600 mb-6 font-medium px-4">Take a quick break and test your knowledge!</p>
+        <button @click="isTriviaModalOpen = true"
+          class="w-full text-center px-4 py-3 rounded-lg border-[1.5px] border-orange-500 bg-orange-500 text-white font-bold text-[12px] tracking-[0.08em] uppercase hover:bg-orange-600 active:scale-95 transition-all shadow-md flex justify-center items-center gap-2">
+          PLAY TRIVIA
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+    <SentimentModal :is-open="isModalOpen" :sentiment="selectedSentiment" :average-vibe="mockAverageVibe"
+      @close="isModalOpen = false" />
+
+    <transition name="fade">
+      <div v-if="isTriviaModalOpen" class="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="isTriviaModalOpen = false"></div>
+
+        <div
+          class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[90vh]">
+          <div
+            class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-md z-10 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-orange-500">psychology</span>
+              <h2 class="text-sm font-bold text-slate-800 tracking-widest uppercase">Daily Challenge</h2>
+            </div>
+            <button @click="isTriviaModalOpen = false"
+              class="text-slate-400 hover:text-slate-700 hover:bg-slate-200 p-1.5 rounded-full transition-colors flex items-center justify-center">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+
+          <div class="p-6 md:p-8 overflow-y-auto no-scrollbar flex flex-col flex-1">
+            <div v-if="quizState === 'start'"
+              class="grow flex flex-col justify-center items-center text-center py-4">
+              <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-6">
+                <span class="material-symbols-outlined text-orange-500 text-5xl">lightbulb</span>
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900 mb-2">Ready to Play?</h3>
+              <p class="text-base text-slate-600 mb-8 leading-relaxed max-w-xs">
+                Answer 10 multiple-choice questions. See how high you can score today!
+              </p>
+              <button @click="fetchQuiz" :disabled="quizLoading"
+                class="w-full max-w-xs text-center px-6 py-4 rounded-xl border-[1.5px] border-orange-500 bg-orange-500 text-white font-bold text-[14px] tracking-widest uppercase hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20 disabled:opacity-70 flex justify-center items-center gap-2">
+                <span v-if="quizLoading" class="material-symbols-outlined text-base animate-spin">refresh</span>
+                {{ quizLoading ? 'LOADING...' : 'START CHALLENGE' }}
+              </button>
+            </div>
+
+            <div v-else-if="quizState === 'playing' || quizState === 'answered'" class="grow flex flex-col h-full">
+              <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-3 shrink-0">
+                <span class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Question {{
+                  currentQuestionIndex + 1 }} of 10</span>
+                <span
+                  class="text-[12px] font-bold text-orange-600 bg-orange-100 px-3 py-1 rounded-full uppercase tracking-widest">Score:
+                  {{ quizScore }}</span>
+              </div>
+              <p class="text-lg md:text-xl font-bold text-slate-800 mb-8 leading-relaxed"
+                v-html="quizQuestions[currentQuestionIndex].question"></p>
+
+              <div class="grid grid-cols-1 gap-3 mt-auto shrink-0">
+                <button v-for="(answer, idx) in shuffledAnswers" :key="idx" @click="selectAnswer(answer)"
+                  :disabled="quizState === 'answered'"
+                  class="w-full text-left px-5 py-4 rounded-xl border-2 text-[14px] font-medium transition-all"
+                  :class="getAnswerClass(answer)" v-html="answer"></button>
+              </div>
+
+              <transition name="fade">
+                <button v-if="quizState === 'answered'" @click="nextQuestion"
+                  class="mt-6 w-full bg-slate-900 text-white py-4 rounded-xl text-[13px] font-bold tracking-widest uppercase hover:bg-slate-800 transition-colors flex justify-center items-center gap-2 shadow-lg shrink-0">
+                  {{ currentQuestionIndex === 9 ? 'SEE FINAL RESULTS' : 'NEXT QUESTION' }}
+                  <span class="material-symbols-outlined text-base">arrow_forward</span>
+                </button>
+              </transition>
+            </div>
+
+            <div v-else-if="quizState === 'completed'"
+              class="grow flex flex-col justify-center items-center text-center py-6">
+              <div class="relative mb-6">
+                <div class="absolute inset-0 bg-orange-200 blur-2xl rounded-full opacity-50 animate-pulse"></div>
+                <span class="material-symbols-outlined text-orange-500 text-7xl relative z-10">workspace_premium</span>
+              </div>
+              <h3 class="text-3xl font-black text-slate-900 mb-2">Challenge Complete</h3>
+              <p class="text-base text-slate-500 mb-8 font-medium">You scored <strong
+                  class="text-orange-600 text-xl mx-1">{{ quizScore }}</strong> out of 10</p>
+
+              <div class="flex flex-col gap-3 w-full max-w-xs">
+                <button @click="fetchQuiz"
+                  class="w-full text-center px-4 py-3.5 rounded-xl border-[1.5px] border-slate-200 hover:border-orange-400 hover:bg-orange-50 text-[13px] font-bold tracking-widest uppercase transition-all text-slate-700 flex justify-center items-center gap-2 shadow-sm">
+                  <span class="material-symbols-outlined text-base">replay</span>
+                  PLAY AGAIN
+                </button>
+                <button @click="isTriviaModalOpen = false"
+                  class="w-full text-center px-4 py-3.5 rounded-xl text-[13px] font-bold tracking-widest uppercase transition-all text-slate-400 hover:text-slate-600">
+                  CLOSE TRIVIA
+                </button>
               </div>
             </div>
 
-            <button @click="fetchQuiz" :disabled="quizLoading" class="w-full max-w-35 bg-orange-500 hover:bg-orange-600 text-white py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1 disabled:opacity-70 shadow-sm">
-              <span v-if="quizLoading" class="material-symbols-outlined text-[14px] animate-spin">refresh</span>
-              <span v-else class="material-symbols-outlined text-[14px]">play_arrow</span>
-              Start
-            </button>
-          </div>
-
-          <div v-else-if="quizState === 'playing' || quizState === 'answered'" class="flex flex-col h-full">
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Question {{ currentQuestionIndex + 1 }}/10</span>
-              <span class="text-[9px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">Score: {{ quizScore }}</span>
-            </div>
-
-            <p class="text-[11px] font-semibold text-gray-800 mb-3 leading-snug line-clamp-2 min-h-8" v-html="quizQuestions[currentQuestionIndex].question"></p>
-
-            <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-1">
-              <button v-for="(answer, idx) in shuffledAnswers" :key="idx" @click="selectAnswer(answer)" :disabled="quizState === 'answered'" class="px-2 py-1.5 text-[9px] font-bold rounded-lg border transition-all duration-200 shadow-sm flex items-center justify-center text-center min-h-9" :class="getAnswerClass(answer)" v-html="answer">
-              </button>
-            </div>
-
-            <div v-if="quizState === 'answered'" class="mt-auto pt-2">
-              <button @click="nextQuestion" class="w-full bg-gray-900 text-white py-1.5 rounded-lg font-bold text-[9px] transition-all flex items-center justify-center gap-1 uppercase tracking-widest">
-                {{ currentQuestionIndex === 9 ? 'See Results' : 'Next' }}
-                <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-
-          <div v-else-if="quizState === 'completed'" class="flex flex-col justify-center h-full text-center">
-            <span class="material-symbols-outlined text-orange-500 text-4xl mb-1">emoji_events</span>
-            <p class="text-xs font-bold text-gray-900">Quiz Complete!</p>
-            <p class="text-[10px] text-gray-500 mb-3">You scored {{ quizScore }} / 10</p>
-            <button @click="fetchQuiz" class="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-xl font-bold text-[9px] uppercase tracking-wider transition-all self-center flex items-center gap-1">
-              <span class="material-symbols-outlined text-[14px]">replay</span>
-              Try Again
-            </button>
           </div>
         </div>
       </div>
+    </transition>
 
-      <div class="hidden lg:flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-700 w-64 shrink-0 relative z-10">
-
-        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md">
-          <div class="flex justify-between items-center mb-4 text-orange-500">
-            <h2 class="text-[10px] font-bold tracking-widest uppercase">{{ currentMonthYear }}</h2>
-          </div>
-          <div class="grid grid-cols-7 gap-1 text-center text-[9px] font-bold text-gray-400 mb-2">
-            <div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div>
-          </div>
-          <div class="grid grid-cols-7 gap-1 text-center">
-            <div v-for="empty in firstDayOfMonth" :key="'empty-' + empty" class="p-1"></div>
-            <div v-for="d in daysInMonth" :key="d" :class="['p-1 text-[10px] transition-all duration-300', d === currentDay ? 'bg-orange-500 text-white rounded-full font-bold shadow-[0_0_10px_rgba(249,115,22,0.4)] scale-110' : 'text-gray-600']">
-              {{ d }}
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-4 backdrop-blur-md relative overflow-hidden">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2 text-orange-500">
-              <span class="material-symbols-outlined text-sm">mood</span>
-              <span class="text-[9px] font-bold tracking-widest uppercase text-gray-500">Campus Vibe Check</span>
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-3 transition-all duration-500">
-            <p class="text-xs text-gray-600 font-medium text-center">
-              {{ hasVoted ? 'Thanks for sharing!' : 'How are you feeling today?' }}
-            </p>
-            <div class="flex justify-between items-center px-1" :class="{'opacity-50 pointer-events-none': hasVoted}">
-              <button 
-                v-for="emoji in sentimentOptions" 
-                :key="emoji.id" 
-                @click="submitSentiment(emoji)"
-                class="text-2xl hover:scale-125 hover:-translate-y-1 transition-all duration-300 grayscale hover:grayscale-0 focus:outline-none"
-                :title="emoji.label"
-              >
-                {{ emoji.icon }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="mt-16 w-full flex items-center bg-white border border-gray-200 shadow-sm rounded-full overflow-hidden h-10 relative z-10">
-      <div class="bg-orange-500 text-white h-full px-6 flex items-center justify-center z-10 shrink-0 shadow-md">
-        <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-          <span class="material-symbols-outlined text-sm animate-pulse">campaign</span>
-          Updates
-        </span>
-      </div>
-      <div class="grow overflow-hidden relative h-full flex items-center">
-        <div class="whitespace-nowrap animate-marquee text-xs font-medium text-gray-600 tracking-wide">
-          <span class="mx-4 text-orange-500">•</span> Welcome to the centralized announcement board MIRACIS!
-          <span class="mx-4 text-orange-500">•</span> Stay tuned for the latest news, events, and updates from the College of Computer and Information Sciences.
-          <span class="mx-4 text-orange-500">•</span> Don't forget to check the Events tab for upcoming department activities.
-          <span class="mx-4 text-orange-500">•</span> interact with the announcements to view details and attachments.
-          <span class="mx-4 text-orange-500">•</span> For any inquiries or support, visit us at the CCIS Network Administration Office.
-        </div>
-      </div>
-    </div>
-
-    <SentimentModal 
-      :is-open="isModalOpen" 
-      :sentiment="selectedSentiment" 
-      :average-vibe="mockAverageVibe"
-      @close="isModalOpen = false"
-    />
-
-  </header>
+  </main>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
-
-// 1. IMPORT YOUR NEW MODAL COMPONENT (Adjust path if needed)
 import SentimentModal from '../modals/sentimentmodal.vue'
 
 // Routing Mock
@@ -219,6 +326,7 @@ const goToEvents = () => {
 
 // Time & Calendar State
 const currentTime = ref('')
+const amPm = ref('')
 const currentDate = ref('')
 const currentDay = ref(new Date().getDate())
 const currentMonthYear = ref('')
@@ -229,17 +337,63 @@ const weatherCity = ref('Butuan City')
 const weatherTemp = ref('--')
 const weatherDesc = ref('Loading...')
 
-// Upcoming Events State
+// --- DYNAMIC DATA STATE ---
+const announcements = ref([])
 const upcomingEvents = ref([])
 const nextEvent = ref(null)
-const countdownDays = ref('04')
-const countdownHours = ref('12')
+const countdownDays = ref('00')
+const countdownHours = ref('00')
+const fallbackImage = '/images/ccislogo.png'
 
-// News State
-const newsHeadlines = ref([])
-const newsStatusMessage = ref('Fetching latest news...')
+const currentAnnouncementIndex = ref(0)
+const activeAnnouncement = computed(() => announcements.value[currentAnnouncementIndex.value] || null)
 
-// --- QUIZ WIDGET STATE ---
+const getAnnouncementImage = (announcement) => {
+  if (announcement.attachments && announcement.attachments.length > 0) {
+    return announcement.attachments[0].file_path
+  }
+  return fallbackImage
+}
+
+const setAnnouncementIndex = (index) => {
+  currentAnnouncementIndex.value = index
+}
+
+const rotateAnnouncements = () => {
+  if (announcements.value.length > 0) {
+    currentAnnouncementIndex.value = (currentAnnouncementIndex.value + 1) % announcements.value.length
+  }
+}
+
+// Fetch Board Data from Backend
+const fetchAnnouncements = async () => {
+  try {
+    const response = await axios.get('board-data')
+
+    // Map Announcements
+    announcements.value = response.data.announcements.map(a => ({
+      ...a,
+      isLiked: false,
+      isProcessing: false,
+      isCooldown: false,
+      cooldownTimer: 0,
+      isAnimating: false
+    }))
+
+    // Map Upcoming Events
+    upcomingEvents.value = response.data.upcoming_events || []
+    if (upcomingEvents.value.length > 0) {
+      nextEvent.value = upcomingEvents.value[0]
+      updateCountdown()
+    }
+
+  } catch (e) {
+    console.error("Sync Error", e)
+  }
+}
+
+// Trivia Logic
+const isTriviaModalOpen = ref(false)
 const quizQuestions = ref([])
 const currentQuestionIndex = ref(0)
 const quizScore = ref(0)
@@ -300,44 +454,36 @@ const nextQuestion = () => {
 
 const getAnswerClass = (answer) => {
   if (quizState.value !== 'answered') {
-    return 'hover:border-orange-500 hover:bg-orange-50 text-gray-700 bg-white border-gray-200'
+    return 'border-slate-200 text-slate-700 bg-white hover:border-orange-400 hover:bg-orange-50 hover:shadow-sm'
   }
   const isCorrect = answer === quizQuestions.value[currentQuestionIndex.value].correct_answer
   if (isCorrect) {
-    return 'bg-green-50 border-green-500 text-green-700 font-bold'
+    return 'bg-green-50 border-green-500 text-green-700 font-bold shadow-sm'
   }
   if (answer === selectedAnswer.value) {
-    return 'bg-red-50 border-red-500 text-red-700'
+    return 'bg-red-50 border-red-400 text-red-700'
   }
-  return 'opacity-50 bg-gray-50 border-gray-200 text-gray-500'
+  return 'opacity-50 bg-slate-50 border-slate-200 text-slate-400'
 }
 
 // --- SENTIMENT TRACKER STATE ---
 const hasVoted = ref(false)
 const selectedSentiment = ref(null)
 const mockAverageVibe = ref('Productive')
-const isModalOpen = ref(false) // NEW STATE FOR MODAL
+const isModalOpen = ref(false)
 
 const sentimentOptions = [
-  { id: 1, icon: '😫', label: 'Stressed', message: 'Take a deep breath! Pause and hydrate. You\'ve got this.' },
-  { id: 2, icon: '😴', label: 'Tired', message: 'Make sure to get some rest soon. A quick power nap helps!' },
+  { id: 1, icon: '😫', label: 'Stressed', message: 'Take a deep breath! Pause and hydrate.' },
+  { id: 2, icon: '😴', label: 'Tired', message: 'Make sure to get some rest soon.' },
   { id: 3, icon: '🙂', label: 'Okay', message: 'Steady and solid! Keep up the good pace.' },
-  { id: 4, icon: '😎', label: 'Productive', message: 'Awesome! Ride that wave of momentum and crush it!' },
-  { id: 5, icon: '🤩', label: 'Great', message: 'Love the energy! Spread those good vibes around campus!' }
+  { id: 4, icon: '😎', label: 'Productive', message: 'Awesome! Crush those goals!' },
+  { id: 5, icon: '🤩', label: 'Great', message: 'Love the energy! Keep it going!' }
 ]
 
 const submitSentiment = async (emoji) => {
   try {
-    // Simulated API Call
-    // const response = await axios.post('/sentiment', { sentiment: emoji.label })
-    
     selectedSentiment.value = emoji
     hasVoted.value = true
-    
-    // Uncomment this when your real API is running
-    // mockAverageVibe.value = response.data.most_common_vibe
-    
-    // TRIGGER MODAL HERE instead of changing widget inline
     isModalOpen.value = true
 
     setTimeout(() => {
@@ -346,28 +492,18 @@ const submitSentiment = async (emoji) => {
     }, 15000)
 
   } catch (error) {
-    if (error.response && error.response.status === 429) {
-      alert("Hold on! You're voting too fast. Wait 10 seconds.")
-    } else {
-      console.error("Failed to record vibe:", error)
-    }
+    console.error("Failed to record vibe:", error)
   }
 }
-
-// Computed properties
-const daysInMonth = computed(() => {
-  const now = new Date(); return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-})
-const firstDayOfMonth = computed(() => {
-  const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), 1).getDay()
-})
-
 
 // Clock Logic
 const updateClock = () => {
   const now = new Date()
-  currentTime.value = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
-  currentDate.value = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()
+  const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+  const [timeText, period] = timeString.split(' ')
+  currentTime.value = timeText
+  amPm.value = period
+  currentDate.value = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', weekday: 'long' }).toUpperCase()
   currentMonthYear.value = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase()
   currentDay.value = now.getDate()
   currentHour.value = now.getHours()
@@ -383,15 +519,14 @@ const getWeatherDescription = (code) => {
     67: 'Heavy Freezing Rain', 71: 'Slight Snow Fall', 73: 'Moderate Snow Fall',
     75: 'Heavy Snow Fall', 77: 'Snow Grains', 80: 'Slight Rain Showers',
     81: 'Moderate Rain Showers', 82: 'Violent Rain Showers', 85: 'Slight Snow Showers',
-    86: 'Heavy Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm with Slight Hail',
-    99: 'Thunderstorm with Heavy Hail'
+    86: 'Heavy Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm with Hail'
   }
   return weatherCodes[code] || 'Unknown Conditions'
 }
 
 const fetchWeather = async () => {
   try {
-    const url = "https://api.open-meteo.com/v1/forecast?latitude=8.9492&longitude=125.5436&current_weather=true&timezone=Asia%2FManila";
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=8.8222&longitude=125.1022&current_weather=true&timezone=Asia%2FManila";
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Weather API is down! Status: ${response.status}`);
     const data = await response.json();
@@ -403,49 +538,6 @@ const fetchWeather = async () => {
     weatherTemp.value = '--';
     weatherDesc.value = 'Weather Unavailable';
   }
-}
-
-// GNEWS API Logic
-const fetchPHNews = async () => {
-  try {
-    const API_KEY = 'a402c195e9fc98081c12f68c383c2354';
-    const url = `https://gnews.io/api/v4/top-headlines?category=general&country=ph&apikey=${API_KEY}`;
-
-    const response = await fetch(url);
-
-    if (response.status === 401 || response.status === 403) {
-      newsStatusMessage.value = "Missing or Invalid API Key.";
-      throw new Error("Unauthorized: Check your GNews API key.");
-    }
-    if (!response.ok) throw new Error(`News API error: ${response.status}`);
-
-    const data = await response.json();
-    if (data.articles && data.articles.length > 0) {
-      newsHeadlines.value = data.articles.slice(0, 5).map(article => ({
-        title: article.title,
-        url: article.url
-      }));
-    } else {
-      newsStatusMessage.value = "No news found right now.";
-    }
-  } catch (e) {
-    console.error("News Sync Error:", e.message);
-    if (newsHeadlines.value.length === 0) {
-      newsStatusMessage.value = "API Error. Check console.";
-    }
-  }
-}
-
-// Upcoming Events Logic
-const fetchUpcomingEvents = async () => {
-  try {
-    const response = await axios.get('events/upcoming')
-    upcomingEvents.value = response.data.events || []
-    if (upcomingEvents.value.length > 0) {
-      nextEvent.value = upcomingEvents.value[0]
-      updateCountdown()
-    }
-  } catch (e) { console.error("Events Error", e) }
 }
 
 const updateCountdown = () => {
@@ -472,44 +564,87 @@ const updateCountdown = () => {
 }
 
 // Timers
-let clockTimer, weatherTimer, newsTimer
+let clockTimer, weatherTimer, carouselTimer
 
 onMounted(() => {
   updateClock()
   fetchWeather()
-  fetchPHNews()
-  fetchUpcomingEvents()
+  fetchAnnouncements()
 
   clockTimer = setInterval(updateClock, 1000)
-  weatherTimer = setInterval(fetchWeather, 1800000) 
-  newsTimer = setInterval(fetchPHNews, 3600000) 
+  weatherTimer = setInterval(fetchWeather, 1800000)
+  carouselTimer = setInterval(rotateAnnouncements, 8000)
 })
 
 onUnmounted(() => {
   clearInterval(clockTimer)
   clearInterval(weatherTimer)
-  clearInterval(newsTimer)
+  clearInterval(carouselTimer)
 })
 </script>
 
 <style scoped>
-/* Gradient for modal is styled with Tailwind directly, but Marquee styles stay here */
-@keyframes marquee {
-  0% {
-    transform: translateX(100%);
-  }
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+}
 
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.pulse-dot {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scrollbar Hiding CSS */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+@keyframes pulse {
+
+  0%,
   100% {
-    transform: translateX(-100%);
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
   }
 }
 
-.animate-marquee {
-  display: inline-block;
-  animation: marquee 25s linear infinite;
+/* Vue Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.5s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-15px);
 }
 </style>
