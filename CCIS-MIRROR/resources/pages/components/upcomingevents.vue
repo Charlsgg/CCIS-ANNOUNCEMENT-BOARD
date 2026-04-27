@@ -54,17 +54,17 @@ onMounted(() => {
 // Updated helper to handle missing or invalid dates
 const formatDate = (dateString?: string) => {
     if (!dateString) return 'Just now'
-    
+
     const date = new Date(dateString)
-    
+
     // Check if the date is actually valid
     if (isNaN(date.getTime())) {
         return 'Recently'
     }
 
-    return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
     })
 }
 
@@ -114,7 +114,7 @@ const formatFullDate = (dateString?: string) => {
                     </span>
                 </div>
 
-                <h4 class="font-bold text-sm mb-1 leading-snug" :style="styles.textPrimary">
+                <h4 class="font-bold text-sm mb-1 leading-snug truncate" :style="styles.textPrimary">
                     {{ event.title }}
                 </h4>
 
