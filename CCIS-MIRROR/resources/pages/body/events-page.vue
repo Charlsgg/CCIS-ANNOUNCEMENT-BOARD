@@ -3,11 +3,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '../composable/usetheme.ts'
 import EventCreateModal from '../modals/eventcreatemodal.vue'
 import EventDetailModal from '../modals/eventdetailmodal.vue'
+import EventEditModal from '../modals/eventupdatemodal.vue' 
 import MonthYearSelector from '../components/monthyearselector.vue'
 import UpcomingEvents from '../components/upcomingevents.vue'
 import CalendarGrid from '../components/calendargrid.vue'
+import UserEvents from '../components/userevents.vue' 
 
-const selectedEvents = ref<Array<{title: string, venue: string, description: string, start_time: string, end_time?: string | null}>>([])
+const selectedEvents = ref<Array<{id?: string | number, title: string, venue: string, description: string, start_time: string, end_time?: string | null}>>([])
 
 interface CalendarEvent {
     id: string | number
@@ -43,7 +45,6 @@ interface DatabaseEvent {
     event_year?: number
 }
 
-// Added csrfToken to props since your app.ts passes it globally now
 const props = defineProps<{
     user?: { name: string; email: string; user_type: string }
     csrfToken?: string 
@@ -58,11 +59,16 @@ const currentYear = ref(today.getFullYear())
 const dbEvents = ref<DatabaseEvent[]>([])
 const isLoading = ref(false)
 
+// Modal States
 const showCreateModal = ref(false)
 const showEventDetailModal = ref(false)
+const showEditModal = ref(false)
+const eventToEdit = ref<any>(null)
 const selectedDay = ref<CalendarDay | null>(null)
 
-// ----- Logic: API Fetch Integration -----
+// Ref to call refresh on UserEvents component
+const userEventsRef = ref<InstanceType<typeof UserEvents> | null>(null)
+
 const fetchMonthEvents = async (month: number, year: number) => {
   const queryParams = new URLSearchParams({
     month: String(month),
@@ -76,14 +82,7 @@ const fetchMonthEvents = async (month: number, year: number) => {
     }
   })
 
-  const contentType = response.headers.get("content-type")
-  if (contentType && contentType.includes("text/html")) {
-    console.error("ERROR: LARAVEL RETURNED HTML")
-    return []
-  }
-
   if (!response.ok) return []
-
   const data = await response.json()
   return data.events || []
 }
@@ -110,6 +109,14 @@ const fetchEvents = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+// Triggers refresh for both global calendar and user-specific events
+const handleEventsUpdated = () => {
+    fetchEvents()
+    if (userEventsRef.value) {
+        userEventsRef.value.refresh()
+    }
 }
 
 const calendarDays = computed(() => {
@@ -185,6 +192,7 @@ const openEventDetail = (day: CalendarDay) => {
     selectedDay.value = day
     if (day.events && day.events.length > 0) {
         selectedEvents.value = day.events.map(e => ({
+            id: e.id,
             title: e.title,
             venue: e.venue || 'TBA',
             description: e.description || 'No description provided.',
@@ -202,6 +210,7 @@ const openUpcomingEventDetail = async (eventId: number) => {
     
     if (event) {
         selectedEvents.value = [{
+            id: event.event_id,
             title: event.title,
             venue: event.venue || event.Venue || 'TBA',
             description: event.content,
@@ -217,6 +226,7 @@ const openUpcomingEventDetail = async (eventId: number) => {
             
             if (futureEvent) {
                 selectedEvents.value = [{
+                    id: futureEvent.event_id || futureEvent.id,
                     title: futureEvent.title,
                     venue: futureEvent.venue || futureEvent.Venue || 'TBA', 
                     description: futureEvent.content || 'No description provided.',
@@ -229,6 +239,12 @@ const openUpcomingEventDetail = async (eventId: number) => {
             console.error("Could not load future event details", error)
         }
     }
+}
+
+const openEditModal = (eventData: any) => {
+    eventToEdit.value = eventData
+    showEventDetailModal.value = false 
+    showEditModal.value = true
 }
 
 onMounted(() => {
@@ -298,8 +314,15 @@ onMounted(() => {
                     class="w-full"
                 />
             </aside>
-
         </div>
+
+        <UserEvents 
+            ref="userEventsRef"
+            :theme="theme"
+            :surface="surface"
+            :styles="styles"
+            @edit="openEditModal"
+        />
 
     </div>
 
@@ -310,7 +333,7 @@ onMounted(() => {
             :surface="surface"
             :styles="styles"
             @close="showCreateModal = false"
-            @created="fetchEvents" 
+            @created="handleEventsUpdated" 
         />
 
         <EventDetailModal 
@@ -320,6 +343,16 @@ onMounted(() => {
             :styles="styles"
             :events="selectedEvents" 
             @close="showEventDetailModal = false"
+        />
+
+        <EventEditModal
+            :show="showEditModal"
+            :theme="theme"
+            :surface="surface"
+            :styles="styles"
+            :eventData="eventToEdit"
+            @close="showEditModal = false; eventToEdit = null"
+            @updated="handleEventsUpdated"
         />
     </Teleport>
 </template>

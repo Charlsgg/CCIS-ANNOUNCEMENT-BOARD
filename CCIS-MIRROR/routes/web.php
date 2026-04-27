@@ -125,6 +125,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']); 
         
+        Route::get('/user/events', [EventController::class, 'userEvents']);
         Route::post('/events', [EventController::class, 'store']);     
         Route::put('/events/{id}', [EventController::class, 'update']);
         Route::delete('/events/{id}', [EventController::class, 'destroy']); 

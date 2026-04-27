@@ -56,6 +56,31 @@ class EventController extends Controller
         ]);
     }
 
+    /**
+     * Fetch events created by the currently authenticated user.
+     */
+    public function userEvents(Request $request)
+    {
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Fetch the user's events ordered by the most recent start time
+        $events = EventFilterView::where('user_id', $userId)
+            ->orderBy('start_time', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'events' => $events
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -127,7 +152,6 @@ class EventController extends Controller
             'content' => 'sometimes|required|string',
             'time' => 'sometimes|required|string',
             'end_time' => 'nullable|string', 
-            'day_range' => 'sometimes|required|string', 
             'start_day' => 'sometimes|required|integer|min:1|max:31',
             'end_day' => 'nullable|integer|min:1|max:31',
         ]);

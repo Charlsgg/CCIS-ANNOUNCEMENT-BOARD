@@ -16,8 +16,8 @@ interface Announcement {
     id: number | string
     title: string
     content: string
-    
-topic?: string
+
+    topic?: string
     date: string
     likes_count?: number
     attachments?: Attachment[]
@@ -54,7 +54,7 @@ const sortedAnnouncements = computed(() => {
 const getFileName = (path?: string | null) => {
     if (!path) return 'Download File'
     const base = path.split('/').pop() || 'Download File'
-    return base.split('?')[0] 
+    return base.split('?')[0]
 }
 
 // --- View State Management ---
@@ -145,33 +145,29 @@ const submitEdit = () => {
 
 <template>
     <div class="flex flex-col gap-6 relative w-full">
-        
-        <AnnouncementCard 
-            v-for="post in sortedAnnouncements" 
-            :key="post.id"
-            :post="post"
-            :show-actions="true"
-            @preview="openPreview"
-            @edit="openEditModal"
-            @delete="$emit('delete', $event)"
-        />
+
+        <AnnouncementCard v-for="post in sortedAnnouncements" :key="post.id" :post="post" :show-actions="true"
+            @preview="openPreview" @edit="openEditModal" @delete="$emit('delete', $event)" />
 
         <Teleport to="body">
-            <div v-if="isEditModalOpen" class="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div v-if="isEditModalOpen"
+                class="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                 <div class="w-full max-w-lg rounded-xl shadow-lg flex flex-col overflow-hidden border"
                     :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
 
                     <div class="px-6 py-4 border-b flex justify-between items-center"
                         :style="{ borderColor: surface.borderSubtle }">
                         <h3 class="text-lg font-bold" :style="styles.textPrimary">Edit Announcement</h3>
-                        <button @click="closeEditModal" class="p-1 rounded hover:bg-black/5" :style="styles.textSecondary">
+                        <button @click="closeEditModal" class="p-1 rounded hover:bg-black/5"
+                            :style="styles.textSecondary">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
 
                     <div class="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
                         <div class="space-y-1">
-                            <label class="text-sm font-medium" :style="styles.textPrimary">Title <span class="text-red-500">*</span></label>
+                            <label class="text-sm font-medium" :style="styles.textPrimary">Title <span
+                                    class="text-red-500">*</span></label>
                             <input v-model="editForm.title" type="text" required maxlength="255"
                                 class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2"
                                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: styles.textPrimary.color }" />
@@ -185,7 +181,8 @@ const submitEdit = () => {
                         </div>
 
                         <div class="space-y-1">
-                            <label class="text-sm font-medium" :style="styles.textPrimary">Content <span class="text-red-500">*</span></label>
+                            <label class="text-sm font-medium" :style="styles.textPrimary">Content <span
+                                    class="text-red-500">*</span></label>
                             <textarea v-model="editForm.content" required rows="4"
                                 class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 resize-y"
                                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: styles.textPrimary.color }"></textarea>
@@ -195,11 +192,13 @@ const submitEdit = () => {
                             <label class="text-sm font-medium" :style="styles.textPrimary">Attachments</label>
 
                             <div v-for="attachment in existingAttachments.filter(a => !deletedAttachmentIds.includes(a.attachment_id!))"
-     :key="attachment.attachment_id!"
+                                :key="attachment.attachment_id!"
                                 class="flex items-center justify-between p-2 rounded border"
                                 :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }">
-                                <span class="text-sm truncate mr-2" :style="styles.textPrimary">{{ getFileName(attachment.file_path) }}</span>
-                                <button type="button" @click="removeExistingAttachment(attachment.attachment_id)" class="text-red-500">
+                                <span class="text-sm truncate mr-2" :style="styles.textPrimary">{{
+                                    getFileName(attachment.file_path) }}</span>
+                                <button type="button" @click="removeExistingAttachment(attachment.attachment_id)"
+                                    class="text-red-500">
                                     <span class="material-symbols-outlined text-sm">close</span>
                                 </button>
                             </div>
@@ -223,8 +222,10 @@ const submitEdit = () => {
                         </div>
                     </div>
 
-                    <div class="px-6 py-4 border-t flex justify-end gap-3" :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.inputBg }">
-                        <button @click="closeEditModal" type="button" class="px-4 py-2 text-sm font-medium" :style="styles.textSecondary">Cancel</button>
+                    <div class="px-6 py-4 border-t flex justify-end gap-3"
+                        :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.inputBg }">
+                        <button @click="closeEditModal" type="button" class="px-4 py-2 text-sm font-medium"
+                            :style="styles.textSecondary">Cancel</button>
                         <button @click="submitEdit" type="button" :disabled="!editForm.title || !editForm.content"
                             class="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
                             :style="{ backgroundColor: theme.accent }">
@@ -235,11 +236,8 @@ const submitEdit = () => {
             </div>
         </Teleport>
 
-        <FilePreviewModal 
-            :file="activePreview" 
-            @close="closePreview" 
-        />
-        
+        <FilePreviewModal :file="activePreview" @close="closePreview" />
+
     </div>
 </template>
 
