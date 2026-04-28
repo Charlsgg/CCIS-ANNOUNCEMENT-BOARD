@@ -63,6 +63,7 @@ const isLoading = ref(false)
 const showCreateModal = ref(false)
 const showEventDetailModal = ref(false)
 const showEditModal = ref(false)
+const showUserEventsModal = ref(false) // <-- NEW: State for the UserEvents modal
 const eventToEdit = ref<any>(null)
 const selectedDay = ref<CalendarDay | null>(null)
 
@@ -279,6 +280,17 @@ onMounted(() => {
                 />
 
                 <button 
+                    @click="showUserEventsModal = true" 
+                    class="flex items-center justify-center gap-2 px-4 h-10 w-full sm:w-auto rounded-lg font-semibold text-sm border transition-all"
+                    :style="{ color: styles.textPrimary.color, backgroundColor: surface.inputBg, borderColor: surface.borderSubtle }"
+                    @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '0.8'"
+                    @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.opacity = '1'"
+                >
+                    <span class="material-symbols-outlined text-[20px]">event_list</span>
+                    My Events
+                </button>
+
+                <button 
                     @click="showCreateModal = true" 
                     class="flex items-center justify-center gap-2 px-4 h-10 w-full sm:w-auto rounded-lg font-semibold text-sm transition-all"
                     :style="styles.button"
@@ -315,19 +327,21 @@ onMounted(() => {
                 />
             </aside>
         </div>
+    </div>
 
+    <Teleport to="body">
+        
         <UserEvents 
             ref="userEventsRef"
+            :isOpen="showUserEventsModal"
             :theme="theme"
             :surface="surface"
             :styles="styles"
+            @close="showUserEventsModal = false"
             @edit="openEditModal"
             @deleted="handleEventsUpdated" 
         />
 
-    </div>
-
-    <Teleport to="body">
         <EventCreateModal 
             :show="showCreateModal"
             :theme="theme"

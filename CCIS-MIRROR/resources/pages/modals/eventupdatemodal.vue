@@ -130,110 +130,124 @@ const submitEvent = async () => {
 
 <template>
     <Teleport to="body">
-        <div v-if="show"
-            class="fixed inset-0 backdrop-blur-sm z-100 flex items-center justify-center p-4 transition-opacity font-['Space_Grotesk']"
-            :style="{ backgroundColor: surface.overlayBg }">
-            <div class="w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden" :style="styles.cardBg">
+        <Transition name="fade">
+            <div v-if="show"
+                class="fixed inset-0 backdrop-blur-sm z-10000 flex items-center justify-center p-4 transition-opacity font-['Space_Grotesk']"
+                :style="{ backgroundColor: surface.overlayBg }">
+                <div class="w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden" :style="styles.cardBg">
 
-                <div class="p-6 border-b flex justify-between items-center"
-                    :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.hoverBg }">
-                    <h3 class="text-xl font-bold" :style="styles.textPrimary">
-                        Edit Event
-                    </h3>
-                    <button @click="$emit('close')"
-                        class="size-8 rounded-full flex items-center justify-center transition-colors"
-                        :style="styles.textSecondary"
-                        @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.borderSubtle"
-                        @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitEvent">
-                    <div class="p-6 space-y-4" :style="styles.textPrimary">
-                        <div v-if="errorMessage" class="p-3 rounded-lg text-sm bg-red-500/10 text-red-500 border border-red-500/20">
-                            {{ errorMessage }}
-                        </div>
-
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Event Title</label>
-                            <input v-model="form.title" required
-                                class="w-full rounded-lg font-display outline-none p-2 border" type="text"
-                                :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Month</label>
-                                <select v-model="form.month"
-                                    class="w-full rounded-lg font-display outline-none p-2 border appearance-none"
-                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }">
-                                    <option v-for="m in 12" :key="m" :value="m">{{ new Date(0, m - 1).toLocaleString('default', { month: 'long' }) }}</option>
-                                </select>
-                            </div>
-                            <div class="space-y-1 col-span-2">
-                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Day</label>
-                                <input v-model="form.day_range" required
-                                    class="w-full rounded-lg font-display outline-none p-2 border" type="text"
-                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Year</label>
-                                <input v-model="form.year" required
-                                    class="w-full rounded-lg font-display outline-none p-2 border" type="number"
-                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Venue</label>
-                                <input v-model="form.venue" required
-                                    class="w-full rounded-lg font-display outline-none p-2 border" type="text"
-                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Start Time</label>
-                                <input v-model="form.time" required
-                                    class="w-full rounded-lg font-display outline-none p-2 border" type="time"
-                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">End Time <span class="text-[9px] opacity-70 normal-case">(Optional)</span></label>
-                                <input v-model="form.end_time"
-                                    class="w-full rounded-lg font-display outline-none p-2 border" type="time"
-                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }" />
-                            </div>
-                        </div>
-
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Brief Description</label>
-                            <textarea v-model="form.description" required
-                                class="w-full rounded-lg font-display outline-none p-3 border resize-none" rows="3"
-                                :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: surface.textPrimary }"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="p-6 flex gap-3 justify-end border-t"
+                    <div class="p-6 border-b flex justify-between items-center"
                         :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.hoverBg }">
-                        <button type="button" @click="$emit('close')"
-                            class="px-6 py-2 rounded-lg font-semibold text-sm transition-colors border"
-                            :style="{ borderColor: surface.borderSubtle, color: surface.textPrimary }">
-                            Cancel
-                        </button>
-                        <button type="submit" :disabled="isLoading"
-                            class="px-6 py-2 rounded-lg font-semibold text-sm transition-opacity flex items-center gap-2 disabled:opacity-50"
-                            :style="styles.button">
-                            <span v-if="isLoading" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                            {{ isLoading ? 'Updating...' : 'Update Event' }}
+                        <h3 class="text-xl font-bold" :style="styles.textPrimary">
+                            Edit Event
+                        </h3>
+                        <button @click="$emit('close')"
+                            class="size-8 rounded-full flex items-center justify-center transition-colors hover:opacity-70"
+                            :style="styles.textSecondary"
+                            @mouseenter="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = surface.borderSubtle"
+                            @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
+                            <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                </form>
 
+                    <form @submit.prevent="submitEvent">
+                        <div class="p-6 space-y-4" :style="styles.textPrimary">
+                            <div v-if="errorMessage" class="p-3 rounded-lg text-sm bg-red-500/10 text-red-500 border border-red-500/20">
+                                {{ errorMessage }}
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Event Title</label>
+                                <input v-model="form.title" required
+                                    class="w-full rounded-lg font-display outline-none p-2 border" type="text"
+                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }" />
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Month</label>
+                                    <select v-model="form.month"
+                                        class="w-full rounded-lg font-display outline-none p-2 border appearance-none"
+                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }">
+                                        <option v-for="m in 12" :key="m" :value="m">{{ new Date(0, m - 1).toLocaleString('default', { month: 'long' }) }}</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1 col-span-2">
+                                    <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Day</label>
+                                    <input v-model="form.day_range" required
+                                        class="w-full rounded-lg font-display outline-none p-2 border" type="text"
+                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Year</label>
+                                    <input v-model="form.year" required
+                                        class="w-full rounded-lg font-display outline-none p-2 border" type="number"
+                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }" />
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Venue</label>
+                                    <input v-model="form.venue" required
+                                        class="w-full rounded-lg font-display outline-none p-2 border" type="text"
+                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Start Time</label>
+                                    <input v-model="form.time" required
+                                        class="w-full rounded-lg font-display outline-none p-2 border" type="time"
+                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }" />
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">End Time <span class="text-[9px] opacity-70 normal-case">(Optional)</span></label>
+                                    <input v-model="form.end_time"
+                                        class="w-full rounded-lg font-display outline-none p-2 border" type="time"
+                                        :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }" />
+                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold uppercase" :style="{ color: theme.accent }">Brief Description</label>
+                                <textarea v-model="form.description" required
+                                    class="w-full rounded-lg font-display outline-none p-3 border resize-none" rows="3"
+                                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.inputBorder, color: styles.textPrimary.color }"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="p-6 flex gap-3 justify-end border-t"
+                            :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.hoverBg }">
+                            <button type="button" @click="$emit('close')"
+                                class="px-6 py-2 rounded-lg font-semibold text-sm transition-colors border hover:opacity-80"
+                                :style="{ borderColor: surface.borderSubtle, color: styles.textPrimary.color, backgroundColor: surface.inputBg }">
+                                Cancel
+                            </button>
+                            <button type="submit" :disabled="isLoading"
+                                class="px-6 py-2 rounded-lg font-semibold text-sm transition-opacity flex items-center gap-2 disabled:opacity-50"
+                                :style="styles.button">
+                                <span v-if="isLoading" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                                {{ isLoading ? 'Updating...' : 'Update Event' }}
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
             </div>
-        </div>
+        </Transition>
     </Teleport>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

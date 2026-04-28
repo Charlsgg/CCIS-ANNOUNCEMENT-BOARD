@@ -1,11 +1,11 @@
 <template>
   <main
-    class="w-full h-screen bg-slate-50/50 p-4 md:p-6 lg:p-8 max-w-400 mx-auto font-sans text-slate-900 overflow-hidden flex flex-col gap-6 box-border relative">
+    class="w-full h-[85vh]  p-4 md:p-6 lg:p-8 max-w-400 mx-auto font-sans text-slate-900 overflow-hidden flex flex-col gap-6 box-border relative">
 
-    <div class="grid grid-cols-12 gap-6 h-[55%] min-h-0">
+    <div class="grid grid-cols-12 gap-6 h-full min-h-0">
 
       <section
-        class="col-span-12 lg:col-span-8 relative overflow-hidden rounded-xl bg-slate-900 shadow-2xl h-full group">
+        class="col-span-12 lg:col-span-8 relative overflow-hidden rounded-xl  border-gray-300 hover:border-orange-500 bg-slate-900 h-full group">
 
         <img alt="Announcements Background"
           class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-10000 ease-out"
@@ -13,20 +13,21 @@
 
         <div class="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-900/60 to-transparent"></div>
 
-        <div class="relative h-full flex flex-col justify-between p-6 md:p-8">
+        <div class="relative h-full flex flex-col justify-between p-8 md:p-12">
 
           <div class="flex justify-between items-center shrink-0 w-full relative z-10">
             <span
-              class="bg-orange-500 text-white px-4 py-2 text-[12px] font-bold tracking-[0.08em] uppercase rounded-sm flex items-center gap-2 shadow-lg shadow-orange-500/20">
-              <span class="w-2 h-2 bg-white rounded-full pulse-dot"></span>
+              class="bg-orange-500 text-white px-5 py-2.5 text-[14px] font-bold tracking-widest uppercase rounded-sm flex items-center gap-3 shadow-lg shadow-orange-500/20">
+              <span class="w-2.5 h-2.5 bg-white rounded-full pulse-dot"></span>
               Announcements
             </span>
 
             <div v-if="announcements.length > 0"
-              class="flex gap-1.5 bg-slate-900/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/10 shrink-0 shadow-lg">
+              class="flex gap-2
+               backdrop-blur-md px-4 py-3 rounded-full border border-white/10 shrink-0 shadow-lg">
               <button v-for="(announcement, index) in announcements" :key="announcement.id"
-                @click="setAnnouncementIndex(index)" class="h-1.5 rounded-full transition-all duration-500 shrink-0"
-                :class="currentAnnouncementIndex === index ? 'w-6 bg-orange-500' : 'w-1.5 bg-white/30 hover:bg-white/60'"></button>
+                @click="setAnnouncementIndex(index)" class="h-2 rounded-full transition-all duration-500 shrink-0"
+                :class="currentAnnouncementIndex === index ? 'w-8 bg-orange-500' : 'w-2 bg-white/30 hover:bg-white/60'"></button>
             </div>
           </div>
 
@@ -35,32 +36,32 @@
               <transition name="slide-up" mode="out-in">
                 <div :key="currentAnnouncementIndex" class="flex flex-col justify-end">
                   <h1
-                    class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 max-w-4xl leading-[1.2] tracking-tight line-clamp-3 drop-shadow-md">
+                    class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 max-w-4xl leading-[1.1] tracking-tight line-clamp-4 drop-shadow-xl">
                     {{ activeAnnouncement.title }}
                   </h1>
-                  <p class="text-sm md:text-base lg:text-lg text-slate-300 max-w-3xl line-clamp-2 leading-relaxed">
+                  <p class="text-base md:text-lg lg:text-xl text-slate-300 max-w-3xl line-clamp-3 leading-relaxed">
                     {{ activeAnnouncement.content }}
                   </p>
-                  <div class="mt-3 flex items-center gap-3">
+                  <div class="mt-5 flex items-center gap-4">
                     <img v-if="activeAnnouncement.author_avatar" :src="activeAnnouncement.author_avatar"
-                      class="w-6 h-6 rounded-full border border-white/20" alt="Author Avatar" />
-                    <span class="text-xs font-medium text-slate-400">Posted by {{ activeAnnouncement.author_name }} • {{
+                      class="w-8 h-8 rounded-full border border-white/20" alt="Author Avatar" />
+                    <span class="text-sm font-medium text-slate-400">Posted by {{ activeAnnouncement.author_name }} • {{
                       activeAnnouncement.date }}</span>
                   </div>
                 </div>
               </transition>
             </div>
             <div v-else class="w-full text-center text-slate-400 py-10">
-              <p>No current announcements.</p>
+              <p class="text-xl">No current announcements.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <div class="col-span-12 lg:col-span-4 flex flex-col gap-6 h-full min-h-0">
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-6 h-full min-h-0 overflow-y-auto no-scrollbar pb-2">
 
         <div
-          class="glass-panel p-6 md:p-8 rounded-xl flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden grow border border-white/40">
+          class="glass-panel p-6 md:p-8 rounded-xl flex flex-col items-center justify-center text-center relative overflow-hidden shrink-0 border border-gray-300 hover:border-orange-500 transition-colors">
           <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-orange-400 to-orange-600"></div>
           <span class="text-[12px] font-bold tracking-[0.2em] text-slate-500 mb-2 uppercase">CURRENT TIME</span>
           <div
@@ -73,29 +74,31 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-6 h-[40%] min-h-35 shrink-0">
+        <div class="grid grid-cols-2 grid-rows-2 gap-4 md:gap-6 flex-1 min-h-0">
+
           <div
-            class="glass-panel p-5 rounded-xl flex flex-col justify-between shadow-lg border border-white/40 overflow-hidden">
-            <div class="flex justify-between items-start mb-4">
+            class="glass-panel p-4 md:p-5 rounded-xl flex flex-col justify-between border border-gray-300 hover:border-orange-500 transition-colors min-h-0 overflow-hidden">
+            <div class="flex justify-between items-start mb-2">
               <span class="material-symbols-outlined text-orange-500 text-3xl">partly_cloudy_day</span>
               <span
-                class="text-[10px] font-bold tracking-[0.08em] uppercase text-slate-400 text-right max-w-20 leading-tight">{{
-                weatherCity }}</span>
+                class="text-[10px] font-bold tracking-[0.08em] uppercase text-slate-400 text-right max-w-20 leading-tight">
+                {{ weatherCity }}
+              </span>
             </div>
-            <div>
-              <div class="text-3xl font-bold text-slate-900 tracking-tight">{{ weatherTemp }}°C</div>
-              <div class="text-[13px] text-slate-500 leading-tight mt-1 truncate">{{ weatherDesc }}</div>
+            <div class="mt-auto">
+              <div class="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">{{ weatherTemp }}°C</div>
+              <div class="text-[12px] lg:text-[13px] text-slate-500 leading-tight mt-1 truncate">{{ weatherDesc }}</div>
             </div>
           </div>
 
           <div
-            class="glass-panel p-5 rounded-xl flex flex-col justify-between shadow-lg border border-white/40 relative">
-            <div class="flex justify-between items-start mb-4 relative z-10">
+            class="glass-panel p-4 md:p-5 rounded-xl flex flex-col justify-between border border-gray-300 hover:border-orange-500 transition-colors min-h-0 overflow-hidden relative">
+            <div class="flex justify-between items-start mb-2 relative z-10">
               <span class="material-symbols-outlined text-blue-500 text-3xl">bolt</span>
-              <span class="text-[10px] font-bold tracking-[0.08em] uppercase text-slate-400 text-right">VIBE
-                CHECK</span>
+              <span
+                class="text-[10px] font-bold tracking-[0.08em] uppercase text-slate-400 text-right leading-tight">VIBE<br>CHECK</span>
             </div>
-            <div class="relative z-10">
+            <div class="relative z-10 mt-auto">
               <div class="text-[11px] font-semibold text-slate-600 mb-2 leading-tight"
                 :class="{ 'text-orange-500': hasVoted }">
                 {{ hasVoted ? 'Thanks!' : 'How are you?' }}
@@ -103,118 +106,103 @@
               <div class="flex justify-between items-center"
                 :class="{ 'opacity-50 pointer-events-none blur-[1px] transition-all': hasVoted }">
                 <button v-for="emoji in sentimentOptions.slice(0, 5)" :key="emoji.id" @click="submitSentiment(emoji)"
-                  class="text-xl hover:scale-125 hover:-translate-y-1 transition-all duration-300 grayscale hover:grayscale-0 focus:outline-none origin-bottom"
+                  class="text-xl lg:text-2xl hover:scale-125 hover:-translate-y-1 transition-all duration-300 grayscale hover:grayscale-0 focus:outline-none origin-bottom"
                   :title="emoji.label">
                   {{ emoji.icon }}
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="grid grid-cols-12 gap-6 h-[45%] min-h-0">
-
-      <div
-        class="col-span-12 md:col-span-8 lg:col-span-9 glass-panel p-6 rounded-xl shadow-lg border border-white/40 flex flex-col min-h-0">
-        <div class="flex items-center justify-between mb-5 shrink-0">
-          <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-orange-500 bg-orange-100 p-1.5 rounded-lg">event_upcoming</span>
-            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">UP NEXT ON CAMPUS</h2>
-          </div>
-          <button @click="goToEvents"
-            class="text-[11px] font-bold tracking-widest uppercase text-slate-500 bg-white hover:text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-full border border-slate-200 transition-all shadow-sm">
-            Full Calendar
-          </button>
-        </div>
-
-        <div class="flex gap-6 flex-1 min-h-0">
-
-          <div v-if="nextEvent"
-            class="w-[55%] relative rounded-xl overflow-hidden shadow-xl border border-slate-800 bg-slate-900 flex flex-col group shrink-0">
-            <div
-              class="absolute inset-0 bg-linear-to-br from-orange-600/20 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+          <div
+            class="glass-panel p-4 md:p-5 rounded-xl border border-gray-300 hover:border-orange-500 transition-colors flex flex-col min-h-0 overflow-hidden">
+            <div class="flex items-center gap-2 mb-3 shrink-0">
+              <span
+                class="material-symbols-outlined text-orange-500 bg-orange-100 p-1 rounded-lg text-[14px]">event_upcoming</span>
+              <h2 class="text-xs font-extrabold text-slate-900 tracking-tight">UP NEXT</h2>
             </div>
-            <div class="absolute -top-12 -right-12 w-32 h-32 bg-orange-500 blur-3xl opacity-20 rounded-full"></div>
 
-            <div class="relative z-10 p-6 flex flex-col h-full">
-              <div class="shrink-0 mb-4">
-                <span
-                  class="inline-block bg-orange-500 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-md">Featured</span>
-              </div>
+            <div class="flex flex-col gap-2 overflow-y-auto no-scrollbar grow pr-1">
+              <div v-if="nextEvent"
+                class="bg-slate-900 rounded-xl p-3 text-white relative overflow-hidden group shrink-0 shadow-md flex flex-col gap-2 border border-slate-800">
+                <div
+                  class="absolute inset-0 bg-linear-to-br from-orange-600/20 to-transparent opacity-50 group-hover:opacity-100 transition-opacity">
+                </div>
 
-              <div class="flex-1 flex flex-col justify-center min-h-0">
-                <h3 class="text-2xl lg:text-3xl font-bold text-white leading-tight mb-2 truncate">
-                  {{ nextEvent.title }}
-                </h3>
-                <div class="flex items-center gap-2 text-slate-400">
-                  <span class="material-symbols-outlined text-[16px]">location_on</span>
-                  <p class="text-[12px] uppercase tracking-wider font-semibold truncate">{{ nextEvent.venue }}</p>
+                <div class="relative z-10 flex justify-between items-start">
+                  <span
+                    class="inline-block bg-orange-500 text-white text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded-sm">Featured</span>
+
+                  <div class="flex items-center gap-1.5 text-center bg-black/30 px-1.5 py-1 rounded backdrop-blur-sm">
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-black font-mono text-orange-400 leading-none">{{ countdownDays }}</span>
+                      <span class="text-[7px] uppercase font-bold tracking-widest text-slate-400 mt-0.5">Days</span>
+                    </div>
+                    <span class="text-slate-600 text-[10px] font-bold leading-none mb-1.5">:</span>
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-black font-mono text-white leading-none">{{ countdownHours }}</span>
+                      <span class="text-[7px] uppercase font-bold tracking-widest text-slate-400 mt-0.5">Hrs</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative z-10 flex flex-col">
+                  <h3 class="text-xs font-bold leading-tight line-clamp-1 mb-1">{{ nextEvent.title }}</h3>
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="material-symbols-outlined text-[10px]">location_on</span>
+                    <p class="text-[9px] uppercase tracking-wider font-semibold truncate">{{ nextEvent.venue }}</p>
+                  </div>
                 </div>
               </div>
 
-              <div class="flex gap-4 items-center mt-4 border-t border-white/10 pt-4 shrink-0">
-                <div class="text-center">
-                  <div class="text-2xl font-black font-mono text-orange-400 leading-none">{{ countdownDays }}</div>
-                  <div class="text-[9px] uppercase font-bold tracking-widest text-slate-500 mt-1">Days</div>
+              <div v-else
+                class="flex flex-col items-center justify-center py-4 text-slate-400 shrink-0 border border-dashed border-slate-300 rounded-xl">
+                <span class="material-symbols-outlined text-2xl mb-1 opacity-50">event_busy</span>
+                <p class="text-[10px] font-medium text-center">No upcoming events.</p>
+              </div>
+
+              <div v-for="event in upcomingEvents.slice(1, 4)" :key="event.event_id"
+                class=" hover:bg-white text-slate-800 p-2 rounded-lg flex items-center gap-2 shrink-0 group transition-all border border-gray-300 hover:border-orange-500 cursor-pointer"
+                @click="goToEvents">
+                <div
+                  class=" text-center rounded p-1 min-w-9 group-hover:bg-orange-50 transition-colors border border-gray-300">
+                  <div class="text-[8px] font-bold uppercase text-slate-500 group-hover:text-orange-500">{{ event.month
+                    }}</div>
+                  <div class="text-xs font-black">{{ event.day }}</div>
                 </div>
-                <div class="w-px h-8 bg-white/10"></div>
-                <div class="text-center">
-                  <div class="text-2xl font-black font-mono text-white leading-none">{{ countdownHours }}</div>
-                  <div class="text-[9px] uppercase font-bold tracking-widest text-slate-500 mt-1">Hours</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-else
-            class="w-[55%] flex flex-col items-center justify-center p-6 bg-slate-100/50 rounded-xl border border-slate-200 border-dashed text-slate-400 shrink-0">
-            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">event_busy</span>
-            <p class="text-sm font-medium">No upcoming events scheduled.</p>
-          </div>
-
-          <div class="w-[45%] flex flex-col gap-4 overflow-y-auto no-scrollbar py-1">
-            <div v-for="event in upcomingEvents.slice(1, 4)" :key="event.event_id"
-              class="shrink-0 group flex items-center gap-4 p-4 bg-white/60 hover:bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden">
-              <div
-                class="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-300">
-              </div>
-
-              <div
-                class="bg-slate-50 text-slate-400 group-hover:text-orange-500 group-hover:bg-orange-50 transition-colors p-3 rounded-lg shrink-0 border border-slate-100 text-center">
-                <div class="text-[10px] font-bold uppercase tracking-widest leading-none">{{ event.month }}</div>
-                <div class="text-xl font-black text-slate-800 leading-none mt-1">{{ event.day }}</div>
-              </div>
-              <div class="min-w-0">
-                <h3
-                  class="font-bold text-slate-800 text-sm lg:text-base leading-tight mb-1 line-clamp-2 group-hover:text-orange-600 transition-colors">
-                  {{ event.title }}</h3>
-                <div class="flex items-center gap-1.5 text-slate-500">
-                  <span class="material-symbols-outlined text-[14px]">map</span>
-                  <p class="text-[10px] lg:text-[11px] uppercase tracking-widest font-semibold truncate">{{ event.venue
-                    }}</p>
+                <div class="min-w-0">
+                  <div class="text-[10px] font-bold truncate group-hover:text-orange-600 transition-colors">{{
+                    event.title }}</div>
+                  <div class="text-[9px] text-slate-500 truncate mt-0.5 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[9px]">map</span>
+                    {{ event.venue }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-        </div>
-      </div>
+          <div
+            class="glass-panel p-4 md:p-5 rounded-xl flex flex-col justify-between border border-gray-300 hover:border-orange-500 transition-colors min-h-0 overflow-hidden relative">
+            <div class="flex justify-between items-start mb-2 relative z-10 shrink-0">
+              <span class="material-symbols-outlined text-orange-500 text-3xl">psychology</span>
+              <span
+                class="text-[10px] font-bold tracking-[0.08em] uppercase text-slate-400 text-right leading-tight">DAILY<br>TRIVIA</span>
+            </div>
 
-      <div
-        class="col-span-12 md:col-span-4 lg:col-span-3 glass-panel p-6 rounded-xl shadow-lg border border-white/40 bg-linear-to-br from-white/80 to-orange-50/50 flex flex-col justify-center items-center text-center group transition-all">
-        <div
-          class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
-          <span class="material-symbols-outlined text-orange-500 text-4xl">psychology</span>
+            <div class="relative z-10 mt-auto flex flex-col justify-end">
+              <div class="text-[11px] font-semibold text-slate-600 mb-3 leading-tight text-center px-2">
+                Take a quick break and test your knowledge!
+              </div>
+              <button @click="isTriviaModalOpen = true"
+                class="w-full text-center px-2 py-2 rounded-lg bg-orange-500 text-white font-bold text-[10px] tracking-[0.08em] uppercase hover:bg-orange-600 transition-all flex justify-center items-center gap-1.5 active:scale-95">
+                PLAY NOW
+                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+
         </div>
-        <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">DAILY TRIVIA</h2>
-        <p class="text-xs text-slate-600 mb-6 font-medium px-4">Take a quick break and test your knowledge!</p>
-        <button @click="isTriviaModalOpen = true"
-          class="w-full text-center px-4 py-3 rounded-lg border-[1.5px] border-orange-500 bg-orange-500 text-white font-bold text-[12px] tracking-[0.08em] uppercase hover:bg-orange-600 active:scale-95 transition-all shadow-md flex justify-center items-center gap-2">
-          PLAY TRIVIA
-          <span class="material-symbols-outlined text-sm">arrow_forward</span>
-        </button>
       </div>
     </div>
 
@@ -228,7 +216,7 @@
         <div
           class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[90vh]">
           <div
-            class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-md z-10 shrink-0">
+            class="flex items-center justify-between px-6 py-4 border-b border-slate-100  backdrop-blur-md z-10 shrink-0">
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-orange-500">psychology</span>
               <h2 class="text-sm font-bold text-slate-800 tracking-widest uppercase">Daily Challenge</h2>
@@ -240,8 +228,7 @@
           </div>
 
           <div class="p-6 md:p-8 overflow-y-auto no-scrollbar flex flex-col flex-1">
-            <div v-if="quizState === 'start'"
-              class="grow flex flex-col justify-center items-center text-center py-4">
+            <div v-if="quizState === 'start'" class="grow flex flex-col justify-center items-center text-center py-4">
               <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-6">
                 <span class="material-symbols-outlined text-orange-500 text-5xl">lightbulb</span>
               </div>
@@ -463,7 +450,7 @@ const getAnswerClass = (answer) => {
   if (answer === selectedAnswer.value) {
     return 'bg-red-50 border-red-400 text-red-700'
   }
-  return 'opacity-50 bg-slate-50 border-slate-200 text-slate-400'
+  return 'opacity-50 border-slate-200 text-slate-400'
 }
 
 // --- SENTIMENT TRACKER STATE ---
