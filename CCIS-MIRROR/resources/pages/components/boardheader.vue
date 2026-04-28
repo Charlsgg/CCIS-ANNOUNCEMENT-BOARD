@@ -2,7 +2,14 @@
   <main
     class="w-full h-[85vh]  p-4 md:p-6 lg:p-8 max-w-400 mx-auto font-sans text-slate-900 overflow-hidden flex flex-col gap-6 box-border relative">
 
-    <div class="grid grid-cols-12 gap-6 h-full min-h-0">
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-400/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+    <button @click="isQrModalOpen = true" 
+      class="fixed bottom-6 right-6 z-50 bg-orange-500 text-white p-4 rounded-full shadow-lg hover:bg-orange-600 transition-all hover:scale-110 flex items-center justify-center hover:shadow-orange-500/50">
+      <span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
+    </button>
+
+    <div class="grid grid-cols-12 gap-6 h-full min-h-0 relative z-10">
 
       <section
         class="col-span-12 lg:col-span-8 relative overflow-hidden rounded-xl  border-gray-300 hover:border-orange-500 bg-slate-900 h-full group">
@@ -206,6 +213,47 @@
       </div>
     </div>
 
+    <transition name="fade">
+      <div v-if="isQrModalOpen" class="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="isQrModalOpen = false"></div>
+
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden max-h-[90vh]">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 backdrop-blur-md z-10 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-orange-500">qr_code_scanner</span>
+              <h2 class="text-sm font-bold text-slate-800 tracking-widest uppercase">QR Code</h2>
+            </div>
+            <button @click="isQrModalOpen = false"
+              class="text-slate-400 hover:text-slate-700 hover:bg-slate-200 p-1.5 rounded-full transition-colors flex items-center justify-center">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+
+          <div class="p-8 flex flex-col items-center justify-center text-center">
+            <h3 class="text-xl font-bold text-slate-900 mb-2">{{ activeQr.title }}</h3>
+            <p class="text-sm text-slate-500 mb-6 px-4">{{ activeQr.description }}</p>
+
+            <div class="w-56 h-56 bg-slate-50 rounded-2xl mb-8 flex items-center justify-center border-2 border-dashed border-slate-200 p-4">
+              <img v-if="activeQr.image" :src="activeQr.image" class="w-full h-full object-contain" alt="QR Code" />
+              <span v-else class="material-symbols-outlined text-6xl text-slate-300">qr_code</span>
+            </div>
+
+            <button @click="nextQrCode"
+              class="w-full text-center px-4 py-3.5 rounded-xl bg-orange-500 text-white font-bold text-[13px] tracking-widest uppercase hover:bg-orange-600 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-orange-500/20 active:scale-95">
+              NEXT QR
+              <span class="material-symbols-outlined text-base">arrow_forward</span>
+            </button>
+
+            <div class="flex gap-1.5 mt-5">
+               <span v-for="(qr, index) in qrCodes" :key="qr.id" 
+                 class="h-1.5 rounded-full transition-all duration-300"
+                 :class="currentQrIndex === index ? 'w-4 bg-orange-500' : 'w-1.5 bg-slate-200'"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <SentimentModal :is-open="isModalOpen" :sentiment="selectedSentiment" :average-vibe="mockAverageVibe"
       @close="isModalOpen = false" />
 
@@ -305,6 +353,20 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import SentimentModal from '../modals/sentimentmodal.vue'
+
+// --- QR CODE STATE ---
+const isQrModalOpen = ref(false)
+const currentQrIndex = ref(0)
+const qrCodes = ref([
+  { id: 1, title: 'Feedback Form', description: 'Tell us about your experience!', image: '/images/sample.png' },
+  { id: 2, title: 'Printing Form', description: 'Scan To request for printing', image: '/images/sample.png' },
+  { id: 3, title: 'Do Day Form', description: 'Scan to submit your Do Day form', image: '/images/sample.png' }
+])
+const activeQr = computed(() => qrCodes.value[currentQrIndex.value])
+
+const nextQrCode = () => {
+  currentQrIndex.value = (currentQrIndex.value + 1) % qrCodes.value.length
+}
 
 // Routing Mock
 const goToEvents = () => {
