@@ -354,7 +354,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import SentimentModal from '../modals/sentimentmodal.vue'
 
-// --- QR CODE STATE ---
 const isQrModalOpen = ref(false)
 const currentQrIndex = ref(0)
 const qrCodes = ref([
