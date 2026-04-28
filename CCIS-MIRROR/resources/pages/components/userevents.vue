@@ -116,7 +116,7 @@ defineExpose({ refresh: fetchMyEvents })
 <template>
     <Teleport to="body">
         <Transition name="fade">
-            <div v-if="isOpen" class="fixed inset-0 z-[9990] flex items-center justify-center backdrop-blur-sm p-4 sm:p-6"
+            <div v-if="isOpen" class="fixed inset-0 z-9990 flex items-center justify-center backdrop-blur-sm p-4 sm:p-6"
                  :style="{ backgroundColor: surface.overlayBg }">
                 
                 <div class="relative w-full max-w-6xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden border"
@@ -255,7 +255,7 @@ defineExpose({ refresh: fetchMyEvents })
 
     <Teleport to="body">
         <Transition name="fade">
-            <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm p-4"
+            <div v-if="isDeleteDialogOpen" class="fixed inset-0 z-9999 flex items-center justify-center backdrop-blur-sm p-4"
                  :style="{ backgroundColor: surface.overlayBg }">
                 <div class="max-w-md w-full rounded-2xl p-6 shadow-xl" 
                     :style="{ backgroundColor: surface.cardBg, border: `1px solid ${surface.borderSubtle}` }">
