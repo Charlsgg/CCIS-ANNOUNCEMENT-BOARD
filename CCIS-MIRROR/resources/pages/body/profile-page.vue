@@ -237,7 +237,6 @@ onMounted(() => {
                         </div>
 
                         <div class="pt-8 flex justify-end gap-4">
-                            <button class="px-8 py-3.5 font-bold rounded-xl transition-all" type="button" :style="styles.textSecondary">Cancel</button>
                             <button class="py-3.5 px-10 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98] disabled:opacity-50" 
                                 type="submit" :disabled="isSaving" :style="styles.button">
                                 {{ isSaving ? 'Saving...' : 'Save Changes' }}
