@@ -4,7 +4,7 @@
   </a>
 </p>
 
-<h1 align="center">CCIS-MIRROR</h1>
+<h1 align="center">CCIS-ANNOUNCEMENT-BOARD</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
