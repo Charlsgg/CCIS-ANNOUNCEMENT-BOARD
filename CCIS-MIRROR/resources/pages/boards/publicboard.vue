@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8 font-sans selection:bg-orange-500/30 overflow-x-hidden relative">
+  <div class="min-h-screen bg-gray-50 text-gray-900 p-2 md:p-4 font-sans selection:bg-orange-500/30 overflow-x-hidden relative">
 
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-400/20 rounded-full blur-[120px] pointer-events-none">
     </div>

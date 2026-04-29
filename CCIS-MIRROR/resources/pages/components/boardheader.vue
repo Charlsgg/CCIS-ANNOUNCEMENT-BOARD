@@ -1,6 +1,6 @@
 <template>
   <main
-    class="w-full h-[85vh]  p-4 md:p-6 lg:p-8 max-w-400 mx-auto font-sans text-slate-900 overflow-hidden flex flex-col gap-6 box-border relative">
+    class="w-full h-[85vh]  p-2 md:p-3 lg:p-4 max-w-400 mx-auto font-sans text-slate-900 overflow-hidden flex flex-col gap-6 box-border relative">
 
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-400/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
