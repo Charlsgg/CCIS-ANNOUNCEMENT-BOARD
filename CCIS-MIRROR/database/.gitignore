@@ -1,1 +1,4 @@
 *.sqlite*
+
+# Ignore all files in the screenshots directory
+screenshots/*
