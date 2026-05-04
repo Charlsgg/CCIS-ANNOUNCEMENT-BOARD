@@ -1,0 +1,2 @@
+#ignore png files in the screenshots directory
+screenshots/*.png
