@@ -1,2 +1,3 @@
-#ignore png files in the screenshots directory
+#ignore png jpg files in the screenshots directory
 screenshots/*.png
+screenshots/*.jpg
