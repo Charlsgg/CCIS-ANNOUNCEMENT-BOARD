@@ -17,15 +17,11 @@ class NavbarController extends Controller
 
         // Get the raw path from the database
         $rawPath = $user->profile?->profile_picture;
-        $avatarUrl = null;
-
-        // If a picture exists, generate the full public URL for it
-        if ($rawPath) {
-            // Option A: If your DB stores just the filename, and they are in the 'avatars' folder:
-            // $avatarUrl = asset('storage/avatars/' . $rawPath);
-            
-            // Option B: If your DB stores the relative path (e.g., 'avatars/filename.jpg'):
-            $avatarUrl = asset('storage/' . $rawPath);
+         $avatarUrl = null;
+        if ($user->profile && $user->profile->profile_picture) {
+            $avatarUrl = str_starts_with($user->profile->profile_picture, 'http')
+                ? $user->profile->profile_picture
+                : Storage::url($user->profile->profile_picture);
         }
 
         return response()->json([
