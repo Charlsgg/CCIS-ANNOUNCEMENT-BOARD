@@ -81,7 +81,7 @@ const formatFullDate = (dateString?: string) => {
         :style="styles.cardBg">
         <div class="p-6 border-b" :style="{ borderColor: surface.borderSubtle, backgroundColor: surface.hoverBg }">
             <h3 class="text-lg font-bold" :style="styles.textPrimary">Upcoming Events</h3>
-            <p class="text-xs" :style="styles.textMuted">Chronological feed of announcements</p>
+            <p class="text-xs" :style="styles.textMuted">Chronological feed of Events</p>
         </div>
 
         <div class="p-4 space-y-4">

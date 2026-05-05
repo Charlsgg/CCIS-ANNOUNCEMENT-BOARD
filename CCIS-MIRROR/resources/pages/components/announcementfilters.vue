@@ -17,11 +17,30 @@ const filters = [
     { key: 'it', label: 'Information Technology', color: 'bg-emerald-500', role: 'it_instructor' },
     { key: 'is', label: 'Information Systems', color: 'bg-amber-500', role: 'is_instructor' },
     { key: 'lsg', label: 'CCIS LSG', color: 'bg-purple-500', role: 'lsg_officer' },
+    
 ]
 
+// Add a variable to hold the timer
+let timeoutId: ReturnType<typeof setTimeout> | null = null
+
 const setFilter = (role: string | null) => {
+    // 1. Still prevent same-filter spam
+    if (activeFilter.value === role) {
+        return
+    }
+
+    // 2. Update the active filter immediately so the UI button highlights instantly
     activeFilter.value = role
-    emit('filterChange', role) 
+
+    // 3. If they click another button while the timer is running, cancel the old timer
+    if (timeoutId) {
+        clearTimeout(timeoutId)
+    }
+
+    // 4. Start a new timer. Only emit the query if 300ms pass with NO clicks.
+    timeoutId = setTimeout(() => {
+        emit('filterChange', role) 
+    }, 300) // 300 milliseconds is usually the sweet spot
 }
 </script>
 
