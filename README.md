@@ -45,7 +45,7 @@ Before starting, ensure you have the following installed on your local machine:
 
 ### 1. Clone & Install Dependencies
 
-```bash
+
 # Clone the repository
 git clone <your-repo-url>
 cd ccis-announcement-board
