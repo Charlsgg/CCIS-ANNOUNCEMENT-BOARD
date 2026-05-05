@@ -33,13 +33,25 @@ const fetchBoardData = async (topic: string | null = null) => {
         activeTopic.value = topic
         const baseUrl = '/api/board-data'
         const url = topic ? `${baseUrl}?topic=${topic}` : baseUrl
-        const response = await fetch(url)
+        
+        // ADDED HEADERS HERE
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
         
         if (response.ok) {
             const data = await response.json()
             announcements.value = data.announcements
             upcomingEvents.value = data.upcoming_events
             stats.value = data.stats 
+        } else if (response.status === 401 || response.status === 403) {
+            // Optional: Handle the case where they actually are unauthorized
+            console.warn('Unauthorized access. Redirecting...')
+            window.location.href = '/login'
         }
     } catch (error) {
         console.error('Error fetching board data:', error)

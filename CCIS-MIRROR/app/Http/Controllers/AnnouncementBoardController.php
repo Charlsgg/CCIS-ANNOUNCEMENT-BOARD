@@ -12,6 +12,10 @@ class AnnouncementBoardController extends Controller
 {
     public function index(Request $request)
     {
+        if (!$request->expectsJson() && !$request->ajax()) {
+        return redirect('https://miracis.vercel.app/announcements-board'); 
+        // Or you can return abort(403, 'Direct access not allowed.');
+    }
         $filter = $request->query('topic');
         $userId = Auth::id();
 
