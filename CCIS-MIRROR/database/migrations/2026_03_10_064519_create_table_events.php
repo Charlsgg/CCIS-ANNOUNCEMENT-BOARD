@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('board_id');
             $table->string('title');
-            $table->string('content');
+            $table->text('content');
             $table->string('venue', 255);
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();
