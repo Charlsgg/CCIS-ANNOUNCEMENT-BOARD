@@ -17,7 +17,7 @@ interface Announcement {
   topic?: string
   date: string
   author_name?: string
-  author_type?: string // <-- Added author_type
+  author_type?: string 
   author_avatar?: string | null
   likes_count?: number
   attachments?: Attachment[]
@@ -75,8 +75,8 @@ const getFileName = (path?: string | null) => {
 }
 
 // --- Role Color Mapping Logic ---
+
 const getRoleColor = (type?: string) => {
-  // Map specific author_types to hex colors based on your API
   const roleColors: Record<string, string> = {
     'it_instructor': '3b82f6',
     'is_instructor': '008000',
@@ -88,8 +88,11 @@ const getRoleColor = (type?: string) => {
     return roleColors[type.toLowerCase()]
   }
 
-  // Default fallback color if type is missing or unknown (Gray)
-  return '6B7280'
+  // Get theme primary color, default to gray if missing
+  const primaryColor = theme.value?.primary || '6B7280'
+  
+  // The UI-Avatars API requires hex colors WITHOUT the hash (#)
+  return primaryColor.replace('#', '')
 }
 
 const getDefaultAvatar = (name?: string, type?: string) => {
@@ -97,7 +100,6 @@ const getDefaultAvatar = (name?: string, type?: string) => {
   const initial = (name?.charAt(0) || 'U').toUpperCase()
 
   return `https://ui-avatars.com/api/?background=${bgColor}&color=fff&name=${encodeURIComponent(initial)}`
-
 }
 
 // --- Image Extraction Logic (For Card Cover) ---

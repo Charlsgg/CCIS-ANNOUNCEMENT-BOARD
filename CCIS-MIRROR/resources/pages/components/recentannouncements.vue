@@ -5,8 +5,8 @@ import AnnouncementCard from './announcementcard.vue'
 import FilePreviewModal from '../modals/filepreviewmodal.vue'
 
 interface Attachment {
-    id?: number | string            // <-- Add this just to be fully compatible
-    attachment_id?: number | string // <-- Add the ? here!
+    id?: number | string
+    attachment_id?: number | string
     file_type: string
     file_path: string
     url?: string
@@ -16,7 +16,6 @@ interface Announcement {
     id: number | string
     title: string
     content: string
-
     topic?: string
     date: string
     likes_count?: number
@@ -40,17 +39,30 @@ const emit = defineEmits<{
 
 const { theme, styles, surface } = useTheme()
 
-// --- Computed Sorting ---
-const sortedAnnouncements = computed(() => {
-    return [...props.announcements].sort((a, b) => {
+// --- NEW: Search State ---
+const searchQuery = ref('')
+
+// --- UPDATED: Computed Filtering & Sorting ---
+const filteredAndSortedAnnouncements = computed(() => {
+    let result = props.announcements
+
+    // 1. Filter based on search query
+    if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase().trim()
+        result = result.filter(post => 
+            post.title.toLowerCase().includes(query) ||
+            post.content.toLowerCase().includes(query) ||
+            (post.topic && post.topic.toLowerCase().includes(query)) ||
+            (post.author_name && post.author_name.toLowerCase().includes(query))
+        )
+    }
+
+    // 2. Sort the filtered results by date
+    return [...result].sort((a, b) => {
         return new Date(b.date).getTime() - new Date(a.date).getTime()
     })
 })
 
-/**
- * Kept ONLY for the Edit Modal to display names of existing attachments.
- * The card/preview helpers are now handled inside their respective components.
- */
 const getFileName = (path?: string | null) => {
     if (!path) return 'Download File'
     const base = path.split('/').pop() || 'Download File'
@@ -112,7 +124,7 @@ const handleFileSelect = (event: Event) => {
 }
 
 const removeExistingAttachment = (id?: number | string) => {
-    if (!id) return; // <-- If it's undefined, just stop here!
+    if (!id) return;
     if (!deletedAttachmentIds.value.includes(id)) {
         deletedAttachmentIds.value.push(id)
     }
@@ -146,8 +158,59 @@ const submitEdit = () => {
 <template>
     <div class="flex flex-col gap-6 relative w-full">
 
-        <AnnouncementCard v-for="post in sortedAnnouncements" :key="post.id" :post="post" :show-actions="true"
+        <!-- Header Actions: Search & View All -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 w-full">
+            
+            <!-- Restrained Width Search Bar -->
+            <div class="relative w-full sm:max-w-md shadow-sm rounded-xl" :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="material-symbols-outlined text-[20px]" :style="styles.textSecondary">search</span>
+                </div>
+                <input 
+                    v-model="searchQuery" 
+                    type="text" 
+                    placeholder="Search announcements..."
+                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 transition-all duration-300"
+                    :style="{ backgroundColor: surface.inputBg, borderColor: surface.borderSubtle, color: styles.textPrimary.color, '--tw-ring-color': theme.accent }" 
+                />
+                <button 
+                    v-if="searchQuery" 
+                    @click="searchQuery = ''"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center hover:opacity-70 transition-opacity"
+                    title="Clear search"
+                >
+                    <span class="material-symbols-outlined text-[18px]" :style="styles.textSecondary">close</span>
+                </button>
+            </div>
+
+            <!-- View All Button -->
+            <button 
+                @click="searchQuery = ''"
+                class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm border transition-all flex items-center justify-center gap-2 shrink-0 hover:-translate-y-0.5 hover:shadow-md"
+                :style="{ 
+                    backgroundColor: searchQuery ? theme.accent : surface.cardBg, 
+                    color: searchQuery ? '#ffffff' : styles.textPrimary.color,
+                    borderColor: searchQuery ? theme.accent : surface.borderSubtle 
+                }"
+            >
+                <span class="material-symbols-outlined text-[18px]">
+                    {{ searchQuery ? 'visibility' : 'format_list_bulleted' }}
+                </span>
+                View All
+            </button>
+
+        </div>
+
+        <!-- Announcement Loop -->
+        <AnnouncementCard v-for="post in filteredAndSortedAnnouncements" :key="post.id" :post="post" :show-actions="true"
             @preview="openPreview" @edit="openEditModal" @delete="$emit('delete', $event)" />
+
+        <!-- Empty State -->
+        <div v-if="filteredAndSortedAnnouncements.length === 0" class="text-center py-12 rounded-xl border mt-4" :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
+            <span class="material-symbols-outlined text-4xl mb-2" :style="styles.textSecondary">search_off</span>
+            <p class="font-medium" :style="styles.textPrimary">No announcements found</p>
+            <p class="text-sm mt-1" :style="styles.textSecondary">Try adjusting your search query to view results.</p>
+        </div>
 
         <Teleport to="body">
             <div v-if="isEditModalOpen"
