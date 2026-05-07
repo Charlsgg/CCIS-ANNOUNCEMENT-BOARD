@@ -205,13 +205,6 @@ const submitEdit = () => {
         <AnnouncementCard v-for="post in filteredAndSortedAnnouncements" :key="post.id" :post="post" :show-actions="true"
             @preview="openPreview" @edit="openEditModal" @delete="$emit('delete', $event)" />
 
-        <!-- Empty State -->
-        <div v-if="filteredAndSortedAnnouncements.length === 0" class="text-center py-12 rounded-xl border mt-4" :style="{ backgroundColor: surface.cardBg, borderColor: surface.borderSubtle }">
-            <span class="material-symbols-outlined text-4xl mb-2" :style="styles.textSecondary">search_off</span>
-            <p class="font-medium" :style="styles.textPrimary">No announcements found</p>
-            <p class="text-sm mt-1" :style="styles.textSecondary">Try adjusting your search query to view results.</p>
-        </div>
-
         <Teleport to="body">
             <div v-if="isEditModalOpen"
                 class="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
