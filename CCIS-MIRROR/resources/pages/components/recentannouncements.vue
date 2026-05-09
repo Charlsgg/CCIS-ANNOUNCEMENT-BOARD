@@ -185,7 +185,7 @@ const submitEdit = () => {
 
         </div>
 
-        <!-- Announcement Loop -->
+        <!-- Announcementjkj Loop -->
         <AnnouncementCard v-for="post in filteredAndSortedAnnouncements" :key="post.id" :post="post" :show-actions="true"
             @preview="openPreview" @edit="openEditModal" @delete="$emit('delete', $event)" />
 
